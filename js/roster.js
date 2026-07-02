@@ -9,6 +9,12 @@ function initials(name) {
     .toUpperCase();
 }
 
+function avatarMarkup(p) {
+  return p.photo
+    ? `<img class="player-avatar" src="${p.photo}" alt="${p.name}" />`
+    : `<div class="player-avatar">${initials(p.name)}</div>`;
+}
+
 async function renderRoster() {
   const grid = document.getElementById("roster-grid");
   try {
@@ -16,7 +22,7 @@ async function renderRoster() {
     const data = await res.json();
     grid.innerHTML = data.players.map(p => `
       <a class="player-card" style="--card-accent:${p.accent}" href="player.html?id=${encodeURIComponent(p.id)}">
-        <div class="player-avatar">${initials(p.name)}</div>
+        ${avatarMarkup(p)}
         <h3>${p.name}</h3>
         <p class="role">${p.role} &middot; ${p.game}</p>
         <div class="meta-row">

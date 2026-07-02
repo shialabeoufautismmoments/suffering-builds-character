@@ -25,6 +25,7 @@ collections:
               - { label: "Rank", name: "rank", widget: "string" }
               - { label: "Joined", name: "joined", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
               - { label: "Accent Color", name: "accent", widget: "color" }
+              - { label: "Photo", name: "photo", widget: "image", required: false, hint: "Optional. Falls back to initials avatar if left blank." }
               - { label: "Bio", name: "bio", widget: "text" }
               - label: "Achievements"
                 name: "achievements"
@@ -37,3 +38,52 @@ collections:
                   - { label: "Twitch URL", name: "twitch", widget: "string", required: false }
                   - { label: "Twitter URL", name: "twitter", widget: "string", required: false }
                   - { label: "Discord URL", name: "discord", widget: "string", required: false }
+
+  - name: "news"
+    label: "News"
+    files:
+      - file: "data/news.json"
+        label: "Announcements"
+        name: "news"
+        fields:
+          - label: "Announcements"
+            name: "news"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.title}}"
+            fields:
+              - { label: "Date", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Body", name: "body", widget: "text" }
+
+  - name: "schedule"
+    label: "Schedule"
+    files:
+      - file: "data/schedule.json"
+        label: "Events"
+        name: "schedule"
+        fields:
+          - label: "Events"
+            name: "events"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.title}}"
+            fields:
+              - { label: "Date", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+              - { label: "Time", name: "time", widget: "string", required: false, hint: "e.g. 7:00 PM ET" }
+              - { label: "Title", name: "title", widget: "string", hint: "e.g. Scrim vs Rival Clan" }
+              - { label: "Game", name: "game", widget: "string", required: false }
+              - { label: "Notes", name: "notes", widget: "text", required: false }
+              - { label: "Link", name: "link", widget: "string", required: false, hint: "Stream/bracket link, optional" }
+
+  - name: "about"
+    label: "About"
+    files:
+      - file: "data/about.json"
+        label: "About Page"
+        name: "about"
+        fields:
+          - { label: "Founded", name: "founded", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+          - { label: "Story", name: "story", widget: "text" }
+          - label: "House Rules"
+            name: "rules"
+            widget: "list"
+            allow_add: true

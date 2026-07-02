@@ -26,7 +26,8 @@ a { color: inherit; text-decoration: none; }
 .site-header {
   display: flex;
   align-items: center;
-  gap: 18px;
+  flex-wrap: wrap;
+  gap: 14px 18px;
   padding: 28px clamp(20px, 5vw, 60px);
   border-bottom: 1px solid var(--border);
   background: rgba(3, 3, 3, 0.85);
@@ -60,6 +61,30 @@ a { color: inherit; text-decoration: none; }
   color: var(--text-dim);
   letter-spacing: 0.15em;
   text-transform: uppercase;
+}
+
+.site-nav {
+  margin-left: auto;
+  display: flex;
+  gap: 26px;
+}
+
+.site-nav a {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.site-nav a:hover { color: var(--text); }
+
+.site-nav a.active {
+  color: var(--accent-bright);
+  border-bottom-color: var(--accent-bright);
 }
 
 main {
@@ -136,6 +161,11 @@ main {
   background: var(--card-accent, var(--accent));
   margin-bottom: 14px;
   box-shadow: 0 0 16px -4px var(--card-accent, var(--accent));
+}
+
+img.player-avatar {
+  object-fit: cover;
+  border: 1px solid var(--border);
 }
 
 .player-card h3 {
@@ -328,3 +358,170 @@ footer {
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+
+.news-list, .schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.news-item {
+  background: linear-gradient(160deg, var(--card) 0%, #060607 100%);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 20px 24px;
+}
+
+.news-date {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+
+.news-item h3 {
+  margin: 0 0 8px;
+  font-family: 'Oswald', 'Segoe UI', sans-serif;
+  letter-spacing: 0.02em;
+  font-size: 1.1rem;
+}
+
+.news-item p {
+  margin: 0;
+  line-height: 1.6;
+  color: #c9c4c4;
+}
+
+.event-item {
+  display: flex;
+  gap: 22px;
+  background: linear-gradient(160deg, var(--card) 0%, #060607 100%);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 20px 24px;
+}
+
+.event-item.past {
+  opacity: 0.45;
+  border-left-color: var(--border);
+}
+
+.event-date {
+  flex-shrink: 0;
+  min-width: 150px;
+  font-family: 'Oswald', 'Segoe UI', sans-serif;
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--accent-bright);
+}
+
+.event-item.past .event-date { color: var(--text-dim); }
+
+.event-time {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-top: 2px;
+}
+
+.event-body h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+}
+
+.event-game {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.event-notes {
+  margin: 0 0 10px;
+  line-height: 1.5;
+  color: #c9c4c4;
+}
+
+.event-link {
+  display: inline-block;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-bright);
+  border-bottom: 1px solid var(--accent-bright);
+}
+
+@media (max-width: 560px) {
+  .event-item { flex-direction: column; gap: 8px; }
+  .event-date { min-width: 0; }
+}
+
+.fame-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.fame-card {
+  display: block;
+  background: linear-gradient(160deg, var(--card) 0%, #060607 100%);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 22px;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fame-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--card-accent, var(--accent));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.7), 0 0 24px -8px var(--card-accent, var(--accent));
+}
+
+.fame-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.fame-card-header .player-avatar { margin-bottom: 0; }
+.fame-card-header h3 { margin: 0 0 4px; font-size: 1rem; }
+.fame-card-header .role {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.founded {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  margin: 0 0 18px;
+}
+
+.story {
+  line-height: 1.7;
+  color: #c9c4c4;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.rules-list {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.8;
+}
+
+.rules-list li { margin-bottom: 6px; }

@@ -15,6 +15,13 @@ function formatDate(iso) {
   });
 }
 
+function avatarMarkup(p, extraClass) {
+  const cls = `player-avatar${extraClass ? " " + extraClass : ""}`;
+  return p.photo
+    ? `<img class="${cls}" src="${p.photo}" alt="${p.name}" />`
+    : `<div class="${cls}" style="background:${p.accent}">${initials(p.name)}</div>`;
+}
+
 function renderNotFound(container) {
   container.innerHTML = `
     <p>Couldn't find that player.</p>
@@ -51,7 +58,7 @@ async function renderPlayer() {
   container.style.setProperty("--card-accent", player.accent);
   container.innerHTML = `
     <div class="player-detail-header">
-      <div class="player-avatar" style="background:${player.accent}">${initials(player.name)}</div>
+      ${avatarMarkup(player)}
       <div>
         <h2>${player.name}</h2>
         <p class="role">${player.role} &middot; ${player.game}</p>

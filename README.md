@@ -7,8 +7,16 @@ password-protected owner panel for editing player profiles.
 
 - `index.html` — roster grid, one card per player
 - `player.html` — player detail page, reads `?id=<player-id>` from the URL
-- `data/players.json` — **all player data lives here** as `{ "players": [...] }`
-- `js/roster.js` / `js/player.js` — fetch `data/players.json` and render it, shouldn't need to touch these for content updates
+- `news.html` — announcements feed, most recent first
+- `schedule.html` — upcoming scrims/tournaments, past events shown greyed out
+- `hall-of-fame.html` — every player's achievements in one place
+- `about.html` — clan story, founding date, and house rules
+- `404.html` — themed not-found page, served automatically by Netlify
+- `data/players.json` — roster data as `{ "players": [...] }`
+- `data/news.json` — announcements as `{ "news": [...] }`
+- `data/schedule.json` — events as `{ "events": [...] }`
+- `data/about.json` — about-page content as `{ "founded", "story", "rules" }`
+- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/hall-of-fame.js` / `js/about.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
 - `assets/logo.svg` — the mascot logo, recreated as SVG so it stays crisp at any size
@@ -54,12 +62,18 @@ Nobody else can reach `/admin` and do anything — Git Gateway rejects commits
 from anyone who isn't a logged-in Identity user, and you controlled who got
 invited in step 6.
 
-## Editing the roster
+## Editing content
 
-**Preferred:** log into `/admin` (see above) and edit players through the form —
-no code required, and it's the actual point of this setup.
+**Preferred:** log into `/admin` (see above). You'll see four sections — Roster,
+News, Schedule, and About — each editable through a form. Roster entries also
+have a **Photo** field: upload an image there and it replaces that player's
+initials avatar automatically, everywhere on the site (including the Hall of
+Fame page, which is generated automatically from each player's achievements —
+nothing to edit separately there).
 
-**Manual alternative:** edit `data/players.json` directly and commit/push:
+**Manual alternative:** edit the JSON files directly and commit/push.
+
+`data/players.json` — one object per player in the `players` array:
 
 ```json
 {
@@ -70,6 +84,7 @@ no code required, and it's the actual point of this setup.
   "rank": "Current Rank",
   "joined": "2025-01-01",
   "accent": "#8b0000",
+  "photo": "assets/uploads/example.jpg",
   "bio": "Short bio.",
   "achievements": ["...", "..."],
   "socials": { "twitch": "https://...", "twitter": "https://...", "discord": "https://..." }
@@ -77,11 +92,55 @@ no code required, and it's the actual point of this setup.
 ```
 
 `id` is used in the URL (`player.html?id=unique-slug`) — keep it lowercase with
-no spaces.
+no spaces. `photo` is optional — omit it to keep the initials avatar.
 
-To swap the avatar initials for a real photo, edit the `.player-avatar` markup in
-`js/roster.js` and `js/player.js` to use an `<img>` instead, and add a `photo` field
-to each player pointing at a file in `assets/`.
+`data/news.json` — one object per announcement in the `news` array:
+
+```json
+{ "date": "2026-07-01", "title": "Headline", "body": "The announcement text." }
+```
+
+`data/schedule.json` — one object per event in the `events` array:
+
+```json
+{
+  "date": "2026-07-12",
+  "time": "7:00 PM ET",
+  "title": "Scrim vs Rival Clan",
+  "game": "Valorant",
+  "notes": "Optional details.",
+  "link": "https://twitch.tv/..."
+}
+```
+
+`time`, `game`, `notes`, and `link` are all optional.
+
+`data/about.json` — a single object, not an array:
+
+```json
+{
+  "founded": "2023-06-15",
+  "story": "The clan's story, one or more sentences.",
+  "rules": ["Rule one.", "Rule two."]
+}
+```
+
+## Social link previews (Open Graph)
+
+Every page has Open Graph / Twitter Card meta tags so links posted in Discord,
+Twitter, etc. show a title, description, and image. The image currently points
+at `assets/logo.svg` — that renders fine in some places (Discord) but **not
+reliably everywhere** (Twitter/X doesn't support SVG previews at all). For
+guaranteed compatibility, export a PNG version of the logo (ideally ~1200×630)
+and swap the `og:image`/`twitter:image` `content` values in each HTML file's
+`<head>` to point at it. Also worth doing once you know your final domain:
+those `content` values are currently relative paths, but Open Graph technically
+wants absolute URLs (e.g. `https://yoursite.netlify.app/assets/social.png`) for
+maximum compatibility with link-preview crawlers.
+
+Note: `player.html` shows the same generic preview for every player (no
+per-player title/image), since there's no server rendering here — the page
+fetches player data client-side, after most crawlers have already read the tags.
 
 ## Local preview
 

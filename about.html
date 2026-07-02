@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Suffering Builds Character</title>
-  <meta name="description" content="Roster and player pages for the Suffering Builds Character gaming clan." />
+  <title>About — Suffering Builds Character</title>
+  <meta name="description" content="The story and house rules behind Suffering Builds Character." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Suffering Builds Character" />
-  <meta property="og:title" content="Suffering Builds Character" />
-  <meta property="og:description" content="Roster, news, and match schedule for the Suffering Builds Character gaming clan." />
+  <meta property="og:title" content="About — Suffering Builds Character" />
+  <meta property="og:description" content="The story and house rules behind Suffering Builds Character." />
   <meta property="og:image" content="assets/logo.svg" />
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Suffering Builds Character" />
-  <meta name="twitter:description" content="Roster, news, and match schedule for the Suffering Builds Character gaming clan." />
+  <meta name="twitter:title" content="About — Suffering Builds Character" />
+  <meta name="twitter:description" content="The story and house rules behind Suffering Builds Character." />
   <meta name="twitter:image" content="assets/logo.svg" />
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,17 +28,17 @@
       <p class="tagline">Suffering is what makes us who we are</p>
     </div>
     <nav class="site-nav">
-      <a href="index.html" class="active">Roster</a>
+      <a href="index.html">Roster</a>
       <a href="news.html">News</a>
       <a href="schedule.html">Schedule</a>
       <a href="hall-of-fame.html">Hall of Fame</a>
-      <a href="about.html">About</a>
+      <a href="about.html" class="active">About</a>
     </nav>
   </header>
 
   <main>
-    <h2 class="section-title">Roster</h2>
-    <div class="roster-grid" id="roster-grid"></div>
+    <h2 class="section-title">About</h2>
+    <div class="player-detail" id="about-content"></div>
   </main>
 
   <footer>
@@ -48,7 +48,7 @@
 
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/roster.js"></script>
+  <script src="js/about.js"></script>
   <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>
