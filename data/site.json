@@ -1,0 +1,16 @@
+{
+  "siteName": "Suffering Builds Character",
+  "tagline": "Suffering is what makes us who we are",
+  "logo": "",
+  "accentColor": "#8b0000",
+  "accentBright": "#ff2b2b",
+  "footerText": "",
+  "socials": [],
+  "pages": {
+    "roster": { "heading": "Roster", "intro": "" },
+    "news": { "heading": "News", "intro": "" },
+    "schedule": { "heading": "Schedule", "intro": "" },
+    "hallOfFame": { "heading": "Hall of Fame", "intro": "" },
+    "about": { "heading": "About", "intro": "" }
+  }
+}

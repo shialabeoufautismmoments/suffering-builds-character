@@ -16,7 +16,9 @@ password-protected owner panel for editing player profiles.
 - `data/news.json` — announcements as `{ "news": [...] }`
 - `data/schedule.json` — events as `{ "events": [...] }`
 - `data/about.json` — about-page content as `{ "founded", "story", "rules" }`
+- `data/site.json` — site-wide branding/theme and per-page headings, applied at runtime by `js/site.js`
 - `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/hall-of-fame.js` / `js/about.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/site.js` — reads `data/site.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, and footer extras
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
 - `assets/logo.svg` — the mascot logo, recreated as SVG so it stays crisp at any size
@@ -62,14 +64,54 @@ Nobody else can reach `/admin` and do anything — Git Gateway rejects commits
 from anyone who isn't a logged-in Identity user, and you controlled who got
 invited in step 6.
 
+### If the admin panel won't fully load
+
+(Note: Netlify announced deprecating Identity in Feb 2025, then reversed that
+decision in Feb 2026 after developer pushback — it's an actively supported
+feature again, not abandoned. So a stuck admin panel is almost always a setup
+issue, not a dead platform.) Check, in order:
+
+1. Open `/admin` on your **live Netlify URL**, not a local server — Git Gateway
+   only works against a real deployed site, since it talks to Netlify's own
+   Identity/Git Gateway API for that specific site.
+2. Open the browser console (F12 → Console tab) while on `/admin` and look for
+   red errors — that error text is the fastest way to pin down the exact cause.
+3. Confirm all of steps 3–6 above are actually done: Identity enabled, Git
+   Gateway enabled (not just Identity), and you accepted the invite email
+   (your account should show as "Active" under Identity → the users list, not
+   "Invited").
+4. Try a hard refresh (Ctrl+Shift+R) — the CMS is loaded fresh from a CDN each
+   time, so a stale cached copy can cause partial loads.
+
+If you hit this, tell me the exact console error and I can usually pin down
+the fix from there.
+
 ## Editing content
 
-**Preferred:** log into `/admin` (see above). You'll see four sections — Roster,
-News, Schedule, and About — each editable through a form. Roster entries also
-have a **Photo** field: upload an image there and it replaces that player's
-initials avatar automatically, everywhere on the site (including the Hall of
-Fame page, which is generated automatically from each player's achievements —
-nothing to edit separately there).
+**Preferred:** log into `/admin` (see above). You'll see five sections —
+Roster, News, Schedule, About, and **Site Settings**. Roster entries have a
+**Photo** field: upload an image there and it replaces that player's initials
+avatar automatically, everywhere on the site (including the Hall of Fame page,
+which is generated automatically from each player's achievements — nothing to
+edit separately there).
+
+**Site Settings** is the "customize almost anything" panel — it controls things
+that used to be hardcoded in the HTML/CSS:
+
+- Site name and tagline (shown in the header, footer, and page `<title>`)
+- A custom logo image (upload one to replace the default mascot SVG; leave
+  blank to keep it)
+- Primary accent color and glow/highlight accent color (recolors cards,
+  buttons, borders, and glows site-wide)
+- A footer note (an extra line shown in the footer, e.g. a slogan or contact
+  email)
+- Social/contact links (any number of label+URL pairs, shown in the footer)
+- Heading and intro text for each page (Roster, News, Schedule, Hall of Fame,
+  About) — e.g. add a sentence under "Roster" explaining who's on it
+
+Layout, navigation structure, and which pages exist are still defined in code
+(not exposed to the CMS) — that's a deliberate line between "content the owner
+should be able to change any time" and "structure that needs a developer."
 
 **Manual alternative:** edit the JSON files directly and commit/push.
 

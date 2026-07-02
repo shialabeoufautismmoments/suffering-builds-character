@@ -87,3 +87,59 @@ collections:
             name: "rules"
             widget: "list"
             allow_add: true
+
+  - name: "settings"
+    label: "Site Settings"
+    files:
+      - file: "data/site.json"
+        label: "Global Settings"
+        name: "site"
+        fields:
+          - { label: "Site Name", name: "siteName", widget: "string" }
+          - { label: "Tagline", name: "tagline", widget: "string" }
+          - { label: "Custom Logo", name: "logo", widget: "image", required: false, hint: "Optional. Leave blank to keep the default mascot logo." }
+          - { label: "Primary Accent Color", name: "accentColor", widget: "color" }
+          - { label: "Glow/Highlight Accent Color", name: "accentBright", widget: "color" }
+          - { label: "Footer Note", name: "footerText", widget: "string", required: false, hint: "Optional extra line shown in the footer." }
+          - label: "Social / Contact Links"
+            name: "socials"
+            widget: "list"
+            required: false
+            summary: "{{fields.label}}"
+            fields:
+              - { label: "Label", name: "label", widget: "string", hint: "e.g. Discord" }
+              - { label: "URL", name: "url", widget: "string" }
+          - label: "Page Headings & Intros"
+            name: "pages"
+            widget: "object"
+            fields:
+              - label: "Roster Page"
+                name: "roster"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "News Page"
+                name: "news"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "Schedule Page"
+                name: "schedule"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "Hall of Fame Page"
+                name: "hallOfFame"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "About Page"
+                name: "about"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }

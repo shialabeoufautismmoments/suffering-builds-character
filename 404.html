@@ -12,10 +12,10 @@
 </head>
 <body>
   <header class="site-header">
-    <img src="assets/logo.svg" alt="Suffering Builds Character logo" />
+    <img src="assets/logo.svg" alt="Suffering Builds Character logo" data-site-logo />
     <div class="titles">
-      <a href="index.html"><h1>Suffering Builds Character</h1></a>
-      <p class="tagline">Suffering is what makes us who we are</p>
+      <a href="index.html"><h1 data-site-name>Suffering Builds Character</h1></a>
+      <p class="tagline" data-site-tagline>Suffering is what makes us who we are</p>
     </div>
     <nav class="site-nav">
       <a href="index.html">Roster</a>
@@ -32,8 +32,12 @@
     <a class="back-link" href="index.html" style="margin-bottom:0;">&larr; Back to the roster</a>
   </main>
 
-  <footer>&copy; <span id="year"></span> Suffering Builds Character</footer>
+  <footer>
+    <div id="footer-extra"></div>
+    <p>&copy; <span id="year"></span> <span data-site-name>Suffering Builds Character</span></p>
+  </footer>
 
+  <script src="js/site.js"></script>
   <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>
