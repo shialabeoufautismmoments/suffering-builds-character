@@ -1,0 +1,39 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+collections:
+  - name: "roster"
+    label: "Roster"
+    files:
+      - file: "data/players.json"
+        label: "Players"
+        name: "players"
+        fields:
+          - label: "Players"
+            name: "players"
+            widget: "list"
+            summary: "{{fields.name}} — {{fields.rank}}"
+            fields:
+              - { label: "ID (URL slug — lowercase, no spaces)", name: "id", widget: "string" }
+              - { label: "Name", name: "name", widget: "string" }
+              - { label: "Game", name: "game", widget: "string" }
+              - { label: "Role", name: "role", widget: "string" }
+              - { label: "Rank", name: "rank", widget: "string" }
+              - { label: "Joined", name: "joined", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+              - { label: "Accent Color", name: "accent", widget: "color" }
+              - { label: "Bio", name: "bio", widget: "text" }
+              - label: "Achievements"
+                name: "achievements"
+                widget: "list"
+                allow_add: true
+              - label: "Socials"
+                name: "socials"
+                widget: "object"
+                fields:
+                  - { label: "Twitch URL", name: "twitch", widget: "string", required: false }
+                  - { label: "Twitter URL", name: "twitter", widget: "string", required: false }
+                  - { label: "Discord URL", name: "discord", widget: "string", required: false }
