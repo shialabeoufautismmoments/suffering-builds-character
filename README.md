@@ -129,7 +129,7 @@ should be able to change any time" and "structure that needs a developer."
   "photo": "assets/uploads/example.jpg",
   "bio": "Short bio.",
   "achievements": ["...", "..."],
-  "socials": { "twitch": "https://...", "twitter": "https://...", "discord": "https://..." }
+  "socials": { "twitch": "https://...", "twitter": "https://...", "pyvno": "https://pyvno.xyz/..." }
 }
 ```
 

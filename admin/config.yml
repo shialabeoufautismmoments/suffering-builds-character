@@ -37,7 +37,7 @@ collections:
                 fields:
                   - { label: "Twitch URL", name: "twitch", widget: "string", required: false }
                   - { label: "Twitter URL", name: "twitter", widget: "string", required: false }
-                  - { label: "Discord URL", name: "discord", widget: "string", required: false }
+                  - { label: "Pyvno URL", name: "pyvno", widget: "string", required: false, hint: "e.g. https://pyvno.xyz/username" }
 
   - name: "news"
     label: "News"

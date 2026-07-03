@@ -88,7 +88,7 @@ async function renderPlayer() {
           <div class="social-links">
             <a href="${player.socials.twitch}" target="_blank" rel="noopener">Twitch</a>
             <a href="${player.socials.twitter}" target="_blank" rel="noopener">Twitter</a>
-            <a href="${player.socials.discord}" target="_blank" rel="noopener">Discord</a>
+            <a href="${player.socials.pyvno}" target="_blank" rel="noopener">Pyvno</a>
           </div>
         </div>
       </div>
