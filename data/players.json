@@ -1,67 +1,20 @@
 {
   "players": [
     {
-      "id": "wrench-monkey",
-      "name": "Alex \"Wrench Monkey\" Torres",
-      "game": "Valorant",
-      "role": "Duelist",
-      "rank": "Immortal 2",
-      "joined": "2024-03-01",
-      "accent": "#8b0000",
-      "bio": "Entry fragger who treats every round like a torque spec you can ignore until something breaks. First one through the door, first one to blame the ping.",
-      "achievements": [
-        "Regional LAN Top 8 — Spring 2025",
-        "Clan MVP — Q1 2025",
-        "500+ hours coaching new members"
-      ],
-      "socials": { "twitch": "#", "twitter": "#", "discord": "#" }
-    },
-    {
-      "id": "torque-queen",
-      "name": "Sam \"Torque Queen\" Whitfield",
-      "game": "Overwatch 2",
-      "role": "Tank",
-      "rank": "Grandmaster",
-      "joined": "2023-11-14",
-      "accent": "#6e0e0e",
-      "bio": "Front-lines every scrim like it owes her money. Believes the best shield is a stubborn attitude and a worse one is silence on comms.",
-      "achievements": [
-        "Team Captain — 2024 season",
-        "Clan Championship Finalist",
-        "Community Coach of the Year"
-      ],
-      "socials": { "twitch": "#", "twitter": "#", "discord": "#" }
-    },
-    {
-      "id": "gasket-ghost",
-      "name": "Jordan \"Gasket Ghost\" Lee",
-      "game": "Apex Legends",
-      "role": "IGL / Support",
-      "rank": "Predator (S18-S20)",
-      "joined": "2024-06-22",
-      "accent": "#a12020",
-      "bio": "Calls rotations like a service manual — calm, precise, and somehow always right about the timing. Keeps the team alive when everything else is on fire.",
-      "achievements": [
-        "In-Game Leader, current roster",
-        "Top 50 Predator RP — 3 seasons running",
-        "Clan Recruiter of the Year"
-      ],
-      "socials": { "twitch": "#", "twitter": "#", "discord": "#" }
-    },
-    {
-      "id": "lugnut",
-      "name": "Casey \"Lugnut\" Park",
-      "game": "Rocket League",
-      "role": "Striker",
-      "rank": "Grand Champion 2",
-      "joined": "2025-01-09",
-      "accent": "#b33021",
-      "bio": "Newest addition to the crew, already threatening to repaint the trophy case. Aerial-heavy playstyle, zero patience for slow builds or slow rotations.",
-      "achievements": [
-        "Rookie of the Season — 2025",
-        "Highest goal differential, clan history"
-      ],
-      "socials": { "twitch": "#", "twitter": "#", "discord": "#" }
+      "achievements": [],
+      "socials": {
+        "twitch": "https://www.twitch.tv/psevoverwatch",
+        "twitter": "https://x.com/psevpsevpsev"
+      },
+      "bio": "Founder of Suffering Builds Character, leader of the Overwatch Division",
+      "joined": "2026-07-03",
+      "accent": "#00ceff",
+      "name": "psev",
+      "rank": "Champion 5",
+      "photo": "/assets/uploads/hkbir2awkaeb_ve.jpg",
+      "game": "Overwatch",
+      "role": "Hitscan",
+      "id": "psev"
     }
   ]
 }
