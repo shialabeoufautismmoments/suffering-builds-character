@@ -22,6 +22,22 @@ function avatarMarkup(p, extraClass) {
     : `<div class="${cls}" style="background:${p.accent}">${initials(p.name)}</div>`;
 }
 
+function socialLinksHtml(player) {
+  const labels = { twitch: "Twitch", twitter: "Twitter", pyvno: "Pyvno" };
+  const links = Object.entries(player.socials || {})
+    .filter(([, url]) => url)
+    .map(([key, url]) => `<a href="${url}" target="_blank" rel="noopener">${labels[key] || key}</a>`);
+
+  if (!links.length) return "";
+
+  return `
+    <div class="sidebar-box">
+      <h4 style="margin-bottom:12px">Links</h4>
+      <div class="social-links">${links.join("")}</div>
+    </div>
+  `;
+}
+
 function renderNotFound(container) {
   container.innerHTML = `
     <p>Couldn't find that player.</p>
@@ -83,14 +99,7 @@ async function renderPlayer() {
             <dt>Joined</dt><dd>${formatDate(player.joined)}</dd>
           </dl>
         </div>
-        <div class="sidebar-box">
-          <h4 style="margin-bottom:12px">Links</h4>
-          <div class="social-links">
-            <a href="${player.socials.twitch}" target="_blank" rel="noopener">Twitch</a>
-            <a href="${player.socials.twitter}" target="_blank" rel="noopener">Twitter</a>
-            <a href="${player.socials.pyvno}" target="_blank" rel="noopener">Pyvno</a>
-          </div>
-        </div>
+        ${socialLinksHtml(player)}
       </div>
     </div>
   `;
