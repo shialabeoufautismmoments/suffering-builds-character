@@ -1,16 +1,36 @@
 {
   "siteName": "Suffering Builds Character",
-  "tagline": "Suffering is what makes us who we are",
+  "tagline": "Suffering Exposes All",
   "logo": "",
-  "accentColor": "#8b0000",
-  "accentBright": "#ff2b2b",
+  "accentColor": "#580101",
+  "accentBright": "#f60b0b",
   "footerText": "",
-  "socials": [],
+  "socials": [
+    {
+      "label": "Twitter",
+      "url": "https://x.com/SuffBuildChar"
+    }
+  ],
   "pages": {
-    "roster": { "heading": "Roster", "intro": "" },
-    "news": { "heading": "News", "intro": "" },
-    "schedule": { "heading": "Schedule", "intro": "" },
-    "hallOfFame": { "heading": "Hall of Fame", "intro": "" },
-    "about": { "heading": "About", "intro": "" }
+    "roster": {
+      "heading": "Roster",
+      "intro": ""
+    },
+    "news": {
+      "heading": "News",
+      "intro": ""
+    },
+    "schedule": {
+      "heading": "Schedule",
+      "intro": ""
+    },
+    "hallOfFame": {
+      "heading": "Hall of Fame",
+      "intro": ""
+    },
+    "about": {
+      "heading": "About",
+      "intro": ""
+    }
   }
 }
