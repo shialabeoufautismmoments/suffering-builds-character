@@ -1,3 +1,11 @@
 {
-  "entries": []
+  "entries": [
+    {
+      "enabled": true,
+      "slug": "obsessionwithrawaim",
+      "title": "The Obsession with Raw Aim",
+      "summary": "While many players obsess over the trainer, not enough realize how to translate these skills in game. by psev and EOO",
+      "body": "test"
+    }
+  ]
 }
