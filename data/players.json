@@ -16,6 +16,22 @@
       "game": "Overwatch",
       "role": "Hitscan",
       "id": "psev"
+    },
+    {
+      "socials": {
+        "twitch": "https://www.twitch.tv/eoo__o",
+        "twitter": "https://x.com/tripqwq",
+        "pyvno": "https://pyvno.xyz/eoo"
+      },
+      "bio": "Top 500 consistent widowmaker, top 1v1er.",
+      "joined": "2026-07-03",
+      "accent": "#ffb900",
+      "name": "EOO",
+      "rank": "Champion 5",
+      "photo": "https://cdn.discordapp.com/avatars/629642053411799067/0847eaff35074e2827bbe9fdd2743f9a.png?size=4096",
+      "game": "Overwatch",
+      "role": "Hitscan and Support",
+      "id": "eoo"
     }
   ]
 }
