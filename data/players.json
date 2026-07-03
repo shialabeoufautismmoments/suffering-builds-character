@@ -51,6 +51,23 @@
       "role": "Hitscan",
       "country": "UA",
       "id": "beleo"
+    },
+    {
+      "socials": {
+        "twitch": "https://www.twitch.tv/frozenF22",
+        "twitter": "https://x.com/frozenVIII",
+        "pyvno": "https://pyvno.xyz/frozen"
+      },
+      "bio": "A top tier hitscan player, Frozen is the prime example of weaving raw mechanical training into in-game situations with scrims and ranked.",
+      "joined": "2026-07-03",
+      "accent": "#105100",
+      "name": "FroZen",
+      "rank": "Champ 3",
+      "photo": "https://cdn.discordapp.com/avatars/345660519975485440/0b78c98f59d0d0e26ea3e4b85692b2ce.png?size=4096",
+      "game": "Overwatch",
+      "role": "Hitscan",
+      "country": "US",
+      "id": "frozen"
     }
   ]
 }
