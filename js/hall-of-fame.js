@@ -53,7 +53,7 @@ async function renderHallOfFame() {
           </div>
         </div>
         <ul class="achievements-list">
-          ${p.achievements.map(a => `<li>${a}</li>`).join("")}
+          ${p.achievements.map(a => `<li>${a.achievement}</li>`).join("")}
         </ul>
       </a>
     `).join("");

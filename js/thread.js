@@ -42,7 +42,7 @@ async function renderThread() {
   document.title = `${thread.title} — Suffering Builds Character`;
   if (titleEl) titleEl.textContent = thread.title;
 
-  const urls = thread.tweetUrls || [];
+  const urls = (thread.tweetUrls || []).map(item => item.url).filter(Boolean);
   if (!urls.length) {
     container.innerHTML = "<p>No tweets added to this thread yet.</p>";
     return;

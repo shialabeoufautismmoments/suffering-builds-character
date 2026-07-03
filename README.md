@@ -176,7 +176,7 @@ those any unique ID and put the full URL in Path.
   "accent": "#8b0000",
   "photo": "assets/uploads/example.jpg",
   "bio": "Short bio.",
-  "achievements": ["...", "..."],
+  "achievements": [{ "achievement": "..." }, { "achievement": "..." }],
   "socials": { "twitch": "https://...", "twitter": "https://...", "pyvno": "https://pyvno.xyz/..." }
 }
 ```
@@ -233,8 +233,8 @@ no spaces. `photo` is optional — omit it to keep the initials avatar.
   "slug": "my-big-thread",
   "title": "Our Regional LAN Recap",
   "tweetUrls": [
-    "https://twitter.com/user/status/111",
-    "https://twitter.com/user/status/222"
+    { "url": "https://twitter.com/user/status/111" },
+    { "url": "https://twitter.com/user/status/222" }
   ],
   "enabled": true
 }

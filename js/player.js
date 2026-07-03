@@ -86,7 +86,7 @@ async function renderPlayer() {
 
   document.title = `${player.name} — Suffering Builds Character`;
 
-  const achievementsHtml = player.achievements.map(a => `<li>${a}</li>`).join("");
+  const achievementsHtml = player.achievements.map(a => `<li>${a.achievement}</li>`).join("");
 
   container.style.setProperty("--card-accent", player.accent);
   container.innerHTML = `

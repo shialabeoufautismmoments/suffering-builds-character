@@ -32,6 +32,10 @@ collections:
                 name: "achievements"
                 widget: "list"
                 allow_add: true
+                default: []
+                summary: "{{fields.achievement}}"
+                fields:
+                  - { label: "Achievement", name: "achievement", widget: "string" }
               - label: "Socials"
                 name: "socials"
                 widget: "object"
@@ -122,7 +126,12 @@ collections:
               - label: "Tweet URLs (in order)"
                 name: "tweetUrls"
                 widget: "list"
-                hint: "Paste each tweet's URL from the thread, top to bottom, in the order they should appear."
+                allow_add: true
+                default: []
+                summary: "{{fields.url}}"
+                hint: "Click \"Add\" once per tweet, top to bottom, in the order they should appear."
+                fields:
+                  - { label: "Tweet URL", name: "url", widget: "string" }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this thread without deleting it." }
 
   - name: "custom_pages"
