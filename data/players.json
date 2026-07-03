@@ -85,6 +85,21 @@
       "role": "Hitscan",
       "country": "US",
       "id": "hud7on"
+    },
+    {
+      "socials": {
+        "pyvno": "https://pyvno.xyz/cannonlol"
+      },
+      "bio": "Co-Owner and Co-Founder of Suffering Builds Character.",
+      "joined": "2026-07-03",
+      "accent": "#6a00ff",
+      "name": "Cannon",
+      "rank": "N/A",
+      "photo": "https://preview.redd.it/roadhog-fanart-by-me-v0-jlwv5bsxtcv91.png?auto=webp&s=54ca0645b9d29e681ab4154d54866d1e21b11be1",
+      "game": "Overwatch",
+      "role": "Owner",
+      "country": "US",
+      "id": "cannon"
     }
   ]
 }
