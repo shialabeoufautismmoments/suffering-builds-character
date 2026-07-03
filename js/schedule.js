@@ -6,6 +6,11 @@ function formatDate(iso) {
 
 async function renderSchedule() {
   const list = document.getElementById("schedule-list");
+  const { site } = await window.__siteDataPromise;
+  if (isPageDisabled(site, "schedule")) {
+    renderPageUnavailable(list);
+    return;
+  }
   try {
     const res = await fetch("data/schedule.json", { cache: "no-store" });
     const data = await res.json();

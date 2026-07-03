@@ -84,6 +84,25 @@ collections:
           - { label: "Founded", name: "founded", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
           - { label: "Story", name: "story", widget: "text" }
 
+  - name: "custom_pages"
+    label: "Custom Pages"
+    files:
+      - file: "data/pages.json"
+        label: "Pages"
+        name: "pages"
+        fields:
+          - label: "Pages"
+            name: "pages"
+            widget: "list"
+            summary: "{{fields.label}}"
+            hint: "Add a page here and it shows up in the nav automatically. Remove one and it disappears from the nav and the URL stops working — that's how you delete a page."
+            fields:
+              - { label: "Slug", name: "slug", widget: "string", hint: "URL-safe, lowercase, no spaces (e.g. sponsors). Page will live at page.html?slug=sponsors" }
+              - { label: "Nav Label", name: "label", widget: "string", hint: "Text shown in the nav bar." }
+              - { label: "Heading", name: "heading", widget: "string" }
+              - { label: "Body", name: "body", widget: "text", hint: "Separate paragraphs with a blank line." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this page without deleting it." }
+
   - name: "settings"
     label: "Site Settings"
     files:
@@ -97,6 +116,16 @@ collections:
           - { label: "Primary Accent Color", name: "accentColor", widget: "color" }
           - { label: "Glow/Highlight Accent Color", name: "accentBright", widget: "color" }
           - { label: "Footer Note", name: "footerText", widget: "string", required: false, hint: "Optional extra line shown in the footer." }
+          - label: "Navigation Menu"
+            name: "navigation"
+            widget: "list"
+            summary: "{{fields.label}}"
+            hint: "Controls the nav bar: order, labels, visibility. The 5 built-in entries (roster/news/schedule/hallOfFame/about) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            fields:
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: roster / news / schedule / hallOfFame / about. Anything else = a custom link, unrelated to any real page." }
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / news.html / schedule.html / hall-of-fame.html / about.html. Custom links: any URL." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
             name: "socials"
             widget: "list"

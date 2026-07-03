@@ -17,6 +17,11 @@ function avatarMarkup(p) {
 
 async function renderRoster() {
   const grid = document.getElementById("roster-grid");
+  const { site } = await window.__siteDataPromise;
+  if (isPageDisabled(site, "roster")) {
+    renderPageUnavailable(grid);
+    return;
+  }
   try {
     const res = await fetch("data/players.json", { cache: "no-store" });
     const data = await res.json();

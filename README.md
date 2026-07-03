@@ -11,14 +11,16 @@ password-protected owner panel for editing player profiles.
 - `schedule.html` — upcoming scrims/tournaments, past events shown greyed out
 - `hall-of-fame.html` — every player's achievements in one place
 - `about.html` — clan story and founding date
+- `page.html` — generic template for owner-created custom pages, reads `?slug=<slug>` from the URL
 - `404.html` — themed not-found page, served automatically by Netlify
 - `data/players.json` — roster data as `{ "players": [...] }`
 - `data/news.json` — announcements as `{ "news": [...] }`
 - `data/schedule.json` — events as `{ "events": [...] }`
 - `data/about.json` — about-page content as `{ "founded", "story" }`
-- `data/site.json` — site-wide branding/theme and per-page headings, applied at runtime by `js/site.js`
-- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/hall-of-fame.js` / `js/about.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
-- `js/site.js` — reads `data/site.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, and footer extras
+- `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
+- `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
+- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/hall-of-fame.js` / `js/about.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, and builds the nav menu
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
 - `assets/logo.svg` — the mascot logo, recreated as SVG so it stays crisp at any size
@@ -88,12 +90,12 @@ the fix from there.
 
 ## Editing content
 
-**Preferred:** log into `/admin` (see above). You'll see five sections —
-Roster, News, Schedule, About, and **Site Settings**. Roster entries have a
-**Photo** field: upload an image there and it replaces that player's initials
-avatar automatically, everywhere on the site (including the Hall of Fame page,
-which is generated automatically from each player's achievements — nothing to
-edit separately there).
+**Preferred:** log into `/admin` (see above). You'll see six sections —
+Roster, News, Schedule, About, **Custom Pages**, and **Site Settings**. Roster
+entries have a **Photo** field: upload an image there and it replaces that
+player's initials avatar automatically, everywhere on the site (including the
+Hall of Fame page, which is generated automatically from each player's
+achievements — nothing to edit separately there).
 
 **Site Settings** is the "customize almost anything" panel — it controls things
 that used to be hardcoded in the HTML/CSS:
@@ -108,10 +110,34 @@ that used to be hardcoded in the HTML/CSS:
 - Social/contact links (any number of label+URL pairs, shown in the footer)
 - Heading and intro text for each page (Roster, News, Schedule, Hall of Fame,
   About) — e.g. add a sentence under "Roster" explaining who's on it
+- **Navigation Menu** — order, labels, and visibility of every nav link
 
-Layout, navigation structure, and which pages exist are still defined in code
-(not exposed to the CMS) — that's a deliberate line between "content the owner
-should be able to change any time" and "structure that needs a developer."
+### Adding, removing, and reordering pages
+
+**Custom Pages** (in `/admin`) is a real "add a page" tool: fill in a slug,
+nav label, heading, and body text, then Publish — a brand-new page appears in
+the nav bar and is live at `page.html?slug=your-slug`, no code involved.
+Deleting that list entry removes the nav link and the page immediately (visiting
+the old URL shows "that page doesn't exist"). This is genuinely full add/delete
+for custom pages.
+
+**Built-in pages** (Roster, News, Schedule, Hall of Fame, About) work a bit
+differently, because they're backed by real code (`roster.js`, `news.js`, etc.),
+not just content — so they can't be *deleted* outright without a developer
+removing files. What you *can* do from `/admin` → Site Settings →
+**Navigation Menu**:
+- Reorder them (drag the list items)
+- Relabel them
+- Uncheck **Enabled** to take a whole section offline — the nav link
+  disappears AND the page itself shows "This section isn't available right
+  now" instead of its normal content. This is as close to "deleting" a
+  built-in page as a code-backed page can get.
+
+Don't change the **ID** or **Path** fields on the 5 built-in entries — those
+are how the site matches a nav entry to the actual page/content; changing them
+breaks the enable/disable toggle for that section. You *can* add extra
+brand-new entries here too, for external links (e.g. a Discord invite) — give
+those any unique ID and put the full URL in Path.
 
 **Manual alternative:** edit the JSON files directly and commit/push.
 
@@ -164,6 +190,25 @@ no spaces. `photo` is optional — omit it to keep the initials avatar.
   "founded": "2023-06-15",
   "story": "The clan's story, one or more sentences."
 }
+```
+
+`data/pages.json` — one object per custom page in the `pages` array:
+
+```json
+{
+  "slug": "sponsors",
+  "label": "Sponsors",
+  "heading": "Our Sponsors",
+  "body": "First paragraph.\n\nSecond paragraph.",
+  "enabled": true
+}
+```
+
+`data/site.json`'s `navigation` array controls the nav bar (see "Adding,
+removing, and reordering pages" above for the built-in-vs-custom distinction):
+
+```json
+{ "id": "roster", "label": "Roster", "path": "index.html", "enabled": true }
 ```
 
 ## Social link previews (Open Graph)

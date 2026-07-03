@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Page Not Found — Suffering Builds Character</title>
+  <title>Page — Suffering Builds Character</title>
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,18 +20,21 @@
     <nav class="site-nav" id="site-nav"></nav>
   </header>
 
-  <main style="text-align:center; padding-top: clamp(40px, 10vw, 100px);">
-    <h2 style="font-family:'Oswald','Segoe UI',sans-serif; font-size:3rem; letter-spacing:0.08em; color:var(--accent-bright); margin-bottom:8px; text-shadow:0 0 24px rgba(255,43,43,0.35);">404</h2>
-    <p style="color:var(--text-dim); font-size:1rem; margin-bottom:28px;">This page didn't survive the grind.</p>
-    <a class="back-link" href="index.html" style="margin-bottom:0;">&larr; Back to the roster</a>
+  <main>
+    <h2 class="section-title" data-page-heading>Page</h2>
+    <div class="player-detail" id="custom-page-content"></div>
   </main>
 
   <footer>
     <div id="footer-extra"></div>
-    <p>&copy; <span id="year"></span> <span data-site-name>Suffering Builds Character</span></p>
+    <p>&copy; <span id="year"></span> <span data-site-name>Suffering Builds Character</span>
+    &middot; <a href="#" id="owner-login">Owner Login</a></p>
   </footer>
 
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/site.js"></script>
+  <script src="js/page.js"></script>
   <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>

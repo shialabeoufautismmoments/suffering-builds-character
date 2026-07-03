@@ -6,6 +6,11 @@ function formatDate(iso) {
 
 async function renderNews() {
   const list = document.getElementById("news-list");
+  const { site } = await window.__siteDataPromise;
+  if (isPageDisabled(site, "news")) {
+    renderPageUnavailable(list);
+    return;
+  }
   try {
     const res = await fetch("data/news.json", { cache: "no-store" });
     const data = await res.json();

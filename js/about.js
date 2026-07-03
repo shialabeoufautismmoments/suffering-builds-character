@@ -6,6 +6,11 @@ function formatDate(iso) {
 
 async function renderAbout() {
   const container = document.getElementById("about-content");
+  const { site } = await window.__siteDataPromise;
+  if (isPageDisabled(site, "about")) {
+    renderPageUnavailable(container);
+    return;
+  }
   try {
     const res = await fetch("data/about.json", { cache: "no-store" });
     const about = await res.json();

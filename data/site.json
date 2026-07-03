@@ -11,6 +11,13 @@
       "url": "https://x.com/SuffBuildChar"
     }
   ],
+  "navigation": [
+    { "id": "roster", "label": "Roster", "path": "index.html", "enabled": true },
+    { "id": "news", "label": "News", "path": "news.html", "enabled": true },
+    { "id": "schedule", "label": "Schedule", "path": "schedule.html", "enabled": true },
+    { "id": "hallOfFame", "label": "Hall of Fame", "path": "hall-of-fame.html", "enabled": true },
+    { "id": "about", "label": "About", "path": "about.html", "enabled": true }
+  ],
   "pages": {
     "roster": {
       "heading": "Roster",

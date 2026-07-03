@@ -1,11 +1,44 @@
-async function loadSiteSettings() {
+// Kicked off immediately (not inside DOMContentLoaded) so every other script
+// on the page can `await window.__siteDataPromise` and get the same resolved
+// result without racing or re-fetching.
+window.__siteDataPromise = (async () => {
   try {
-    const res = await fetch("data/site.json", { cache: "no-store" });
-    return await res.json();
+    const [siteRes, pagesRes] = await Promise.all([
+      fetch("data/site.json", { cache: "no-store" }),
+      fetch("data/pages.json", { cache: "no-store" })
+    ]);
+    const site = await siteRes.json();
+    const pagesData = await pagesRes.json();
+    return { site, pages: pagesData.pages || [] };
   } catch (err) {
-    console.error("Couldn't load site settings", err);
-    return null;
+    console.error("Couldn't load site data", err);
+    return { site: null, pages: [] };
   }
+})();
+
+function currentFile() {
+  return window.location.pathname.split("/").pop() || "index.html";
+}
+
+function buildNavHtml(site, pages) {
+  const file = currentFile();
+  const slug = new URLSearchParams(window.location.search).get("slug");
+
+  const builtinLinks = (site?.navigation || [])
+    .filter(item => item.enabled !== false)
+    .map(item => {
+      const isActive = item.path === file;
+      return `<a href="${item.path}"${isActive ? ' class="active"' : ""}>${item.label}</a>`;
+    });
+
+  const customLinks = pages
+    .filter(p => p.enabled !== false)
+    .map(p => {
+      const isActive = file === "page.html" && slug === p.slug;
+      return `<a href="page.html?slug=${encodeURIComponent(p.slug)}"${isActive ? ' class="active"' : ""}>${p.label}</a>`;
+    });
+
+  return builtinLinks.concat(customLinks).join("");
 }
 
 function applySiteSettings(site) {
@@ -53,6 +86,22 @@ function applySiteSettings(site) {
   }
 }
 
+// Shared by every built-in page's own render script: `await window.__siteDataPromise`
+// then call this before fetching/rendering that page's own content, so a
+// disabled page never flashes its real content first.
+function isPageDisabled(site, pageKey) {
+  const entry = (site?.navigation || []).find(n => n.id === pageKey);
+  return !!entry && entry.enabled === false;
+}
+
+function renderPageUnavailable(container) {
+  container.innerHTML = `<p>This section isn't available right now.</p>`;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
-  applySiteSettings(await loadSiteSettings());
+  const { site, pages } = await window.__siteDataPromise;
+  applySiteSettings(site);
+
+  const navEl = document.getElementById("site-nav");
+  if (navEl) navEl.innerHTML = buildNavHtml(site, pages);
 });

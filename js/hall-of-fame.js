@@ -17,6 +17,11 @@ function avatarMarkup(p) {
 
 async function renderHallOfFame() {
   const grid = document.getElementById("fame-grid");
+  const { site } = await window.__siteDataPromise;
+  if (isPageDisabled(site, "hallOfFame")) {
+    renderPageUnavailable(grid);
+    return;
+  }
   try {
     const res = await fetch("data/players.json", { cache: "no-store" });
     const data = await res.json();

@@ -51,6 +51,12 @@ async function renderPlayer() {
   const id = params.get("id");
   const container = document.getElementById("player-detail");
 
+  const { site } = await window.__siteDataPromise;
+  if (isPageDisabled(site, "roster")) {
+    renderPageUnavailable(container);
+    return;
+  }
+
   let player;
   try {
     const res = await fetch("data/players.json", { cache: "no-store" });
