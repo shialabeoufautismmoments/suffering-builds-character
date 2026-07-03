@@ -15,6 +15,17 @@ function avatarMarkup(p) {
     : `<div class="player-avatar">${initials(p.name)}</div>`;
 }
 
+function flagEmoji(code) {
+  if (!code || code.length !== 2) return "";
+  const points = [...code.toUpperCase()].map(c => 127397 + c.charCodeAt(0));
+  return String.fromCodePoint(...points);
+}
+
+function nameWithFlag(p) {
+  const flag = flagEmoji(p.country);
+  return flag ? `${p.name} <span class="flag" title="${p.country.toUpperCase()}">${flag}</span>` : p.name;
+}
+
 async function renderHallOfFame() {
   const grid = document.getElementById("fame-grid");
   const { site } = await window.__siteDataPromise;
@@ -37,7 +48,7 @@ async function renderHallOfFame() {
         <div class="fame-card-header">
           ${avatarMarkup(p)}
           <div>
-            <h3>${p.name}</h3>
+            <h3>${nameWithFlag(p)}</h3>
             <p class="role">${p.role} &middot; ${p.game}</p>
           </div>
         </div>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wiki — Suffering Builds Character</title>
+  <meta name="description" content="Strategy notes, lore, and reference entries for Suffering Builds Character." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Suffering Builds Character" />
+  <meta property="og:title" content="Wiki — Suffering Builds Character" />
+  <meta property="og:description" content="Strategy notes, lore, and reference entries for Suffering Builds Character." />
+  <meta property="og:image" content="assets/logo.svg" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Wiki — Suffering Builds Character" />
+  <meta name="twitter:description" content="Strategy notes, lore, and reference entries for Suffering Builds Character." />
+  <meta name="twitter:image" content="assets/logo.svg" />
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="wiki">
+  <header class="site-header">
+    <img src="assets/logo.svg" alt="Suffering Builds Character logo" data-site-logo />
+    <div class="titles">
+      <a href="index.html"><h1 data-site-name>Suffering Builds Character</h1></a>
+      <p class="tagline" data-site-tagline>Suffering is what makes us who we are</p>
+    </div>
+    <nav class="site-nav" id="site-nav"></nav>
+  </header>
+
+  <main>
+    <h2 class="section-title" data-page-heading>Wiki</h2>
+    <p class="page-intro" data-page-intro></p>
+    <div class="card-list" id="wiki-list"></div>
+  </main>
+
+  <footer>
+    <div id="footer-extra"></div>
+    <p>&copy; <span id="year"></span> <span data-site-name>Suffering Builds Character</span>
+    &middot; <a href="#" id="owner-login">Owner Login</a></p>
+  </footer>
+
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/wiki.js"></script>
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

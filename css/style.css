@@ -197,6 +197,11 @@ img.player-avatar {
   letter-spacing: 0.01em;
 }
 
+.flag {
+  font-size: 0.85em;
+  vertical-align: middle;
+}
+
 .player-card .role {
   margin: 0 0 12px;
   font-size: 0.8rem;
@@ -539,5 +544,45 @@ footer {
   color: #c9c4c4;
   font-size: 1rem;
   margin: 0;
+}
+
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card-list-item {
+  display: block;
+  background: linear-gradient(160deg, var(--card) 0%, #060607 100%);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 20px 24px;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-list-item:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-bright);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.7);
+}
+
+.card-list-item h3 {
+  margin: 0 0 6px;
+  font-family: 'Oswald', 'Segoe UI', sans-serif;
+  font-size: 1.1rem;
+}
+
+.card-list-item p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.tweet-embed {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
 }
 

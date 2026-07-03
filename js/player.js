@@ -22,6 +22,17 @@ function avatarMarkup(p, extraClass) {
     : `<div class="${cls}" style="background:${p.accent}">${initials(p.name)}</div>`;
 }
 
+function flagEmoji(code) {
+  if (!code || code.length !== 2) return "";
+  const points = [...code.toUpperCase()].map(c => 127397 + c.charCodeAt(0));
+  return String.fromCodePoint(...points);
+}
+
+function nameWithFlag(p) {
+  const flag = flagEmoji(p.country);
+  return flag ? `${p.name} <span class="flag" title="${p.country.toUpperCase()}">${flag}</span>` : p.name;
+}
+
 function socialLinksHtml(player) {
   const labels = { twitch: "Twitch", twitter: "Twitter", pyvno: "Pyvno" };
   const links = Object.entries(player.socials || {})
@@ -82,7 +93,7 @@ async function renderPlayer() {
     <div class="player-detail-header">
       ${avatarMarkup(player)}
       <div>
-        <h2>${player.name}</h2>
+        <h2>${nameWithFlag(player)}</h2>
         <p class="role">${player.role} &middot; ${player.game}</p>
       </div>
     </div>

@@ -11,15 +11,19 @@ password-protected owner panel for editing player profiles.
 - `schedule.html` — upcoming scrims/tournaments, past events shown greyed out
 - `hall-of-fame.html` — every player's achievements in one place
 - `about.html` — clan story and founding date
+- `wiki.html` / `wiki-entry.html` — wiki index and individual entry view (`?slug=<slug>`)
+- `threads.html` / `thread.html` — Twitter/X thread index and unrolled-thread view (`?slug=<slug>`)
 - `page.html` — generic template for owner-created custom pages, reads `?slug=<slug>` from the URL
 - `404.html` — themed not-found page, served automatically by Netlify
 - `data/players.json` — roster data as `{ "players": [...] }`
 - `data/news.json` — announcements as `{ "news": [...] }`
 - `data/schedule.json` — events as `{ "events": [...] }`
 - `data/about.json` — about-page content as `{ "founded", "story" }`
+- `data/wiki.json` — wiki entries as `{ "entries": [...] }`
+- `data/threads.json` — Twitter/X threads as `{ "threads": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/hall-of-fame.js` / `js/about.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/hall-of-fame.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, and builds the nav menu
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
@@ -90,12 +94,30 @@ the fix from there.
 
 ## Editing content
 
-**Preferred:** log into `/admin` (see above). You'll see six sections —
-Roster, News, Schedule, About, **Custom Pages**, and **Site Settings**. Roster
-entries have a **Photo** field: upload an image there and it replaces that
-player's initials avatar automatically, everywhere on the site (including the
-Hall of Fame page, which is generated automatically from each player's
-achievements — nothing to edit separately there).
+**Preferred:** log into `/admin` (see above). You'll see eight sections —
+Roster, News, Schedule, About, **Wiki**, **Twitter Threads**, **Custom Pages**,
+and **Site Settings**. Roster entries have a **Photo** field: upload an image
+there and it replaces that player's initials avatar automatically, everywhere
+on the site (including the Hall of Fame page, which is generated automatically
+from each player's achievements — nothing to edit separately there). Roster
+entries also have a **Country Code** field (2-letter ISO code, e.g. `US`,
+`KR`, `BR`) that renders a flag next to the player's name on the roster,
+player page, and Hall of Fame — leave it blank for no flag.
+
+**Wiki** works like a mini knowledge base: each entry gets a title, optional
+short summary, and body text, and lives at its own page
+(`wiki-entry.html?slug=...`), listed on the `wiki.html` index.
+
+**Twitter Threads** "unrolls" a thread without needing any Twitter/X API
+access or developer account: paste each tweet's URL from the thread, in
+order, into the **Tweet URLs** list, and the thread page renders each one as
+an official embedded tweet (via Twitter's public widget), stacked to look
+like a continuous unrolled thread. This only works for tweets that are still
+public — if the original is deleted or the account is private, that one
+embed will fall back to a plain link. There's no way to auto-discover an
+entire thread from just the first tweet's URL without a Twitter Developer
+API key (which has its own setup and possible costs) — ask if you want that
+upgraded later.
 
 **Site Settings** is the "customize almost anything" panel — it controls things
 that used to be hardcoded in the HTML/CSS:
@@ -121,11 +143,11 @@ Deleting that list entry removes the nav link and the page immediately (visiting
 the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
-**Built-in pages** (Roster, News, Schedule, Hall of Fame, About) work a bit
-differently, because they're backed by real code (`roster.js`, `news.js`, etc.),
-not just content — so they can't be *deleted* outright without a developer
-removing files. What you *can* do from `/admin` → Site Settings →
-**Navigation Menu**:
+**Built-in pages** (Roster, News, Schedule, Hall of Fame, About, Wiki, Threads)
+work a bit differently, because they're backed by real code (`roster.js`,
+`news.js`, etc.), not just content — so they can't be *deleted* outright
+without a developer removing files. What you *can* do from `/admin` → Site
+Settings → **Navigation Menu**:
 - Reorder them (drag the list items)
 - Relabel them
 - Uncheck **Enabled** to take a whole section offline — the nav link
@@ -133,7 +155,7 @@ removing files. What you *can* do from `/admin` → Site Settings →
   now" instead of its normal content. This is as close to "deleting" a
   built-in page as a code-backed page can get.
 
-Don't change the **ID** or **Path** fields on the 5 built-in entries — those
+Don't change the **ID** or **Path** fields on the 7 built-in entries — those
 are how the site matches a nav entry to the actual page/content; changing them
 breaks the enable/disable toggle for that section. You *can* add extra
 brand-new entries here too, for external links (e.g. a Discord invite) — give
@@ -189,6 +211,32 @@ no spaces. `photo` is optional — omit it to keep the initials avatar.
 {
   "founded": "2023-06-15",
   "story": "The clan's story, one or more sentences."
+}
+```
+
+`data/wiki.json` — one object per entry in the `entries` array:
+
+```json
+{
+  "slug": "map-callouts",
+  "title": "Map Callouts",
+  "summary": "Shorthand names for common map positions.",
+  "body": "First paragraph.\n\nSecond paragraph.",
+  "enabled": true
+}
+```
+
+`data/threads.json` — one object per thread in the `threads` array:
+
+```json
+{
+  "slug": "my-big-thread",
+  "title": "Our Regional LAN Recap",
+  "tweetUrls": [
+    "https://twitter.com/user/status/111",
+    "https://twitter.com/user/status/222"
+  ],
+  "enabled": true
 }
 ```
 

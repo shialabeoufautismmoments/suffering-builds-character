@@ -23,6 +23,7 @@ collections:
               - { label: "Game", name: "game", widget: "string" }
               - { label: "Role", name: "role", widget: "string" }
               - { label: "Rank", name: "rank", widget: "string" }
+              - { label: "Country Code", name: "country", widget: "string", required: false, hint: "2-letter ISO code (e.g. US, GB, KR, BR) — shows a flag next to the name. Leave blank for no flag." }
               - { label: "Joined", name: "joined", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
               - { label: "Accent Color", name: "accent", widget: "color" }
               - { label: "Photo", name: "photo", widget: "image", required: false, hint: "Optional. Falls back to initials avatar if left blank." }
@@ -84,6 +85,46 @@ collections:
           - { label: "Founded", name: "founded", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
           - { label: "Story", name: "story", widget: "text" }
 
+  - name: "wiki"
+    label: "Wiki"
+    files:
+      - file: "data/wiki.json"
+        label: "Entries"
+        name: "wiki"
+        fields:
+          - label: "Entries"
+            name: "entries"
+            widget: "list"
+            summary: "{{fields.title}}"
+            hint: "Each entry gets its own page at wiki-entry.html?slug=... and shows up in the wiki index."
+            fields:
+              - { label: "Slug", name: "slug", widget: "string", hint: "URL-safe, lowercase, no spaces (e.g. map-callouts)" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Summary", name: "summary", widget: "string", required: false, hint: "Short teaser shown on the wiki index page." }
+              - { label: "Body", name: "body", widget: "text", hint: "Separate paragraphs with a blank line." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this entry without deleting it." }
+
+  - name: "threads"
+    label: "Twitter Threads"
+    files:
+      - file: "data/threads.json"
+        label: "Threads"
+        name: "threads"
+        fields:
+          - label: "Threads"
+            name: "threads"
+            widget: "list"
+            summary: "{{fields.title}}"
+            hint: "No Twitter account/API needed — just paste each tweet's URL from the thread, in order, and it renders as an official embedded tweet, stacked to look unrolled."
+            fields:
+              - { label: "Slug", name: "slug", widget: "string", hint: "URL-safe, lowercase, no spaces (e.g. my-big-thread)" }
+              - { label: "Title", name: "title", widget: "string" }
+              - label: "Tweet URLs (in order)"
+                name: "tweetUrls"
+                widget: "list"
+                hint: "Paste each tweet's URL from the thread, top to bottom, in the order they should appear."
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this thread without deleting it." }
+
   - name: "custom_pages"
     label: "Custom Pages"
     files:
@@ -120,11 +161,11 @@ collections:
             name: "navigation"
             widget: "list"
             summary: "{{fields.label}}"
-            hint: "Controls the nav bar: order, labels, visibility. The 5 built-in entries (roster/news/schedule/hallOfFame/about) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            hint: "Controls the nav bar: order, labels, visibility. The 7 built-in entries (roster/news/schedule/hallOfFame/about/wiki/threads) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: roster / news / schedule / hallOfFame / about. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: roster / news / schedule / hallOfFame / about / wiki / threads. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / news.html / schedule.html / hall-of-fame.html / about.html. Custom links: any URL." }
+              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / news.html / schedule.html / hall-of-fame.html / about.html / wiki.html / threads.html. Custom links: any URL." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
             name: "socials"
@@ -164,6 +205,18 @@ collections:
                   - { label: "Intro text", name: "intro", widget: "text", required: false }
               - label: "About Page"
                 name: "about"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "Wiki Page"
+                name: "wiki"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "Threads Page"
+                name: "threads"
                 widget: "object"
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }
