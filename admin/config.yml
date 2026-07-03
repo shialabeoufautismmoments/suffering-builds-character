@@ -28,14 +28,7 @@ collections:
               - { label: "Accent Color", name: "accent", widget: "color" }
               - { label: "Photo", name: "photo", widget: "image", required: false, hint: "Optional. Falls back to initials avatar if left blank." }
               - { label: "Bio", name: "bio", widget: "text" }
-              - label: "Achievements"
-                name: "achievements"
-                widget: "list"
-                allow_add: true
-                default: []
-                summary: "{{fields.achievement}}"
-                fields:
-                  - { label: "Achievement", name: "achievement", widget: "string" }
+              - { label: "Achievements", name: "achievements", widget: "text", required: false, hint: "One achievement per line." }
               - label: "Socials"
                 name: "socials"
                 widget: "object"
@@ -123,15 +116,7 @@ collections:
             fields:
               - { label: "Slug", name: "slug", widget: "string", hint: "URL-safe, lowercase, no spaces (e.g. my-big-thread)" }
               - { label: "Title", name: "title", widget: "string" }
-              - label: "Tweet URLs (in order)"
-                name: "tweetUrls"
-                widget: "list"
-                allow_add: true
-                default: []
-                summary: "{{fields.url}}"
-                hint: "Click \"Add\" once per tweet, top to bottom, in the order they should appear."
-                fields:
-                  - { label: "Tweet URL", name: "url", widget: "string" }
+              - { label: "Tweet URLs (one per line, in order)", name: "tweetUrls", widget: "text", hint: "Paste each tweet's URL from the thread on its own line, top to bottom, in the order they should appear." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this thread without deleting it." }
 
   - name: "custom_pages"

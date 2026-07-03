@@ -15,6 +15,10 @@ function formatDate(iso) {
   });
 }
 
+function achievementLines(text) {
+  return (text || "").split("\n").map(a => a.trim()).filter(Boolean);
+}
+
 function avatarMarkup(p, extraClass) {
   const cls = `player-avatar${extraClass ? " " + extraClass : ""}`;
   return p.photo
@@ -86,7 +90,7 @@ async function renderPlayer() {
 
   document.title = `${player.name} — Suffering Builds Character`;
 
-  const achievementsHtml = player.achievements.map(a => `<li>${a.achievement}</li>`).join("");
+  const achievementsHtml = achievementLines(player.achievements).map(a => `<li>${a}</li>`).join("");
 
   container.style.setProperty("--card-accent", player.accent);
   container.innerHTML = `

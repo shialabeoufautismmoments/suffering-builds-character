@@ -16,7 +16,7 @@ async function renderThreadsIndex() {
     }
 
     list.innerHTML = items.map(t => {
-      const count = (t.tweetUrls || []).length;
+      const count = (t.tweetUrls || "").split("\n").map(u => u.trim()).filter(Boolean).length;
       return `
         <a class="card-list-item" href="thread.html?slug=${encodeURIComponent(t.slug)}">
           <h3>${t.title}</h3>

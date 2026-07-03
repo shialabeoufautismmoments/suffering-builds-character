@@ -109,15 +109,23 @@ short summary, and body text, and lives at its own page
 (`wiki-entry.html?slug=...`), listed on the `wiki.html` index.
 
 **Twitter Threads** "unrolls" a thread without needing any Twitter/X API
-access or developer account: paste each tweet's URL from the thread, in
-order, into the **Tweet URLs** list, and the thread page renders each one as
-an official embedded tweet (via Twitter's public widget), stacked to look
-like a continuous unrolled thread. This only works for tweets that are still
-public — if the original is deleted or the account is private, that one
-embed will fall back to a plain link. There's no way to auto-discover an
-entire thread from just the first tweet's URL without a Twitter Developer
-API key (which has its own setup and possible costs) — ask if you want that
-upgraded later.
+access or developer account: paste each tweet's URL from the thread, **one
+per line**, into the **Tweet URLs** box (a plain text box, not a repeatable
+list — see note below on why), and the thread page renders each one as an
+official embedded tweet (via Twitter's public widget), stacked to look like a
+continuous unrolled thread. This only works for tweets that are still public
+— if the original is deleted or the account is private, that one embed will
+fall back to a plain link. There's no way to auto-discover an entire thread
+from just the first tweet's URL without a Twitter Developer API key (which
+has its own setup and possible costs) — ask if you want that upgraded later.
+
+*Why plain text instead of a repeatable list:* Decap CMS (the admin panel
+software) has a real bug where a list field nested inside another list item
+doesn't render an "Add" button correctly — since every Thread (and every
+Roster player) is itself one item in a list, a second-level list for Tweet
+URLs / Achievements hit that bug and effectively capped at one entry no
+matter how it was configured. A plain multi-line text box sidesteps the bug
+entirely and is just as easy to use — one line per item.
 
 **Site Settings** is the "customize almost anything" panel — it controls things
 that used to be hardcoded in the HTML/CSS:
@@ -176,10 +184,13 @@ those any unique ID and put the full URL in Path.
   "accent": "#8b0000",
   "photo": "assets/uploads/example.jpg",
   "bio": "Short bio.",
-  "achievements": [{ "achievement": "..." }, { "achievement": "..." }],
+  "achievements": "First achievement.\nSecond achievement.",
   "socials": { "twitch": "https://...", "twitter": "https://...", "pyvno": "https://pyvno.xyz/..." }
 }
 ```
+
+`achievements` is a single string, one achievement per line (not an array) — the
+admin form shows it as a plain text box for that reason (see note below).
 
 `id` is used in the URL (`player.html?id=unique-slug`) — keep it lowercase with
 no spaces. `photo` is optional — omit it to keep the initials avatar.
@@ -232,13 +243,13 @@ no spaces. `photo` is optional — omit it to keep the initials avatar.
 {
   "slug": "my-big-thread",
   "title": "Our Regional LAN Recap",
-  "tweetUrls": [
-    { "url": "https://twitter.com/user/status/111" },
-    { "url": "https://twitter.com/user/status/222" }
-  ],
+  "tweetUrls": "https://twitter.com/user/status/111\nhttps://twitter.com/user/status/222",
   "enabled": true
 }
 ```
+
+`tweetUrls` is a single string, one URL per line (not an array) — same reason
+as `achievements` above.
 
 `data/pages.json` — one object per custom page in the `pages` array:
 

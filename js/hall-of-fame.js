@@ -26,6 +26,10 @@ function nameWithFlag(p) {
   return flag ? `${p.name} <span class="flag" title="${p.country.toUpperCase()}">${flag}</span>` : p.name;
 }
 
+function achievementLines(text) {
+  return (text || "").split("\n").map(a => a.trim()).filter(Boolean);
+}
+
 async function renderHallOfFame() {
   const grid = document.getElementById("fame-grid");
   const { site } = await window.__siteDataPromise;
@@ -36,14 +40,16 @@ async function renderHallOfFame() {
   try {
     const res = await fetch("data/players.json", { cache: "no-store" });
     const data = await res.json();
-    const decorated = data.players.filter(p => p.achievements && p.achievements.length);
+    const decorated = data.players
+      .map(p => ({ p, achievements: achievementLines(p.achievements) }))
+      .filter(({ achievements }) => achievements.length);
 
     if (!decorated.length) {
       grid.innerHTML = "<p>No achievements logged yet.</p>";
       return;
     }
 
-    grid.innerHTML = decorated.map(p => `
+    grid.innerHTML = decorated.map(({ p, achievements }) => `
       <a class="fame-card" style="--card-accent:${p.accent}" href="player.html?id=${encodeURIComponent(p.id)}">
         <div class="fame-card-header">
           ${avatarMarkup(p)}
@@ -53,7 +59,7 @@ async function renderHallOfFame() {
           </div>
         </div>
         <ul class="achievements-list">
-          ${p.achievements.map(a => `<li>${a.achievement}</li>`).join("")}
+          ${achievements.map(a => `<li>${a}</li>`).join("")}
         </ul>
       </a>
     `).join("");
