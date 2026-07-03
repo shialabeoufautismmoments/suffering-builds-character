@@ -32,6 +32,23 @@
       "game": "Overwatch",
       "role": "Hitscan and Support",
       "id": "eoo"
+    },
+    {
+      "socials": {
+        "pyvno": "https://pyvno.xyz/beleo",
+        "twitter": "https://x.com/beleofps",
+        "twitch": "https://twitch.tv/beleo66"
+      },
+      "bio": "Formerly a Soldier: 76 one trick, Beleo is the prime example of why aim trainers alone do not make you a good player. Beleo spent hours grinding aim trainers wondering why, while his scores went up, his rank did not. This is a common trap for people new to the mechanics scene.",
+      "joined": "2026-07-03",
+      "accent": "#000000",
+      "name": "beleo",
+      "rank": "GM1",
+      "photo": "https://cdn.discordapp.com/avatars/1200154824772157553/ee3a6303b077212f8c9ce8727a232d44.png?size=4096",
+      "game": "Overwatch",
+      "role": "Hitscan",
+      "country": "UA",
+      "id": "beleo"
     }
   ]
 }
