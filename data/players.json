@@ -68,6 +68,22 @@
       "role": "Hitscan",
       "country": "US",
       "id": "frozen"
+    },
+    {
+      "socials": {
+        "twitch": "https://www.twitch.tv/hud7on",
+        "twitter": "https://x.com/hud7on",
+        "pyvno": "https://pyvno.xyz/hud7on"
+      },
+      "bio": "Hudson is another prime example of how training mechanics properly will help you improve in game the fastest.",
+      "joined": "2026-07-03",
+      "accent": "#36005a",
+      "name": "hudson",
+      "rank": "GM1",
+      "game": "Overwatch",
+      "role": "Hitscan",
+      "country": "US",
+      "id": "hud7on"
     }
   ]
 }
