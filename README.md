@@ -10,12 +10,12 @@ password-protected owner panel for editing player profiles.
 - `news.html` — announcements feed, most recent first
 - `schedule.html` — upcoming scrims/tournaments, past events shown greyed out
 - `hall-of-fame.html` — every player's achievements in one place
-- `about.html` — clan story, founding date, and house rules
+- `about.html` — clan story and founding date
 - `404.html` — themed not-found page, served automatically by Netlify
 - `data/players.json` — roster data as `{ "players": [...] }`
 - `data/news.json` — announcements as `{ "news": [...] }`
 - `data/schedule.json` — events as `{ "events": [...] }`
-- `data/about.json` — about-page content as `{ "founded", "story", "rules" }`
+- `data/about.json` — about-page content as `{ "founded", "story" }`
 - `data/site.json` — site-wide branding/theme and per-page headings, applied at runtime by `js/site.js`
 - `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/hall-of-fame.js` / `js/about.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, and footer extras
@@ -162,8 +162,7 @@ no spaces. `photo` is optional — omit it to keep the initials avatar.
 ```json
 {
   "founded": "2023-06-15",
-  "story": "The clan's story, one or more sentences.",
-  "rules": ["Rule one.", "Rule two."]
+  "story": "The clan's story, one or more sentences."
 }
 ```
 

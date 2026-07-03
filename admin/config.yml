@@ -83,10 +83,6 @@ collections:
         fields:
           - { label: "Founded", name: "founded", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
           - { label: "Story", name: "story", widget: "text" }
-          - label: "House Rules"
-            name: "rules"
-            widget: "list"
-            allow_add: true
 
   - name: "settings"
     label: "Site Settings"
