@@ -9,7 +9,7 @@ password-protected owner panel for editing player profiles.
 - `player.html` — player detail page, reads `?id=<player-id>` from the URL
 - `news.html` — announcements feed, most recent first
 - `schedule.html` — upcoming scrims/tournaments, past events shown greyed out
-- `hall-of-fame.html` — every player's achievements in one place
+- `staff.html` — leadership/staff members (players flagged **Staff Member?** in Roster)
 - `about.html` — clan story and founding date
 - `wiki.html` / `wiki-entry.html` — wiki index and individual entry view (`?slug=<slug>`)
 - `threads.html` / `thread.html` — Twitter/X thread index and unrolled-thread view (`?slug=<slug>`)
@@ -25,7 +25,7 @@ password-protected owner panel for editing player profiles.
 - `data/roadmap.json` — roadmap milestones as `{ "items": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/hall-of-fame.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, and builds the nav menu
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
@@ -100,15 +100,15 @@ the fix from there.
 Roster, News, Schedule, About, **Wiki**, **Twitter Threads**, **Roadmap**,
 **Custom Pages**, and **Site Settings**. Roster entries have a **Photo** field: upload an image
 there and it replaces that player's initials avatar automatically, everywhere
-on the site (including the Hall of Fame page, which is generated automatically
-from each player's achievements — nothing to edit separately there). Roster
-entries also have a **Country Code** field (2-letter ISO code, e.g. `US`,
-`KR`, `BR`) that renders a flag next to the player's name on the roster,
-player page, and Hall of Fame — leave it blank for no flag. There's also a
-**YouTube Videos** field (same one-per-line plain text pattern as Tweet URLs
-below): paste any number of YouTube video URLs, one per line, and they embed
-as responsive players on that player's page under their achievements. Leave
-blank for no videos.
+on the site. Roster entries also have a **Staff Member?** checkbox — check it
+to include that player on the Staff page (`staff.html`), which shows their
+photo, name/flag, role, and full bio; and a **Country Code** field
+(2-letter ISO code, e.g. `US`, `KR`, `BR`) that renders a flag next to the
+player's name on the roster, player page, and Staff page — leave it blank for
+no flag. There's also a **YouTube Videos** field (same one-per-line plain text
+pattern as Tweet URLs below): paste any number of YouTube video URLs, one per
+line, and they embed as responsive players on that player's page under their
+achievements. Leave blank for no videos.
 
 **Wiki** works like a mini knowledge base: each entry gets a title, optional
 short summary, and body text, and lives at its own page
@@ -152,7 +152,9 @@ that used to be hardcoded in the HTML/CSS:
 - A footer note (an extra line shown in the footer, e.g. a slogan or contact
   email)
 - Social/contact links (any number of label+URL pairs, shown in the footer)
-- Heading and intro text for each page (Roster, News, Schedule, Hall of Fame,
+- A Discord Server ID, which shows a live member widget in the footer of
+  every page (see "Discord widget" below)
+- Heading and intro text for each page (Roster, News, Schedule, Staff,
   About) — e.g. add a sentence under "Roster" explaining who's on it
 - **Navigation Menu** — order, labels, and visibility of every nav link
 
@@ -169,7 +171,7 @@ Deleting that list entry removes the nav link and the page immediately (visiting
 the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
-**Built-in pages** (Roster, News, Schedule, Hall of Fame, About, Wiki, Threads,
+**Built-in pages** (Roster, News, Schedule, Staff, About, Wiki, Threads,
 Roadmap) work a bit differently, because they're backed by real code (`roster.js`,
 `news.js`, etc.), not just content — so they can't be *deleted* outright
 without a developer removing files. What you *can* do from `/admin` → Site
@@ -187,6 +189,21 @@ breaks the enable/disable toggle for that section. You *can* add extra
 brand-new entries here too, for external links (e.g. a Discord invite) — give
 those any unique ID and put the full URL in Path.
 
+### Discord widget
+
+A live Discord widget (member count, who's online) can show in the footer of
+every page. To turn it on:
+
+1. In Discord: your server → **Server Settings → Widget** → enable
+   **"Enable Server Widget"**
+2. Copy the **Server ID** shown on that same screen
+3. In `/admin` → **Site Settings** → paste it into **Discord Server ID**,
+   then Publish
+
+Leave the field blank to hide the widget entirely (that's the default — it
+won't show up until you fill this in). No per-member settings are involved,
+just the one server-side toggle in step 1.
+
 **Manual alternative:** edit the JSON files directly and commit/push.
 
 `data/players.json` — one object per player in the `players` array:
@@ -202,6 +219,7 @@ those any unique ID and put the full URL in Path.
   "accent": "#8b0000",
   "photo": "assets/uploads/example.jpg",
   "bio": "Short bio.",
+  "isStaff": true,
   "achievements": "First achievement.\nSecond achievement.",
   "youtubeVideos": "https://youtu.be/dQw4w9WgXcQ\nhttps://youtu.be/anotherOne",
   "socials": { "twitch": "https://...", "twitter": "https://...", "pyvno": "https://pyvno.xyz/..." }
@@ -303,6 +321,9 @@ removing, and reordering pages" above for the built-in-vs-custom distinction):
 ```json
 { "id": "roster", "label": "Roster", "path": "index.html", "enabled": true }
 ```
+
+`data/site.json`'s `discordServerId` is a plain string — see "Discord widget"
+above for where to find it. Leave it `""` to hide the widget.
 
 ## Social link previews (Open Graph)
 

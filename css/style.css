@@ -176,6 +176,17 @@ main {
 
 .footer-extra-line a:hover { color: var(--accent-bright); }
 
+#discord-widget {
+  max-width: 350px;
+  margin: 0 auto 20px;
+}
+
+#discord-widget iframe {
+  display: block;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
 .roster-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -531,13 +542,13 @@ footer {
   .event-date { min-width: 0; }
 }
 
-.fame-grid {
+.staff-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
 }
 
-.fame-card {
+.staff-card {
   display: block;
   background: linear-gradient(160deg, var(--card) 0%, #060607 100%);
   border: 1px solid var(--border);
@@ -546,13 +557,13 @@ footer {
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.fame-card:hover {
+.staff-card:hover {
   transform: translateY(-3px);
   border-color: var(--card-accent, var(--accent));
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.7), 0 0 24px -8px var(--card-accent, var(--accent));
 }
 
-.fame-card-header {
+.staff-card-header {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -561,14 +572,21 @@ footer {
   border-bottom: 1px solid var(--border);
 }
 
-.fame-card-header .player-avatar { margin-bottom: 0; }
-.fame-card-header h3 { margin: 0 0 4px; font-size: 1rem; }
-.fame-card-header .role {
+.staff-card-header .player-avatar { margin-bottom: 0; }
+.staff-card-header h3 { margin: 0 0 4px; font-size: 1rem; }
+.staff-card-header .role {
   margin: 0;
   font-size: 0.76rem;
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.staff-bio {
+  margin: 0;
+  color: #c9c4c4;
+  font-size: 0.88rem;
+  line-height: 1.5;
 }
 
 .founded {

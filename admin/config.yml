@@ -24,6 +24,7 @@ collections:
               - { label: "Role", name: "role", widget: "string" }
               - { label: "Rank", name: "rank", widget: "string" }
               - { label: "Country Code", name: "country", widget: "string", required: false, hint: "2-letter ISO code (e.g. US, GB, KR, BR) — shows a flag next to the name. Leave blank for no flag." }
+              - { label: "Staff Member?", name: "isStaff", widget: "boolean", default: false, hint: "Check to include this player on the Staff page." }
               - { label: "Joined", name: "joined", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
               - { label: "Accent Color", name: "accent", widget: "color" }
               - { label: "Photo", name: "photo", widget: "image", required: false, hint: "Optional. Falls back to initials avatar if left blank." }
@@ -174,15 +175,16 @@ collections:
           - { label: "Primary Accent Color", name: "accentColor", widget: "color" }
           - { label: "Glow/Highlight Accent Color", name: "accentBright", widget: "color" }
           - { label: "Footer Note", name: "footerText", widget: "string", required: false, hint: "Optional extra line shown in the footer." }
+          - { label: "Discord Server ID", name: "discordServerId", widget: "string", required: false, hint: "Shows a live Discord widget (member count, who's online) in the footer of every page. To find it: your Discord server → Server Settings → Widget → turn on \"Enable Server Widget\" → copy the Server ID shown there. Leave blank to hide the widget." }
           - label: "Navigation Menu"
             name: "navigation"
             widget: "list"
             summary: "{{fields.label}}"
-            hint: "Controls the nav bar: order, labels, visibility. The 8 built-in entries (roster/news/schedule/hallOfFame/about/wiki/threads/roadmap) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            hint: "Controls the nav bar: order, labels, visibility. The 8 built-in entries (roster/news/schedule/staff/about/wiki/threads/roadmap) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: roster / news / schedule / hallOfFame / about / wiki / threads / roadmap. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: roster / news / schedule / staff / about / wiki / threads / roadmap. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / news.html / schedule.html / hall-of-fame.html / about.html / wiki.html / threads.html / roadmap.html. Custom links: any URL." }
+              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / news.html / schedule.html / staff.html / about.html / wiki.html / threads.html / roadmap.html. Custom links: any URL." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
             name: "socials"
@@ -214,8 +216,8 @@ collections:
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }
                   - { label: "Intro text", name: "intro", widget: "text", required: false }
-              - label: "Hall of Fame Page"
-                name: "hallOfFame"
+              - label: "Staff Page"
+                name: "staff"
                 widget: "object"
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }

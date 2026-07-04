@@ -26,47 +26,39 @@ function nameWithFlag(p) {
   return flag ? `${p.name} <span class="flag" title="${p.country.toUpperCase()}">${flag}</span>` : p.name;
 }
 
-function achievementLines(text) {
-  return (text || "").split("\n").map(a => a.trim()).filter(Boolean);
-}
-
-async function renderHallOfFame() {
-  const grid = document.getElementById("fame-grid");
+async function renderStaff() {
+  const grid = document.getElementById("staff-grid");
   const { site } = await window.__siteDataPromise;
-  if (isPageDisabled(site, "hallOfFame")) {
+  if (isPageDisabled(site, "staff")) {
     renderPageUnavailable(grid);
     return;
   }
   try {
     const res = await fetch("data/players.json", { cache: "no-store" });
     const data = await res.json();
-    const decorated = data.players
-      .map(p => ({ p, achievements: achievementLines(p.achievements) }))
-      .filter(({ achievements }) => achievements.length);
+    const staff = data.players.filter(p => p.isStaff);
 
-    if (!decorated.length) {
-      grid.innerHTML = "<p>No achievements logged yet.</p>";
+    if (!staff.length) {
+      grid.innerHTML = "<p>No staff listed yet.</p>";
       return;
     }
 
-    grid.innerHTML = decorated.map(({ p, achievements }) => `
-      <a class="fame-card" style="--card-accent:${p.accent}" href="player.html?id=${encodeURIComponent(p.id)}">
-        <div class="fame-card-header">
+    grid.innerHTML = staff.map(p => `
+      <a class="staff-card" style="--card-accent:${p.accent}" href="player.html?id=${encodeURIComponent(p.id)}">
+        <div class="staff-card-header">
           ${avatarMarkup(p)}
           <div>
             <h3>${nameWithFlag(p)}</h3>
             <p class="role">${p.role} &middot; ${p.game}</p>
           </div>
         </div>
-        <ul class="achievements-list">
-          ${achievements.map(a => `<li>${a}</li>`).join("")}
-        </ul>
+        <p class="staff-bio">${p.bio}</p>
       </a>
     `).join("");
   } catch (err) {
-    grid.innerHTML = "<p>Couldn't load the hall of fame right now.</p>";
+    grid.innerHTML = "<p>Couldn't load the staff list right now.</p>";
     console.error(err);
   }
 }
 
-document.addEventListener("DOMContentLoaded", renderHallOfFame);
+document.addEventListener("DOMContentLoaded", renderStaff);

@@ -84,6 +84,11 @@ function applySiteSettings(site) {
       extra.innerHTML = `<p class="footer-extra-line">${parts.join(" &middot; ")}</p>`;
     }
   }
+
+  const discordEl = document.getElementById("discord-widget");
+  if (discordEl && site.discordServerId) {
+    discordEl.innerHTML = `<iframe src="https://discord.com/widget?id=${encodeURIComponent(site.discordServerId)}&theme=dark" width="100%" height="240" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>`;
+  }
 }
 
 // Shared by every built-in page's own render script: `await window.__siteDataPromise`

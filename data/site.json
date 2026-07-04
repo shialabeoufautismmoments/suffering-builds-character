@@ -5,6 +5,7 @@
   "accentColor": "#131318",
   "accentBright": "#8f00ff",
   "footerText": "",
+  "discordServerId": "",
   "socials": [
     {
       "label": "Twitter",
@@ -15,7 +16,7 @@
     { "id": "roster", "label": "Roster", "path": "index.html", "enabled": true },
     { "id": "news", "label": "News", "path": "news.html", "enabled": true },
     { "id": "schedule", "label": "Schedule", "path": "schedule.html", "enabled": true },
-    { "id": "hallOfFame", "label": "Hall of Fame", "path": "hall-of-fame.html", "enabled": true },
+    { "id": "staff", "label": "Staff", "path": "staff.html", "enabled": true },
     { "id": "about", "label": "About", "path": "about.html", "enabled": true },
     { "id": "wiki", "label": "Wiki", "path": "wiki.html", "enabled": true },
     { "id": "threads", "label": "Threads", "path": "threads.html", "enabled": true },
@@ -34,8 +35,8 @@
       "heading": "Schedule",
       "intro": ""
     },
-    "hallOfFame": {
-      "heading": "Hall of Fame",
+    "staff": {
+      "heading": "Staff",
       "intro": ""
     },
     "about": {

@@ -8,6 +8,7 @@
         "pyvno": "https://pyvno.xyz/psev"
       },
       "bio": "Founder of Suffering Builds Character, leader of the Overwatch Division",
+      "isStaff": true,
       "joined": "2026-07-03",
       "accent": "#00ceff",
       "name": "psev",
@@ -91,6 +92,7 @@
         "pyvno": "https://pyvno.xyz/cannonlol"
       },
       "bio": "Co-Owner and Co-Founder of Suffering Builds Character.",
+      "isStaff": true,
       "joined": "2026-07-03",
       "accent": "#6a00ff",
       "name": "Cannon",
