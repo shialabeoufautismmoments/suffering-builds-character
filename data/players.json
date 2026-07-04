@@ -100,6 +100,22 @@
       "role": "Owner",
       "country": "US",
       "id": "cannon"
+    },
+    {
+      "socials": {
+        "pyvno": "https://pyvno.xyz/nuance",
+        "twitter": "https://x.com/owNuance"
+      },
+      "bio": "Widowmaker and Hitscan player from TF2",
+      "joined": "2026-07-04",
+      "accent": "#b7b7b7",
+      "name": "owNuance",
+      "rank": "GM3",
+      "photo": "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png",
+      "game": "Overwatch",
+      "role": "Hitscan",
+      "country": "US",
+      "id": "nuance"
     }
   ]
 }
