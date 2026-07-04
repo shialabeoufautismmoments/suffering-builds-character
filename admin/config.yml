@@ -83,6 +83,28 @@ collections:
           - { label: "Founded", name: "founded", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
           - { label: "Story", name: "story", widget: "text" }
 
+  - name: "roadmap"
+    label: "Roadmap"
+    files:
+      - file: "data/roadmap.json"
+        label: "Roadmap"
+        name: "roadmap"
+        fields:
+          - label: "Roadmap Items"
+            name: "items"
+            widget: "list"
+            summary: "{{fields.title}} — {{fields.status}}"
+            hint: "Drag items to reorder. Order here is the order shown on the page."
+            fields:
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Target (optional)", name: "target", widget: "string", required: false, hint: "e.g. Q3 2026, Late 2026, TBD" }
+              - label: "Status"
+                name: "status"
+                widget: "select"
+                options: ["Planned", "In Progress", "Completed"]
+                default: "Planned"
+              - { label: "Description", name: "description", widget: "text", required: false }
+
   - name: "wiki"
     label: "Wiki"
     files:
@@ -156,11 +178,11 @@ collections:
             name: "navigation"
             widget: "list"
             summary: "{{fields.label}}"
-            hint: "Controls the nav bar: order, labels, visibility. The 7 built-in entries (roster/news/schedule/hallOfFame/about/wiki/threads) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            hint: "Controls the nav bar: order, labels, visibility. The 8 built-in entries (roster/news/schedule/hallOfFame/about/wiki/threads/roadmap) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: roster / news / schedule / hallOfFame / about / wiki / threads. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: roster / news / schedule / hallOfFame / about / wiki / threads / roadmap. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / news.html / schedule.html / hall-of-fame.html / about.html / wiki.html / threads.html. Custom links: any URL." }
+              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / news.html / schedule.html / hall-of-fame.html / about.html / wiki.html / threads.html / roadmap.html. Custom links: any URL." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
             name: "socials"
@@ -212,6 +234,12 @@ collections:
                   - { label: "Intro text", name: "intro", widget: "text", required: false }
               - label: "Threads Page"
                 name: "threads"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "Roadmap Page"
+                name: "roadmap"
                 widget: "object"
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }

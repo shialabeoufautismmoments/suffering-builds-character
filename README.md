@@ -13,6 +13,7 @@ password-protected owner panel for editing player profiles.
 - `about.html` — clan story and founding date
 - `wiki.html` / `wiki-entry.html` — wiki index and individual entry view (`?slug=<slug>`)
 - `threads.html` / `thread.html` — Twitter/X thread index and unrolled-thread view (`?slug=<slug>`)
+- `roadmap.html` — planned/in-progress/completed milestones
 - `page.html` — generic template for owner-created custom pages, reads `?slug=<slug>` from the URL
 - `404.html` — themed not-found page, served automatically by Netlify
 - `data/players.json` — roster data as `{ "players": [...] }`
@@ -21,9 +22,10 @@ password-protected owner panel for editing player profiles.
 - `data/about.json` — about-page content as `{ "founded", "story" }`
 - `data/wiki.json` — wiki entries as `{ "entries": [...] }`
 - `data/threads.json` — Twitter/X threads as `{ "threads": [...] }`
+- `data/roadmap.json` — roadmap milestones as `{ "items": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/hall-of-fame.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/hall-of-fame.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, and builds the nav menu
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
@@ -94,9 +96,9 @@ the fix from there.
 
 ## Editing content
 
-**Preferred:** log into `/admin` (see above). You'll see eight sections —
-Roster, News, Schedule, About, **Wiki**, **Twitter Threads**, **Custom Pages**,
-and **Site Settings**. Roster entries have a **Photo** field: upload an image
+**Preferred:** log into `/admin` (see above). You'll see nine sections —
+Roster, News, Schedule, About, **Wiki**, **Twitter Threads**, **Roadmap**,
+**Custom Pages**, and **Site Settings**. Roster entries have a **Photo** field: upload an image
 there and it replaces that player's initials avatar automatically, everywhere
 on the site (including the Hall of Fame page, which is generated automatically
 from each player's achievements — nothing to edit separately there). Roster
@@ -131,6 +133,14 @@ URLs / Achievements hit that bug and effectively capped at one entry no
 matter how it was configured. A plain multi-line text box sidesteps the bug
 entirely and is just as easy to use — one line per item.
 
+**Roadmap** is a simple ordered list of milestones — each one has a Title,
+an optional Target (e.g. "Q3 2026", loose text, not a strict date), a Status
+(Planned / In Progress / Completed, shown as a colored pill), and an optional
+Description. Drag items in the admin list to reorder them — that order is
+exactly what's shown on the page. This one's a plain list-of-objects (not
+nested inside another list), so it doesn't hit the bug above and the normal
+Add/reorder/delete controls all work.
+
 **Site Settings** is the "customize almost anything" panel — it controls things
 that used to be hardcoded in the HTML/CSS:
 
@@ -159,8 +169,8 @@ Deleting that list entry removes the nav link and the page immediately (visiting
 the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
-**Built-in pages** (Roster, News, Schedule, Hall of Fame, About, Wiki, Threads)
-work a bit differently, because they're backed by real code (`roster.js`,
+**Built-in pages** (Roster, News, Schedule, Hall of Fame, About, Wiki, Threads,
+Roadmap) work a bit differently, because they're backed by real code (`roster.js`,
 `news.js`, etc.), not just content — so they can't be *deleted* outright
 without a developer removing files. What you *can* do from `/admin` → Site
 Settings → **Navigation Menu**:
@@ -171,7 +181,7 @@ Settings → **Navigation Menu**:
   now" instead of its normal content. This is as close to "deleting" a
   built-in page as a code-backed page can get.
 
-Don't change the **ID** or **Path** fields on the 7 built-in entries — those
+Don't change the **ID** or **Path** fields on the 8 built-in entries — those
 are how the site matches a nav entry to the actual page/content; changing them
 breaks the enable/disable toggle for that section. You *can* add extra
 brand-new entries here too, for external links (e.g. a Discord invite) — give
@@ -259,6 +269,21 @@ no spaces. `photo` is optional — omit it to keep the initials avatar.
 
 `tweetUrls` is a single string, one URL per line (not an array) — same reason
 as `achievements` above.
+
+`data/roadmap.json` — one object per milestone in the `items` array, in
+display order:
+
+```json
+{
+  "title": "Regional LAN qualifier run",
+  "target": "Q4 2026",
+  "status": "Planned",
+  "description": "Optional details."
+}
+```
+
+`status` is one of `"Planned"`, `"In Progress"`, or `"Completed"`. `target`
+and `description` are both optional.
 
 `data/pages.json` — one object per custom page in the `pages` array:
 

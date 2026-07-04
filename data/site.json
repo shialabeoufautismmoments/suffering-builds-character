@@ -18,7 +18,8 @@
     { "id": "hallOfFame", "label": "Hall of Fame", "path": "hall-of-fame.html", "enabled": true },
     { "id": "about", "label": "About", "path": "about.html", "enabled": true },
     { "id": "wiki", "label": "Wiki", "path": "wiki.html", "enabled": true },
-    { "id": "threads", "label": "Threads", "path": "threads.html", "enabled": true }
+    { "id": "threads", "label": "Threads", "path": "threads.html", "enabled": true },
+    { "id": "roadmap", "label": "Roadmap", "path": "roadmap.html", "enabled": true }
   ],
   "pages": {
     "roster": {
@@ -47,6 +48,10 @@
     },
     "threads": {
       "heading": "Threads",
+      "intro": ""
+    },
+    "roadmap": {
+      "heading": "Roadmap",
       "intro": ""
     }
   }
