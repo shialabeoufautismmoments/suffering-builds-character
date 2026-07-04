@@ -1,27 +1,5 @@
 {
-  "siteName": "Suffering Builds Character",
-  "tagline": "Suffering Exposes All",
-  "logo": "",
-  "accentColor": "#131318",
   "accentBright": "#8f00ff",
-  "footerText": "",
-  "discordServerId": "",
-  "socials": [
-    {
-      "label": "Twitter",
-      "url": "https://x.com/SuffBuildChar"
-    }
-  ],
-  "navigation": [
-    { "id": "roster", "label": "Roster", "path": "index.html", "enabled": true },
-    { "id": "news", "label": "News", "path": "news.html", "enabled": true },
-    { "id": "schedule", "label": "Schedule", "path": "schedule.html", "enabled": true },
-    { "id": "staff", "label": "Staff", "path": "staff.html", "enabled": true },
-    { "id": "about", "label": "About", "path": "about.html", "enabled": true },
-    { "id": "wiki", "label": "Wiki", "path": "wiki.html", "enabled": true },
-    { "id": "threads", "label": "Threads", "path": "threads.html", "enabled": true },
-    { "id": "roadmap", "label": "Roadmap", "path": "roadmap.html", "enabled": true }
-  ],
   "pages": {
     "roster": {
       "heading": "Roster",
@@ -55,5 +33,67 @@
       "heading": "Roadmap",
       "intro": ""
     }
-  }
+  },
+  "socials": [
+    {
+      "label": "Twitter",
+      "url": "https://x.com/SuffBuildChar"
+    }
+  ],
+  "footerText": "",
+  "discordServerId": "1522649714150080772",
+  "logo": "",
+  "tagline": "Suffering Exposes All",
+  "siteName": "Suffering Builds Character",
+  "navigation": [
+    {
+      "id": "roster",
+      "label": "Roster",
+      "path": "index.html",
+      "enabled": true
+    },
+    {
+      "id": "news",
+      "label": "News",
+      "path": "news.html",
+      "enabled": true
+    },
+    {
+      "id": "schedule",
+      "label": "Schedule",
+      "path": "schedule.html",
+      "enabled": true
+    },
+    {
+      "id": "staff",
+      "label": "Staff",
+      "path": "staff.html",
+      "enabled": true
+    },
+    {
+      "id": "about",
+      "label": "About",
+      "path": "about.html",
+      "enabled": true
+    },
+    {
+      "id": "wiki",
+      "label": "Wiki",
+      "path": "wiki.html",
+      "enabled": true
+    },
+    {
+      "id": "threads",
+      "label": "Threads",
+      "path": "threads.html",
+      "enabled": true
+    },
+    {
+      "id": "roadmap",
+      "label": "Roadmap",
+      "path": "roadmap.html",
+      "enabled": true
+    }
+  ],
+  "accentColor": "#131318"
 }
