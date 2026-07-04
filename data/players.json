@@ -8,7 +8,6 @@
         "pyvno": "https://pyvno.xyz/psev"
       },
       "bio": "Founder of Suffering Builds Character, leader of the Overwatch Division",
-      "isStaff": true,
       "joined": "2026-07-03",
       "accent": "#00ceff",
       "name": "psev",
@@ -17,6 +16,7 @@
       "game": "Overwatch",
       "role": "Hitscan",
       "country": "CA",
+      "isStaff": true,
       "id": "psev"
     },
     {
@@ -34,6 +34,7 @@
       "game": "Overwatch",
       "role": "Hitscan and Support",
       "country": "GB",
+      "isStaff": true,
       "id": "eoo"
     },
     {
@@ -51,6 +52,7 @@
       "game": "Overwatch",
       "role": "Hitscan",
       "country": "UA",
+      "isStaff": false,
       "id": "beleo"
     },
     {
@@ -68,6 +70,7 @@
       "game": "Overwatch",
       "role": "Hitscan",
       "country": "US",
+      "isStaff": false,
       "id": "frozen"
     },
     {
@@ -85,6 +88,7 @@
       "game": "Overwatch",
       "role": "Hitscan",
       "country": "US",
+      "isStaff": false,
       "id": "hud7on"
     },
     {
@@ -92,7 +96,6 @@
         "pyvno": "https://pyvno.xyz/cannonlol"
       },
       "bio": "Co-Owner and Co-Founder of Suffering Builds Character.",
-      "isStaff": true,
       "joined": "2026-07-03",
       "accent": "#6a00ff",
       "name": "Cannon",
@@ -101,6 +104,7 @@
       "game": "Overwatch",
       "role": "Owner",
       "country": "US",
+      "isStaff": true,
       "id": "cannon"
     },
     {
@@ -117,6 +121,7 @@
       "game": "Overwatch",
       "role": "Hitscan",
       "country": "US",
+      "isStaff": false,
       "id": "nuance"
     },
     {
@@ -133,6 +138,7 @@
       "game": "Overwatch",
       "role": "Tank",
       "country": "US",
+      "isStaff": false,
       "id": "matt"
     }
   ]
