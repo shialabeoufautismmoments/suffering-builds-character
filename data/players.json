@@ -116,6 +116,22 @@
       "role": "Hitscan",
       "country": "US",
       "id": "nuance"
+    },
+    {
+      "socials": {
+        "pyvno": "https://pyvno.xyz/mattburger",
+        "twitter": "https://x.com/doodlebobslayer"
+      },
+      "bio": "A top tier tank, who shows mechanics transcend roles.",
+      "joined": "2026-07-04",
+      "accent": "#7e0000",
+      "name": "Mattburger",
+      "rank": "Champ 4",
+      "photo": "https://cdn.discordapp.com/avatars/223199393346486272/99cda1547092c77703d9df2dd95eb3d6.png?size=4096",
+      "game": "Overwatch",
+      "role": "Tank",
+      "country": "US",
+      "id": "matt"
     }
   ]
 }
