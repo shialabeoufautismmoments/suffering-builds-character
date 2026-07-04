@@ -102,7 +102,11 @@ on the site (including the Hall of Fame page, which is generated automatically
 from each player's achievements — nothing to edit separately there). Roster
 entries also have a **Country Code** field (2-letter ISO code, e.g. `US`,
 `KR`, `BR`) that renders a flag next to the player's name on the roster,
-player page, and Hall of Fame — leave it blank for no flag.
+player page, and Hall of Fame — leave it blank for no flag. There's also a
+**YouTube Videos** field (same one-per-line plain text pattern as Tweet URLs
+below): paste any number of YouTube video URLs, one per line, and they embed
+as responsive players on that player's page under their achievements. Leave
+blank for no videos.
 
 **Wiki** works like a mini knowledge base: each entry gets a title, optional
 short summary, and body text, and lives at its own page
@@ -141,6 +145,10 @@ that used to be hardcoded in the HTML/CSS:
 - Heading and intro text for each page (Roster, News, Schedule, Hall of Fame,
   About) — e.g. add a sentence under "Roster" explaining who's on it
 - **Navigation Menu** — order, labels, and visibility of every nav link
+
+On screens narrower than 720px, the nav bar collapses into a hamburger button
+(☰) that toggles a full-width dropdown menu — this is automatic and not
+something Site Settings controls.
 
 ### Adding, removing, and reordering pages
 
@@ -185,6 +193,7 @@ those any unique ID and put the full URL in Path.
   "photo": "assets/uploads/example.jpg",
   "bio": "Short bio.",
   "achievements": "First achievement.\nSecond achievement.",
+  "youtubeVideos": "https://youtu.be/dQw4w9WgXcQ\nhttps://youtu.be/anotherOne",
   "socials": { "twitch": "https://...", "twitter": "https://...", "pyvno": "https://pyvno.xyz/..." }
 }
 ```

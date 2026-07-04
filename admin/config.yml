@@ -29,6 +29,7 @@ collections:
               - { label: "Photo", name: "photo", widget: "image", required: false, hint: "Optional. Falls back to initials avatar if left blank." }
               - { label: "Bio", name: "bio", widget: "text" }
               - { label: "Achievements", name: "achievements", widget: "text", required: false, hint: "One achievement per line." }
+              - { label: "YouTube Videos", name: "youtubeVideos", widget: "text", required: false, hint: "One YouTube video URL per line (highlights, VODs, etc). Leave blank for none." }
               - label: "Socials"
                 name: "socials"
                 widget: "object"

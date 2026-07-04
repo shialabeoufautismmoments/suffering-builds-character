@@ -104,4 +104,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const navEl = document.getElementById("site-nav");
   if (navEl) navEl.innerHTML = buildNavHtml(site, pages);
+
+  const toggle = document.getElementById("nav-toggle");
+  if (toggle && navEl) {
+    toggle.addEventListener("click", () => {
+      const isOpen = navEl.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", String(isOpen));
+    });
+  }
 });

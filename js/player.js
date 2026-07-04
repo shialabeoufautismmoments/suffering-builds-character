@@ -19,6 +19,28 @@ function achievementLines(text) {
   return (text || "").split("\n").map(a => a.trim()).filter(Boolean);
 }
 
+function youtubeIdFromUrl(url) {
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+  return match ? match[1] : null;
+}
+
+function videosHtml(text) {
+  const urls = (text || "").split("\n").map(u => u.trim()).filter(Boolean);
+  if (!urls.length) return "";
+
+  const embeds = urls.map(url => {
+    const id = youtubeIdFromUrl(url);
+    return id
+      ? `<div class="video-embed"><iframe src="https://www.youtube.com/embed/${id}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`
+      : `<p><a href="${url}" target="_blank" rel="noopener">${url}</a></p>`;
+  }).join("");
+
+  return `
+    <h4 style="margin-top:24px">Videos</h4>
+    ${embeds}
+  `;
+}
+
 function avatarMarkup(p, extraClass) {
   const cls = `player-avatar${extraClass ? " " + extraClass : ""}`;
   return p.photo
@@ -109,6 +131,8 @@ async function renderPlayer() {
 
         <h4 style="margin-top:24px">Achievements</h4>
         <ul class="achievements-list">${achievementsHtml}</ul>
+
+        ${videosHtml(player.youtubeVideos)}
       </div>
 
       <div>
