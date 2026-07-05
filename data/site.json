@@ -1,6 +1,10 @@
 {
   "accentBright": "#8f00ff",
   "pages": {
+    "home": {
+      "heading": "Welcome to Hone",
+      "intro": "A team built on precision, discipline, and constant improvement. Explore the roster, catch up on news, or book a coaching session below."
+    },
     "roster": {
       "heading": "Roster",
       "intro": ""
@@ -51,9 +55,15 @@
   "siteName": "Hone",
   "navigation": [
     {
+      "id": "home",
+      "label": "Home",
+      "path": "index.html",
+      "enabled": true
+    },
+    {
       "id": "roster",
       "label": "Roster",
-      "path": "index.html",
+      "path": "roster.html",
       "enabled": true
     },
     {

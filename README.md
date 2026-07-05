@@ -5,7 +5,8 @@ password-protected owner panel for editing player profiles.
 
 ## Structure
 
-- `index.html` — roster grid, one card per player
+- `index.html` — **home page**: hero welcome banner, latest-news teaser, and quick-link tiles to every enabled section (auto-generated from the nav menu)
+- `roster.html` — roster grid, one card per player (this used to be at `index.html` — moved when the home page was added)
 - `player.html` — player detail page, reads `?id=<player-id>` from the URL
 - `news.html` — announcements feed, most recent first
 - `schedule.html` — upcoming scrims/tournaments, past events shown greyed out
@@ -27,7 +28,7 @@ password-protected owner panel for editing player profiles.
 - `data/testimonials.json` — coaching testimonials as `{ "testimonials": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, and builds the nav menu
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
@@ -112,6 +113,12 @@ pattern as Tweet URLs below): paste any number of YouTube video URLs, one per
 line, and they embed as responsive players on that player's page under their
 achievements. Leave blank for no videos.
 
+**Home** (`index.html`) isn't its own CMS section — its welcome heading/intro
+text come from Site Settings → Page Headings & Intros → **Home Page**, same
+as every other built-in page. Its quick-link tiles and news teaser are
+generated automatically (from the Navigation Menu and the two most recent
+News entries), so there's nothing else to configure there.
+
 **Wiki** works like a mini knowledge base: each entry gets a title, optional
 short summary, and body text, and lives at its own page
 (`wiki-entry.html?slug=...`), listed on the `wiki.html` index. Wiki entries
@@ -183,7 +190,7 @@ Deleting that list entry removes the nav link and the page immediately (visiting
 the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
-**Built-in pages** (Roster, News, Schedule, Staff, About, Wiki, Threads,
+**Built-in pages** (Home, Roster, News, Schedule, Staff, About, Wiki, Threads,
 Roadmap, Coaching) work a bit differently, because they're backed by real code (`roster.js`,
 `news.js`, etc.), not just content — so they can't be *deleted* outright
 without a developer removing files. What you *can* do from `/admin` → Site
@@ -195,7 +202,7 @@ Settings → **Navigation Menu**:
   now" instead of its normal content. This is as close to "deleting" a
   built-in page as a code-backed page can get.
 
-Don't change the **ID** or **Path** fields on the 9 built-in entries — those
+Don't change the **ID** or **Path** fields on the 10 built-in entries — those
 are how the site matches a nav entry to the actual page/content; changing them
 breaks the enable/disable toggle for that section. You *can* add extra
 brand-new entries here too, for external links (e.g. a Discord invite) — give
@@ -353,7 +360,7 @@ array:
 removing, and reordering pages" above for the built-in-vs-custom distinction):
 
 ```json
-{ "id": "roster", "label": "Roster", "path": "index.html", "enabled": true }
+{ "id": "home", "label": "Home", "path": "index.html", "enabled": true }
 ```
 
 `data/site.json`'s `discordServerId` is a plain string — see "Discord widget"

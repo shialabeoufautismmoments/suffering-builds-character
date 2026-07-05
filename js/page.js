@@ -1,7 +1,7 @@
 function renderMissing(container, message) {
   container.innerHTML = `
     <p>${message}</p>
-    <p><a class="back-link" href="index.html">&larr; Back to roster</a></p>
+    <p><a class="back-link" href="index.html">&larr; Back to Home</a></p>
   `;
 }
 

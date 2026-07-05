@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hone</title>
-  <meta name="description" content="Home of the Suffering Builds Character gaming clan." />
+  <title>Roster — Hone</title>
+  <meta name="description" content="Roster and player pages for the Suffering Builds Character gaming clan." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Suffering Builds Character" />
   <meta property="og:title" content="Suffering Builds Character" />
-  <meta property="og:description" content="Home of the Suffering Builds Character gaming clan." />
+  <meta property="og:description" content="Roster, news, and match schedule for the Suffering Builds Character gaming clan." />
   <meta property="og:image" content="assets/logo.svg" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Suffering Builds Character" />
-  <meta name="twitter:description" content="Home of the Suffering Builds Character gaming clan." />
+  <meta name="twitter:description" content="Roster, news, and match schedule for the Suffering Builds Character gaming clan." />
   <meta name="twitter:image" content="assets/logo.svg" />
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body data-page="home">
+<body data-page="roster">
   <header class="site-header">
     <img src="assets/logo.svg" alt="Hone logo" data-site-logo />
     <div class="titles">
@@ -32,26 +32,9 @@
   </header>
 
   <main>
-    <section class="hero">
-      <img src="assets/logo.svg" alt="Hone logo" class="hero-logo" data-site-logo />
-      <h2 class="hero-heading" data-page-heading>Welcome to Hone</h2>
-      <p class="hero-intro page-intro" data-page-intro></p>
-      <div class="hero-actions">
-        <a class="hero-button" href="roster.html">Meet the Roster</a>
-        <a class="hero-button hero-button-secondary" href="coaching.html">Get Coached</a>
-      </div>
-    </section>
-
-    <section class="home-section">
-      <h2 class="section-title">Latest News</h2>
-      <div class="news-list" id="home-news-teaser"></div>
-      <a class="back-link" href="news.html" style="margin-top:16px; margin-bottom:0;">See all News &rarr;</a>
-    </section>
-
-    <section class="home-section">
-      <h2 class="section-title">Explore</h2>
-      <div class="card-list home-links-grid" id="home-links"></div>
-    </section>
+    <h2 class="section-title" data-page-heading>Roster</h2>
+    <p class="page-intro" data-page-intro></p>
+    <div class="roster-grid" id="roster-grid"></div>
   </main>
 
   <footer>
@@ -64,7 +47,7 @@
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/site.js"></script>
-  <script src="js/home.js"></script>
+  <script src="js/roster.js"></script>
   <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>

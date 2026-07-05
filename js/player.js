@@ -78,7 +78,7 @@ function socialLinksHtml(player) {
 function renderNotFound(container) {
   container.innerHTML = `
     <p>Couldn't find that player.</p>
-    <p><a class="back-link" href="index.html">&larr; Back to roster</a></p>
+    <p><a class="back-link" href="roster.html">&larr; Back to roster</a></p>
   `;
   document.title = "Player not found — Suffering Builds Character";
 }

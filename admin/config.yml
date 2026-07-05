@@ -206,11 +206,11 @@ collections:
             name: "navigation"
             widget: "list"
             summary: "{{fields.label}}"
-            hint: "Controls the nav bar: order, labels, visibility. The 9 built-in entries (roster/news/schedule/staff/about/wiki/threads/roadmap/coaching) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            hint: "Controls the nav bar: order, labels, visibility. The 10 built-in entries (home/roster/news/schedule/staff/about/wiki/threads/roadmap/coaching) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: roster / news / schedule / staff / about / wiki / threads / roadmap / coaching. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / schedule / staff / about / wiki / threads / roadmap / coaching. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / news.html / schedule.html / staff.html / about.html / wiki.html / threads.html / roadmap.html / coaching.html. Custom links: any URL." }
+              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / roster.html / news.html / schedule.html / staff.html / about.html / wiki.html / threads.html / roadmap.html / coaching.html. Custom links: any URL." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
             name: "socials"
@@ -224,6 +224,12 @@ collections:
             name: "pages"
             widget: "object"
             fields:
+              - label: "Home Page"
+                name: "home"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false, hint: "Shown as the hero welcome text on the homepage." }
               - label: "Roster Page"
                 name: "roster"
                 widget: "object"
