@@ -14,6 +14,7 @@ password-protected owner panel for editing player profiles.
 - `wiki.html` / `wiki-entry.html` — wiki index and individual entry view (`?slug=<slug>`)
 - `threads.html` / `thread.html` — Twitter/X thread index and unrolled-thread view (`?slug=<slug>`)
 - `roadmap.html` — planned/in-progress/completed milestones
+- `coaching.html` — coaching testimonials (star rating, quote, optional PDF report)
 - `page.html` — generic template for owner-created custom pages, reads `?slug=<slug>` from the URL
 - `404.html` — themed not-found page, served automatically by Netlify
 - `data/players.json` — roster data as `{ "players": [...] }`
@@ -23,9 +24,10 @@ password-protected owner panel for editing player profiles.
 - `data/wiki.json` — wiki entries as `{ "entries": [...] }`
 - `data/threads.json` — Twitter/X threads as `{ "threads": [...] }`
 - `data/roadmap.json` — roadmap milestones as `{ "items": [...] }`
+- `data/testimonials.json` — coaching testimonials as `{ "testimonials": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, and builds the nav menu
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
@@ -96,9 +98,9 @@ the fix from there.
 
 ## Editing content
 
-**Preferred:** log into `/admin` (see above). You'll see nine sections —
+**Preferred:** log into `/admin` (see above). You'll see ten sections —
 Roster, News, Schedule, About, **Wiki**, **Twitter Threads**, **Roadmap**,
-**Custom Pages**, and **Site Settings**. Roster entries have a **Photo** field: upload an image
+**Coaching / Testimonials**, **Custom Pages**, and **Site Settings**. Roster entries have a **Photo** field: upload an image
 there and it replaces that player's initials avatar automatically, everywhere
 on the site. Roster entries also have a **Staff Member?** checkbox — check it
 to include that player on the Staff page (`staff.html`), which shows their
@@ -112,7 +114,10 @@ achievements. Leave blank for no videos.
 
 **Wiki** works like a mini knowledge base: each entry gets a title, optional
 short summary, and body text, and lives at its own page
-(`wiki-entry.html?slug=...`), listed on the `wiki.html` index.
+(`wiki-entry.html?slug=...`), listed on the `wiki.html` index. Wiki entries
+and Custom Pages both also have a **PDF Attachment** field — upload a PDF and
+it's embedded inline (viewable right on the page) below the body text, with a
+"Download PDF" link underneath. Leave it blank for no attachment.
 
 **Twitter Threads** "unrolls" a thread without needing any Twitter/X API
 access or developer account: paste each tweet's URL from the thread, **one
@@ -140,6 +145,13 @@ Description. Drag items in the admin list to reorder them — that order is
 exactly what's shown on the page. This one's a plain list-of-objects (not
 nested inside another list), so it doesn't hit the bug above and the normal
 Add/reorder/delete controls all work.
+
+**Coaching / Testimonials** is a flat list of testimonial cards shown on
+`coaching.html` — each has a Name, optional Role/Context (e.g. "Diamond →
+Masters in 3 months"), a Quote, an optional 1–5 star Rating, and an optional
+PDF Attachment (e.g. a written coaching session report), plus the usual
+Enabled toggle. Same plain list-of-objects pattern as Roadmap, so Add/reorder
+work normally.
 
 **Site Settings** is the "customize almost anything" panel — it controls things
 that used to be hardcoded in the HTML/CSS:
@@ -172,7 +184,7 @@ the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
 **Built-in pages** (Roster, News, Schedule, Staff, About, Wiki, Threads,
-Roadmap) work a bit differently, because they're backed by real code (`roster.js`,
+Roadmap, Coaching) work a bit differently, because they're backed by real code (`roster.js`,
 `news.js`, etc.), not just content — so they can't be *deleted* outright
 without a developer removing files. What you *can* do from `/admin` → Site
 Settings → **Navigation Menu**:
@@ -183,7 +195,7 @@ Settings → **Navigation Menu**:
   now" instead of its normal content. This is as close to "deleting" a
   built-in page as a code-backed page can get.
 
-Don't change the **ID** or **Path** fields on the 8 built-in entries — those
+Don't change the **ID** or **Path** fields on the 9 built-in entries — those
 are how the site matches a nav entry to the actual page/content; changing them
 breaks the enable/disable toggle for that section. You *can* add extra
 brand-new entries here too, for external links (e.g. a Discord invite) — give
@@ -270,9 +282,14 @@ no spaces. `photo` is optional — omit it to keep the initials avatar.
   "title": "Map Callouts",
   "summary": "Shorthand names for common map positions.",
   "body": "First paragraph.\n\nSecond paragraph.",
+  "pdf": "assets/uploads/example.pdf",
   "enabled": true
 }
 ```
+
+`pdf` is optional — a path to an uploaded PDF (same `assets/uploads/` folder
+as photos), embedded inline below the body with a download link. Omit it for
+no attachment. `data/pages.json` custom pages support the same `pdf` field.
 
 `data/threads.json` — one object per thread in the `threads` array:
 
@@ -303,6 +320,22 @@ display order:
 `status` is one of `"Planned"`, `"In Progress"`, or `"Completed"`. `target`
 and `description` are both optional.
 
+`data/testimonials.json` — one object per testimonial in the `testimonials`
+array:
+
+```json
+{
+  "name": "Jake M.",
+  "role": "Diamond to Masters in 3 months",
+  "quote": "The VOD reviews alone were worth it.",
+  "rating": "5",
+  "pdf": "assets/uploads/example-report.pdf",
+  "enabled": true
+}
+```
+
+`role`, `rating`, and `pdf` are all optional. `rating` is a string `"1"`–`"5"`.
+
 `data/pages.json` — one object per custom page in the `pages` array:
 
 ```json
@@ -311,6 +344,7 @@ and `description` are both optional.
   "label": "Sponsors",
   "heading": "Our Sponsors",
   "body": "First paragraph.\n\nSecond paragraph.",
+  "pdf": "assets/uploads/example.pdf",
   "enabled": true
 }
 ```

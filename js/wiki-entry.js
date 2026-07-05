@@ -5,6 +5,16 @@ function renderMissingEntry(container, message) {
   `;
 }
 
+function pdfEmbedHtml(pdfUrl) {
+  if (!pdfUrl) return "";
+  return `
+    <div class="pdf-embed">
+      <iframe src="${pdfUrl}" title="PDF attachment"></iframe>
+    </div>
+    <a class="pdf-download-link" href="${pdfUrl}" target="_blank" rel="noopener" download>Download PDF</a>
+  `;
+}
+
 async function renderWikiEntry() {
   const slug = new URLSearchParams(window.location.search).get("slug");
   const container = document.getElementById("wiki-entry-content");
@@ -40,7 +50,7 @@ async function renderWikiEntry() {
     .map(p => `<p class="story">${p.trim()}</p>`)
     .join("");
 
-  container.innerHTML = `<h2 style="margin-top:0">${entry.title}</h2>${bodyHtml}`;
+  container.innerHTML = `<h2 style="margin-top:0">${entry.title}</h2>${bodyHtml}${pdfEmbedHtml(entry.pdf)}`;
 }
 
 document.addEventListener("DOMContentLoaded", renderWikiEntry);

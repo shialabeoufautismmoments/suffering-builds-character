@@ -123,6 +123,7 @@ collections:
               - { label: "Title", name: "title", widget: "string" }
               - { label: "Summary", name: "summary", widget: "string", required: false, hint: "Short teaser shown on the wiki index page." }
               - { label: "Body", name: "body", widget: "text", hint: "Separate paragraphs with a blank line." }
+              - { label: "PDF Attachment", name: "pdf", widget: "file", required: false, hint: "Optional. Upload a PDF to embed below the body, with a download link." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this entry without deleting it." }
 
   - name: "threads"
@@ -160,7 +161,32 @@ collections:
               - { label: "Nav Label", name: "label", widget: "string", hint: "Text shown in the nav bar." }
               - { label: "Heading", name: "heading", widget: "string" }
               - { label: "Body", name: "body", widget: "text", hint: "Separate paragraphs with a blank line." }
+              - { label: "PDF Attachment", name: "pdf", widget: "file", required: false, hint: "Optional. Upload a PDF to embed below the body, with a download link." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this page without deleting it." }
+
+  - name: "testimonials"
+    label: "Coaching / Testimonials"
+    files:
+      - file: "data/testimonials.json"
+        label: "Testimonials"
+        name: "testimonials"
+        fields:
+          - label: "Testimonials"
+            name: "testimonials"
+            widget: "list"
+            summary: "{{fields.name}}"
+            fields:
+              - { label: "Name", name: "name", widget: "string" }
+              - { label: "Role / Context", name: "role", widget: "string", required: false, hint: "e.g. Diamond → Masters in 3 months of coaching" }
+              - { label: "Quote", name: "quote", widget: "text" }
+              - label: "Rating"
+                name: "rating"
+                widget: "select"
+                options: ["5", "4", "3", "2", "1"]
+                default: "5"
+                required: false
+              - { label: "PDF Attachment", name: "pdf", widget: "file", required: false, hint: "Optional. e.g. a written coaching session report." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this testimonial without deleting it." }
 
   - name: "settings"
     label: "Site Settings"
@@ -180,11 +206,11 @@ collections:
             name: "navigation"
             widget: "list"
             summary: "{{fields.label}}"
-            hint: "Controls the nav bar: order, labels, visibility. The 8 built-in entries (roster/news/schedule/staff/about/wiki/threads/roadmap) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            hint: "Controls the nav bar: order, labels, visibility. The 9 built-in entries (roster/news/schedule/staff/about/wiki/threads/roadmap/coaching) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: roster / news / schedule / staff / about / wiki / threads / roadmap. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: roster / news / schedule / staff / about / wiki / threads / roadmap / coaching. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / news.html / schedule.html / staff.html / about.html / wiki.html / threads.html / roadmap.html. Custom links: any URL." }
+              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / news.html / schedule.html / staff.html / about.html / wiki.html / threads.html / roadmap.html / coaching.html. Custom links: any URL." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
             name: "socials"
@@ -242,6 +268,12 @@ collections:
                   - { label: "Intro text", name: "intro", widget: "text", required: false }
               - label: "Roadmap Page"
                 name: "roadmap"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "Coaching Page"
+                name: "coaching"
                 widget: "object"
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }

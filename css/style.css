@@ -729,3 +729,67 @@ footer {
 .roadmap-in-progress { background: #e0a500; }
 .roadmap-completed { background: #2ecc71; }
 
+.pdf-embed {
+  margin: 20px 0 10px;
+}
+
+.pdf-embed iframe {
+  width: 100%;
+  height: 600px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: #fff;
+}
+
+.pdf-download-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-bright);
+  border-bottom: 1px solid var(--accent-bright);
+}
+
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.testimonial-card {
+  background: linear-gradient(160deg, var(--card) 0%, #060607 100%);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 22px;
+}
+
+.testimonial-stars {
+  color: var(--accent-bright);
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+.testimonial-quote {
+  margin: 0 0 14px;
+  font-style: italic;
+  color: #c9c4c4;
+  line-height: 1.6;
+}
+
+.testimonial-name {
+  margin: 0 0 10px;
+  font-family: 'Oswald', 'Segoe UI', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.testimonial-role {
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 400;
+  color: var(--text-dim);
+  text-transform: none;
+}
+

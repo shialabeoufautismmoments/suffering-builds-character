@@ -32,6 +32,10 @@
     "roadmap": {
       "heading": "Roadmap",
       "intro": ""
+    },
+    "coaching": {
+      "heading": "Coaching",
+      "intro": ""
     }
   },
   "socials": [
@@ -92,6 +96,12 @@
       "id": "roadmap",
       "label": "Roadmap",
       "path": "roadmap.html",
+      "enabled": true
+    },
+    {
+      "id": "coaching",
+      "label": "Coaching",
+      "path": "coaching.html",
       "enabled": true
     }
   ],

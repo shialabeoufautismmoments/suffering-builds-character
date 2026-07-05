@@ -5,6 +5,16 @@ function renderMissing(container, message) {
   `;
 }
 
+function pdfEmbedHtml(pdfUrl) {
+  if (!pdfUrl) return "";
+  return `
+    <div class="pdf-embed">
+      <iframe src="${pdfUrl}" title="PDF attachment"></iframe>
+    </div>
+    <a class="pdf-download-link" href="${pdfUrl}" target="_blank" rel="noopener" download>Download PDF</a>
+  `;
+}
+
 async function renderCustomPage() {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get("slug");
@@ -44,7 +54,7 @@ async function renderCustomPage() {
     .map(p => `<p>${p.trim()}</p>`)
     .join("");
 
-  container.innerHTML = bodyHtml || "<p></p>";
+  container.innerHTML = (bodyHtml || "<p></p>") + pdfEmbedHtml(page.pdf);
 }
 
 document.addEventListener("DOMContentLoaded", renderCustomPage);
