@@ -328,15 +328,30 @@ above for where to find it. Leave it `""` to hide the widget.
 ## Social link previews (Open Graph)
 
 Every page has Open Graph / Twitter Card meta tags so links posted in Discord,
-Twitter, etc. show a title, description, and image. The image currently points
-at `assets/logo.svg` — that renders fine in some places (Discord) but **not
-reliably everywhere** (Twitter/X doesn't support SVG previews at all). For
-guaranteed compatibility, export a PNG version of the logo (ideally ~1200×630)
-and swap the `og:image`/`twitter:image` `content` values in each HTML file's
-`<head>` to point at it. Also worth doing once you know your final domain:
-those `content` values are currently relative paths, but Open Graph technically
-wants absolute URLs (e.g. `https://yoursite.netlify.app/assets/social.png`) for
-maximum compatibility with link-preview crawlers.
+Twitter, etc. show a title, description, and image.
+
+**Deliberate split from the visible site branding:** the site itself displays
+as "Hone" (header, footer, page titles — all driven by `data/site.json` via
+`js/site.js`), but every page's `og:title` / `twitter:title` / `og:site_name`
+are hardcoded to always say **"Suffering Builds Character"**, uniformly
+across every page, regardless of which page it is. This is intentional — link
+previews should keep showing the old name/logo even though the on-site brand
+changed. Unlike the rest of the site's branding, these are **not** wired up
+to Site Settings — they're static text in each HTML file's `<head>`, so
+changing them means editing the `og:title`/`twitter:title`/`og:site_name`
+lines directly in every `*.html` file (the per-page `og:description` /
+`twitter:description` / `<meta name="description">` are still page-specific
+and safe to edit individually).
+
+The image points at `assets/logo.svg` — that renders fine in some places
+(Discord) but **not reliably everywhere** (Twitter/X doesn't support SVG
+previews at all). For guaranteed compatibility, export a PNG version of the
+logo (ideally ~1200×630) and swap the `og:image`/`twitter:image` `content`
+values in each HTML file's `<head>` to point at it. Also worth doing once you
+know your final domain: those `content` values are currently relative paths,
+but Open Graph technically wants absolute URLs (e.g.
+`https://yoursite.netlify.app/assets/social.png`) for maximum compatibility
+with link-preview crawlers.
 
 Note: `player.html` shows the same generic preview for every player (no
 per-player title/image), since there's no server rendering here — the page
