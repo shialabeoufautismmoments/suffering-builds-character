@@ -1,4 +1,4 @@
-# Suffering Builds Character
+# Hone
 
 Static roster site for the clan. No build step — plain HTML/CSS/JS, with a
 password-protected owner panel for editing player profiles.
