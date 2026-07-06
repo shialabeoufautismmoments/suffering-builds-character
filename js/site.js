@@ -52,7 +52,7 @@ function buildNavHtml(site, pages) {
       `<a href="${k.path}"${k.path === file ? ' class="active"' : ""}>${k.label}</a>`
     ).join("");
 
-    return `<div class="nav-item has-dropdown">${trigger}<div class="nav-dropdown">${dropdown}</div></div>`;
+    return `<div class="nav-item has-dropdown">${trigger}<div class="nav-dropdown"><div class="nav-dropdown-inner">${dropdown}</div></div></div>`;
   });
 
   const customLinksHtml = pages
