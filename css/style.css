@@ -871,3 +871,80 @@ footer {
   gap: 16px;
 }
 
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.book-card {
+  display: flex;
+  gap: 16px;
+  background: linear-gradient(160deg, var(--card) 0%, #060607 100%);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 20px;
+}
+
+.book-cover {
+  flex-shrink: 0;
+  width: 84px;
+  height: 126px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+}
+
+.book-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Oswald', 'Segoe UI', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.book-info h3 {
+  margin: 0 0 4px;
+  font-family: 'Oswald', 'Segoe UI', sans-serif;
+  font-size: 1.05rem;
+}
+
+.book-author {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.book-summary {
+  margin: 0 0 14px;
+  font-size: 0.88rem;
+  color: #c9c4c4;
+  line-height: 1.5;
+}
+
+.book-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.book-buy-button {
+  padding: 8px 18px;
+  font-size: 0.72rem;
+}
+
+.book-notes-link {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-bright);
+  border-bottom: 1px solid var(--accent-bright);
+}
+

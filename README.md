@@ -15,7 +15,8 @@ password-protected owner panel for editing player profiles.
 - `wiki.html` / `wiki-entry.html` — wiki index and individual entry view (`?slug=<slug>`)
 - `threads.html` / `thread.html` — Twitter/X thread index and unrolled-thread view (`?slug=<slug>`)
 - `roadmap.html` — planned/in-progress/completed milestones
-- `coaching.html` — coaching testimonials (star rating, quote, optional PDF report)
+- `coaching.html` — bookable coaches (linking to their Cal.com page) and coaching testimonials
+- `reading.html` / `notes.html` — book list (cover, region-aware Amazon link, summary) and per-book notes view (`?slug=<slug>`)
 - `page.html` — generic template for owner-created custom pages, reads `?slug=<slug>` from the URL
 - `404.html` — themed not-found page, served automatically by Netlify
 - `data/players.json` — roster data as `{ "players": [...] }`
@@ -25,10 +26,11 @@ password-protected owner panel for editing player profiles.
 - `data/wiki.json` — wiki entries as `{ "entries": [...] }`
 - `data/threads.json` — Twitter/X threads as `{ "threads": [...] }`
 - `data/roadmap.json` — roadmap milestones as `{ "items": [...] }`
-- `data/testimonials.json` — coaching testimonials as `{ "testimonials": [...] }`
+- `data/testimonials.json` — bookable coaches + testimonials as `{ "coaches": [...], "testimonials": [...] }`
+- `data/books.json` — reading list as `{ "books": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, and builds the nav menu
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
@@ -99,9 +101,9 @@ the fix from there.
 
 ## Editing content
 
-**Preferred:** log into `/admin` (see above). You'll see ten sections —
+**Preferred:** log into `/admin` (see above). You'll see eleven sections —
 Roster, News, Schedule, About, **Wiki**, **Twitter Threads**, **Roadmap**,
-**Coaching / Testimonials**, **Custom Pages**, and **Site Settings**. Roster entries have a **Photo** field: upload an image
+**Coaching / Testimonials**, **Reading**, **Custom Pages**, and **Site Settings**. Roster entries have a **Photo** field: upload an image
 there and it replaces that player's initials avatar automatically, everywhere
 on the site. Roster entries also have a **Staff Member?** checkbox — check it
 to include that player on the Staff page (`staff.html`), which shows their
@@ -173,6 +175,28 @@ Both are plain list-of-objects (siblings in the same file, not nested inside
 each other), same safe pattern as Roadmap and Site Settings' Navigation Menu
 + Social Links, so Add/reorder work normally.
 
+**Reading** (`reading.html`) is a book list — each entry has a Slug, Title,
+optional Author, optional Cover Image, optional Amazon Link, optional
+Summary, and optional Notes. A few things worth knowing:
+
+- **Amazon Link** — paste any Amazon product URL (any country domain, e.g. a
+  `.com` or `.co.uk` link). When a visitor clicks "Buy on Amazon," the site
+  extracts the product's ASIN from whatever URL you pasted and rebuilds the
+  link pointing at *their* local Amazon storefront, guessed from their
+  **browser's language setting** (`navigator.language`). This is a
+  free, no-signup heuristic, not true location detection — a US visitor whose
+  browser is set to French would get routed to amazon.fr. For guaranteed
+  accuracy you'd need Amazon's own Associates "OneLink" product (a separate
+  signup on Amazon's side) or a paid IP-geolocation service; ask if you want
+  that wired in later. If the pasted URL doesn't contain a recognizable ASIN,
+  the link is used exactly as pasted (no rewriting).
+- **Notes** — if filled in, a "Notes →" link appears on the book's card,
+  leading to its own page at `notes.html?slug=<slug>` showing that text
+  (separate paragraphs with a blank line). Leave Notes blank and the link
+  disappears entirely — no dead/empty notes pages.
+- **Cover Image** is optional — leave it blank and the card shows a plain
+  placeholder (the book title's first letter) instead of a broken image.
+
 **Site Settings** is the "customize almost anything" panel — it controls things
 that used to be hardcoded in the HTML/CSS:
 
@@ -204,7 +228,7 @@ the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
 **Built-in pages** (Home, Roster, News, Schedule, Staff, About, Wiki, Threads,
-Roadmap, Coaching) work a bit differently, because they're backed by real code (`roster.js`,
+Roadmap, Coaching, Reading) work a bit differently, because they're backed by real code (`roster.js`,
 `news.js`, etc.), not just content — so they can't be *deleted* outright
 without a developer removing files. What you *can* do from `/admin` → Site
 Settings → **Navigation Menu**:
@@ -215,7 +239,7 @@ Settings → **Navigation Menu**:
   now" instead of its normal content. This is as close to "deleting" a
   built-in page as a code-backed page can get.
 
-Don't change the **ID** or **Path** fields on the 10 built-in entries — those
+Don't change the **ID** or **Path** fields on the 11 built-in entries — those
 are how the site matches a nav entry to the actual page/content; changing them
 breaks the enable/disable toggle for that section. You *can* add extra
 brand-new entries here too, for external links (e.g. a Discord invite) — give
@@ -370,6 +394,25 @@ For `coaches`: `playerId` must match a real player's `id` in
 `data/players.json` — that player's photo/name/country/role/game get pulled
 in automatically. For `testimonials`: `role`, `rating`, and `pdf` are all
 optional. `rating` is a string `"1"`–`"5"`.
+
+`data/books.json` — one object per book in the `books` array:
+
+```json
+{
+  "slug": "atomic-habits",
+  "title": "Atomic Habits",
+  "author": "James Clear",
+  "cover": "assets/uploads/atomic-habits.jpg",
+  "amazonUrl": "https://www.amazon.com/dp/B07D23CFGR",
+  "summary": "A practical guide to building good habits and breaking bad ones.",
+  "notes": "First paragraph.\n\nSecond paragraph.",
+  "enabled": true
+}
+```
+
+`author`, `cover`, `amazonUrl`, `summary`, and `notes` are all optional. See
+"Reading" above for how `amazonUrl` gets rewritten per-visitor and why Notes
+is what controls whether the "Notes →" link appears.
 
 `data/pages.json` — one object per custom page in the `pages` array:
 

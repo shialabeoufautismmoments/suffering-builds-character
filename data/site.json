@@ -40,6 +40,10 @@
     "coaching": {
       "heading": "Coaching",
       "intro": ""
+    },
+    "reading": {
+      "heading": "Reading",
+      "intro": ""
     }
   },
   "socials": [
@@ -112,6 +116,12 @@
       "id": "coaching",
       "label": "Coaching",
       "path": "coaching.html",
+      "enabled": true
+    },
+    {
+      "id": "reading",
+      "label": "Reading",
+      "path": "reading.html",
       "enabled": true
     }
   ],

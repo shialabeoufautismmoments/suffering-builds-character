@@ -198,6 +198,28 @@ collections:
               - { label: "PDF Attachment", name: "pdf", widget: "file", required: false, hint: "Optional. e.g. a written coaching session report." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this testimonial without deleting it." }
 
+  - name: "reading"
+    label: "Reading"
+    files:
+      - file: "data/books.json"
+        label: "Books"
+        name: "books"
+        fields:
+          - label: "Books"
+            name: "books"
+            widget: "list"
+            summary: "{{fields.title}}"
+            hint: "Each book gets its own Notes page (linked from its card) and a region-aware Amazon buy button."
+            fields:
+              - { label: "Slug", name: "slug", widget: "string", hint: "URL-safe, lowercase, no spaces (e.g. atomic-habits). Notes page will live at notes.html?slug=atomic-habits" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Author", name: "author", widget: "string", required: false }
+              - { label: "Cover Image", name: "cover", widget: "image", required: false, hint: "Falls back to a plain placeholder if left blank." }
+              - { label: "Amazon Link", name: "amazonUrl", widget: "string", required: false, hint: "Paste any Amazon product link, any country domain (e.g. a .com or .co.uk link) — visitors are redirected to their own region's Amazon store based on their browser's language setting when they click Buy. This is a heuristic, not true location detection, so it won't be 100% accurate for every visitor." }
+              - { label: "Summary", name: "summary", widget: "text", required: false }
+              - { label: "Notes", name: "notes", widget: "text", required: false, hint: "Shown on this book's own Notes page. Separate paragraphs with a blank line. Leave blank to hide the Notes link on the card." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this book without deleting it." }
+
   - name: "settings"
     label: "Site Settings"
     files:
@@ -216,11 +238,11 @@ collections:
             name: "navigation"
             widget: "list"
             summary: "{{fields.label}}"
-            hint: "Controls the nav bar: order, labels, visibility. The 10 built-in entries (home/roster/news/schedule/staff/about/wiki/threads/roadmap/coaching) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            hint: "Controls the nav bar: order, labels, visibility. The 11 built-in entries (home/roster/news/schedule/staff/about/wiki/threads/roadmap/coaching/reading) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / schedule / staff / about / wiki / threads / roadmap / coaching. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / schedule / staff / about / wiki / threads / roadmap / coaching / reading. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / roster.html / news.html / schedule.html / staff.html / about.html / wiki.html / threads.html / roadmap.html / coaching.html. Custom links: any URL." }
+              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / roster.html / news.html / schedule.html / staff.html / about.html / wiki.html / threads.html / roadmap.html / coaching.html / reading.html. Custom links: any URL." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
             name: "socials"
@@ -290,6 +312,12 @@ collections:
                   - { label: "Intro text", name: "intro", widget: "text", required: false }
               - label: "Coaching Page"
                 name: "coaching"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "Reading Page"
+                name: "reading"
                 widget: "object"
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }
