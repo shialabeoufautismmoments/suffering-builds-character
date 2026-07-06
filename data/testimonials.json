@@ -4,13 +4,15 @@
       "enabled": true,
       "playerId": "psev",
       "description": "psev has 100s of hours in coaching individuals, as well as team environments. He can do vods, live coaching, documents, anything you'd like. Mechanics, gamesense, just pick what you would like and click his icon to book him.\nPrimary focus: Mechanics, Hitscan, Support",
-      "calLink": "https://cal.com/psevcoaching/1on1session"
+      "calLink": "https://cal.com/psevcoaching/1on1session",
+      "pricing": "30$ / 50m"
     },
     {
       "enabled": true,
       "playerId": "eoo",
       "description": "Champ Hitscan/Support Player with thousands of hours of successful coaching and VOD reviews for ranked specific gameplay.\nIn Depth Dissections into Micro and execution, deep structured layouts as well as strategy and mental awareness.  Proven track record of building players into monsters.",
-      "calLink": "https://cal.com/eoo-o/1-hour-vod"
+      "calLink": "https://cal.com/eoo-o/1-hour-vod",
+      "pricing": "35$ / 60m"
     }
   ],
   "testimonials": [
