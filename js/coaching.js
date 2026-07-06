@@ -37,6 +37,12 @@ function pdfLinkHtml(pdfUrl) {
   return `<a class="pdf-download-link" href="${pdfUrl}" target="_blank" rel="noopener" download>View coaching report (PDF)</a>`;
 }
 
+function pricingHtml(pricing) {
+  const lines = (pricing || "").split("\n").map(p => p.trim()).filter(Boolean);
+  if (!lines.length) return "";
+  return `<ul class="coach-pricing">${lines.map(p => `<li>${p}</li>`).join("")}</ul>`;
+}
+
 function renderCoaches(coachesGrid, coaches, players) {
   const resolved = coaches
     .filter(c => c.enabled !== false)
@@ -64,6 +70,7 @@ function renderCoaches(coachesGrid, coaches, players) {
         </div>
       </div>
       <p class="staff-bio">${c.description}</p>
+      ${pricingHtml(c.pricing)}
     </a>
   `).join("");
 }

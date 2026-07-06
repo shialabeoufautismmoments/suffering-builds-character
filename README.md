@@ -161,12 +161,15 @@ Add/reorder/delete controls all work.
 - **Coaches** — feature a roster member as a bookable coach. Enter their
   **Player ID** (must exactly match that player's ID field in Roster, e.g.
   `psev`), write a **Coaching Description** (separate from their roster bio —
-  this is specifically about what they coach), and add their **Cal.com
-  Booking URL**. The card automatically pulls that player's photo, name, flag,
-  role, and game from Roster — nothing to re-enter — and the whole card links
-  out to their Cal.com page in a new tab. If a Player ID doesn't match anyone
-  in Roster, that entry is silently skipped on the live site (logged to the
-  browser console) rather than showing a broken card.
+  this is specifically about what they coach), optionally add **Pricing**
+  (one price per line, e.g. `$30 / 30 min` then `$50 / 60 min` on the next
+  line — shown as small pill tags under the description; leave blank to hide
+  pricing on that card), and add their **Cal.com Booking URL**. The card
+  automatically pulls that player's photo, name, flag, role, and game from
+  Roster — nothing to re-enter — and the whole card links out to their
+  Cal.com page in a new tab. If a Player ID doesn't match anyone in Roster,
+  that entry is silently skipped on the live site (logged to the browser
+  console) rather than showing a broken card.
 - **Testimonials** — Name, optional Role/Context (e.g. "Diamond → Masters in
   3 months"), a Quote, an optional 1–5 star Rating, and an optional PDF
   Attachment (e.g. a written coaching session report).
@@ -404,6 +407,7 @@ and `description` are both optional.
     {
       "playerId": "psev",
       "description": "Focuses on hitscan fundamentals and VOD review.",
+      "pricing": "$30 / 30 min\n$50 / 60 min",
       "calLink": "https://cal.com/psev/coaching-session",
       "enabled": true
     }
@@ -423,7 +427,8 @@ and `description` are both optional.
 
 For `coaches`: `playerId` must match a real player's `id` in
 `data/players.json` — that player's photo/name/country/role/game get pulled
-in automatically. For `testimonials`: `role`, `rating`, and `pdf` are all
+in automatically. `pricing` is optional, a plain string with one price per
+line (not an array). For `testimonials`: `role`, `rating`, and `pdf` are all
 optional. `rating` is a string `"1"`–`"5"`.
 
 `data/books.json` — one object per book in the `books` array:

@@ -179,6 +179,7 @@ collections:
             fields:
               - { label: "Player ID", name: "playerId", widget: "string", hint: "Must exactly match that player's \"ID (URL slug)\" field in Roster — e.g. psev, eoo, cannon." }
               - { label: "Coaching Description", name: "description", widget: "text", hint: "What this coach focuses on — distinct from their roster bio." }
+              - { label: "Pricing", name: "pricing", widget: "text", required: false, hint: "One price per line, e.g. \"$30 / 30 min\" then \"$50 / 60 min\" on the next line. Shown under the description. Leave blank to hide pricing on this card." }
               - { label: "Cal.com Booking URL", name: "calLink", widget: "string", hint: "e.g. https://cal.com/psev/coaching-session" }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this coach listing without deleting it." }
           - label: "Testimonials"
