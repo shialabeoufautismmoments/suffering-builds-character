@@ -7,5 +7,13 @@
       "calLink": "https://cal.com/psevcoaching/1on1session"
     }
   ],
-  "testimonials": []
+  "testimonials": [
+    {
+      "rating": "5",
+      "enabled": true,
+      "name": "Deign",
+      "role": "Coached by psev",
+      "quote": "Psev is an Overwatch wizard. He is fantastic at explaining the high level concepts of OW in a way that is easy to understand. His understanding of this game, not just of the moment to moment decisions, but in the abstract, is incredible. He’s probably saved me months or years of toiling."
+    }
+  ]
 }
