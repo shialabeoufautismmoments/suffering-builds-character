@@ -1,3 +1,12 @@
 {
-  "books": []
+  "books": [
+    {
+      "enabled": true,
+      "slug": "mindwithoutmind",
+      "title": "Mind Without Mind",
+      "author": "Marek Komar",
+      "cover": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1617680167i/57642394.jpg",
+      "amazonUrl": "https://www.amazon.com/Mind-without-Using-Science-Perform/dp/1777519101"
+    }
+  ]
 }
