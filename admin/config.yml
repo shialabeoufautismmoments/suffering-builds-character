@@ -171,6 +171,16 @@ collections:
         label: "Testimonials"
         name: "testimonials"
         fields:
+          - label: "Coaches"
+            name: "coaches"
+            widget: "list"
+            summary: "{{fields.playerId}}"
+            hint: "Feature a roster member as a bookable coach. The card shows their photo/name/flag pulled straight from Roster, plus the coaching-specific description you write here (separate from their roster bio) — clicking the card opens their Cal.com link."
+            fields:
+              - { label: "Player ID", name: "playerId", widget: "string", hint: "Must exactly match that player's \"ID (URL slug)\" field in Roster — e.g. psev, eoo, cannon." }
+              - { label: "Coaching Description", name: "description", widget: "text", hint: "What this coach focuses on — distinct from their roster bio." }
+              - { label: "Cal.com Booking URL", name: "calLink", widget: "string", hint: "e.g. https://cal.com/psev/coaching-session" }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this coach listing without deleting it." }
           - label: "Testimonials"
             name: "testimonials"
             widget: "list"

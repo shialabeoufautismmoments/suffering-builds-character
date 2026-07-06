@@ -153,12 +153,25 @@ exactly what's shown on the page. This one's a plain list-of-objects (not
 nested inside another list), so it doesn't hit the bug above and the normal
 Add/reorder/delete controls all work.
 
-**Coaching / Testimonials** is a flat list of testimonial cards shown on
-`coaching.html` — each has a Name, optional Role/Context (e.g. "Diamond →
-Masters in 3 months"), a Quote, an optional 1–5 star Rating, and an optional
-PDF Attachment (e.g. a written coaching session report), plus the usual
-Enabled toggle. Same plain list-of-objects pattern as Roadmap, so Add/reorder
-work normally.
+**Coaching / Testimonials** has two independent lists, both shown on
+`coaching.html`:
+
+- **Coaches** — feature a roster member as a bookable coach. Enter their
+  **Player ID** (must exactly match that player's ID field in Roster, e.g.
+  `psev`), write a **Coaching Description** (separate from their roster bio —
+  this is specifically about what they coach), and add their **Cal.com
+  Booking URL**. The card automatically pulls that player's photo, name, flag,
+  role, and game from Roster — nothing to re-enter — and the whole card links
+  out to their Cal.com page in a new tab. If a Player ID doesn't match anyone
+  in Roster, that entry is silently skipped on the live site (logged to the
+  browser console) rather than showing a broken card.
+- **Testimonials** — Name, optional Role/Context (e.g. "Diamond → Masters in
+  3 months"), a Quote, an optional 1–5 star Rating, and an optional PDF
+  Attachment (e.g. a written coaching session report).
+
+Both are plain list-of-objects (siblings in the same file, not nested inside
+each other), same safe pattern as Roadmap and Site Settings' Navigation Menu
++ Social Links, so Add/reorder work normally.
 
 **Site Settings** is the "customize almost anything" panel — it controls things
 that used to be hardcoded in the HTML/CSS:
@@ -327,21 +340,36 @@ display order:
 `status` is one of `"Planned"`, `"In Progress"`, or `"Completed"`. `target`
 and `description` are both optional.
 
-`data/testimonials.json` — one object per testimonial in the `testimonials`
-array:
+`data/testimonials.json` has two top-level arrays, `coaches` and
+`testimonials`:
 
 ```json
 {
-  "name": "Jake M.",
-  "role": "Diamond to Masters in 3 months",
-  "quote": "The VOD reviews alone were worth it.",
-  "rating": "5",
-  "pdf": "assets/uploads/example-report.pdf",
-  "enabled": true
+  "coaches": [
+    {
+      "playerId": "psev",
+      "description": "Focuses on hitscan fundamentals and VOD review.",
+      "calLink": "https://cal.com/psev/coaching-session",
+      "enabled": true
+    }
+  ],
+  "testimonials": [
+    {
+      "name": "Jake M.",
+      "role": "Diamond to Masters in 3 months",
+      "quote": "The VOD reviews alone were worth it.",
+      "rating": "5",
+      "pdf": "assets/uploads/example-report.pdf",
+      "enabled": true
+    }
+  ]
 }
 ```
 
-`role`, `rating`, and `pdf` are all optional. `rating` is a string `"1"`–`"5"`.
+For `coaches`: `playerId` must match a real player's `id` in
+`data/players.json` — that player's photo/name/country/role/game get pulled
+in automatically. For `testimonials`: `role`, `rating`, and `pdf` are all
+optional. `rating` is a string `"1"`–`"5"`.
 
 `data/pages.json` — one object per custom page in the `pages` array:
 
