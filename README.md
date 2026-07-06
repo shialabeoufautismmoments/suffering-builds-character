@@ -212,7 +212,37 @@ that used to be hardcoded in the HTML/CSS:
   every page (see "Discord widget" below)
 - Heading and intro text for each page (Roster, News, Schedule, Staff,
   About) — e.g. add a sentence under "Roster" explaining who's on it
-- **Navigation Menu** — order, labels, and visibility of every nav link
+- **Navigation Menu** — order, labels, visibility, *and grouping into hover
+  dropdowns* for every nav link (see below)
+
+### Nav dropdowns (mega-menu)
+
+The top nav bar isn't a flat list of every page — related pages are grouped
+under a handful of top-level buttons that reveal the rest on hover (or on
+tap, on mobile, where dropdowns just show as an indented list instead of a
+hover popup). This is controlled entirely by each item's **Parent Group(s)**
+field in Site Settings → Navigation Menu:
+
+- Leave **Parent Group(s)** blank → the item is its own top-level nav button.
+- Put another item's **ID** in **Parent Group(s)** → this item becomes a
+  dropdown entry under that item instead of appearing at the top level
+  itself. Comma-separate multiple IDs (e.g. `home,about`) to nest the same
+  item under more than one dropdown at once — Roster does exactly this by
+  default, appearing under both Home and About.
+- A top-level item automatically gets a hover dropdown arrow (▾) if anything
+  lists its ID as a parent. No children = no dropdown, just a plain link
+  (Coaching, by default).
+- A top-level item can also have **no Path** at all — it renders as
+  plain (unclickable) text that exists purely to host a dropdown. Information
+  is set up this way by default: it isn't a real page, it's just a label for
+  the Wiki/Threads/Roadmap/Reading dropdown.
+- If a page shown inside a dropdown is the current page, its *parent*
+  button is also highlighted as active (both Home and About light up when
+  viewing the Roster page, since Roster is nested under both).
+
+Default grouping out of the box: **Home** → Roster, News, Schedule · **About**
+→ Roster, Staff · **Coaching** → (no dropdown) · **Information** → Wiki,
+Threads, Roadmap, Reading.
 
 On screens narrower than 720px, the nav bar collapses into a hamburger button
 (☰) that toggles a full-width dropdown menu — this is automatic and not
@@ -239,7 +269,8 @@ Settings → **Navigation Menu**:
   now" instead of its normal content. This is as close to "deleting" a
   built-in page as a code-backed page can get.
 
-Don't change the **ID** or **Path** fields on the 11 built-in entries — those
+Don't change the **ID** or **Path** fields on the 12 built-in nav entries
+(the 11 real pages plus the label-only "Information" entry) — those
 are how the site matches a nav entry to the actual page/content; changing them
 breaks the enable/disable toggle for that section. You *can* add extra
 brand-new entries here too, for external links (e.g. a Discord invite) — give
@@ -428,11 +459,19 @@ is what controls whether the "Notes →" link appears.
 ```
 
 `data/site.json`'s `navigation` array controls the nav bar (see "Adding,
-removing, and reordering pages" above for the built-in-vs-custom distinction):
+removing, and reordering pages" above for the built-in-vs-custom distinction,
+and "Nav dropdowns" above for how `parents` works):
 
 ```json
-{ "id": "home", "label": "Home", "path": "index.html", "enabled": true }
+{ "id": "home", "label": "Home", "path": "index.html", "enabled": true, "parents": "" }
+{ "id": "roster", "label": "Roster", "path": "roster.html", "enabled": true, "parents": "home,about" }
+{ "id": "information", "label": "Information", "path": "", "enabled": true, "parents": "" }
 ```
+
+`parents` is a plain comma-separated string, not an array — empty means
+top-level, non-empty means "nest this under these parent IDs instead." An
+empty `path` (like `information` above) means the item has no page of its
+own and exists only to host a dropdown.
 
 `data/site.json`'s `discordServerId` is a plain string — see "Discord widget"
 above for where to find it. Leave it `""` to hide the widget.

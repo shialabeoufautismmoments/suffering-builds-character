@@ -62,67 +62,85 @@
       "id": "home",
       "label": "Home",
       "path": "index.html",
-      "enabled": true
-    },
-    {
-      "id": "coaching",
-      "label": "Coaching",
-      "path": "coaching.html",
-      "enabled": true
+      "enabled": true,
+      "parents": ""
     },
     {
       "id": "roster",
       "label": "Roster",
       "path": "roster.html",
-      "enabled": true
+      "enabled": true,
+      "parents": "home,about"
     },
     {
       "id": "news",
       "label": "News",
       "path": "news.html",
-      "enabled": true
+      "enabled": true,
+      "parents": "home"
     },
     {
       "id": "schedule",
       "label": "Schedule",
       "path": "schedule.html",
-      "enabled": true
-    },
-    {
-      "id": "staff",
-      "label": "Staff",
-      "path": "staff.html",
-      "enabled": true
+      "enabled": true,
+      "parents": "home"
     },
     {
       "id": "about",
       "label": "About",
       "path": "about.html",
-      "enabled": true
+      "enabled": true,
+      "parents": ""
+    },
+    {
+      "id": "staff",
+      "label": "Staff",
+      "path": "staff.html",
+      "enabled": true,
+      "parents": "about"
+    },
+    {
+      "id": "coaching",
+      "label": "Coaching",
+      "path": "coaching.html",
+      "enabled": true,
+      "parents": ""
+    },
+    {
+      "id": "information",
+      "label": "Information",
+      "path": "",
+      "enabled": true,
+      "parents": ""
     },
     {
       "id": "wiki",
       "label": "Wiki",
       "path": "wiki.html",
-      "enabled": true
+      "enabled": true,
+      "parents": "information"
     },
     {
       "id": "threads",
       "label": "Threads",
       "path": "threads.html",
-      "enabled": true
+      "enabled": true,
+      "parents": "information"
     },
     {
       "id": "roadmap",
       "label": "Roadmap",
       "path": "roadmap.html",
-      "enabled": true
+      "enabled": true,
+      "parents": "information"
     },
     {
       "id": "reading",
       "label": "Reading",
       "path": "reading.html",
-      "enabled": true
+      "enabled": true,
+      "parents": "information"
     }
   ],
   "accentColor": "#131318"

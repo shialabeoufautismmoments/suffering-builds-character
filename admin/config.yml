@@ -238,11 +238,12 @@ collections:
             name: "navigation"
             widget: "list"
             summary: "{{fields.label}}"
-            hint: "Controls the nav bar: order, labels, visibility. The 11 built-in entries (home/roster/news/schedule/staff/about/wiki/threads/roadmap/coaching/reading) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            hint: "Controls the nav bar: order, labels, visibility, AND grouping into hover dropdowns (see Parent Group(s) below). The 12 built-in entries (home/roster/news/schedule/staff/about/wiki/threads/roadmap/coaching/reading/information) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / schedule / staff / about / wiki / threads / roadmap / coaching / reading. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / schedule / staff / about / wiki / threads / roadmap / coaching / reading / information. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", hint: "Built-ins: index.html / roster.html / news.html / schedule.html / staff.html / about.html / wiki.html / threads.html / roadmap.html / coaching.html / reading.html. Custom links: any URL." }
+              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / schedule.html / staff.html / about.html / wiki.html / threads.html / roadmap.html / coaching.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
+              - { label: "Parent Group(s)", name: "parents", widget: "string", required: false, hint: "Leave blank to show this item as its own top-level nav button. To nest it as a hover-dropdown item instead, put the ID(s) of the top-level item(s) it should appear under, comma-separated if more than one (e.g. \"home\" or \"home,about\"). An item with children automatically gets a hover dropdown; hovering an item with no children does nothing." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
             name: "socials"

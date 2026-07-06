@@ -24,21 +24,45 @@ function buildNavHtml(site, pages) {
   const file = currentFile();
   const slug = new URLSearchParams(window.location.search).get("slug");
 
-  const builtinLinks = (site?.navigation || [])
-    .filter(item => item.enabled !== false)
-    .map(item => {
-      const isActive = item.path === file;
-      return `<a href="${item.path}"${isActive ? ' class="active"' : ""}>${item.label}</a>`;
-    });
+  const items = (site?.navigation || []).filter(item => item.enabled !== false);
+  const topLevel = items.filter(item => !item.parents);
+  const children = items.filter(item => item.parents);
 
-  const customLinks = pages
+  function childrenOf(parentId) {
+    return children.filter(c =>
+      c.parents.split(",").map(s => s.trim()).includes(parentId)
+    );
+  }
+
+  const builtinHtml = topLevel.map(item => {
+    const kids = childrenOf(item.id);
+    const ownActive = item.path && item.path === file;
+    const kidActive = kids.some(k => k.path === file);
+    const activeClass = (ownActive || kidActive) ? " active" : "";
+
+    const trigger = item.path
+      ? `<a href="${item.path}" class="nav-top-link${activeClass}">${item.label}</a>`
+      : `<span class="nav-top-link nav-top-label${activeClass}">${item.label}</span>`;
+
+    if (!kids.length) {
+      return `<div class="nav-item">${trigger}</div>`;
+    }
+
+    const dropdown = kids.map(k =>
+      `<a href="${k.path}"${k.path === file ? ' class="active"' : ""}>${k.label}</a>`
+    ).join("");
+
+    return `<div class="nav-item has-dropdown">${trigger}<div class="nav-dropdown">${dropdown}</div></div>`;
+  });
+
+  const customLinksHtml = pages
     .filter(p => p.enabled !== false)
     .map(p => {
       const isActive = file === "page.html" && slug === p.slug;
-      return `<a href="page.html?slug=${encodeURIComponent(p.slug)}"${isActive ? ' class="active"' : ""}>${p.label}</a>`;
+      return `<div class="nav-item"><a href="page.html?slug=${encodeURIComponent(p.slug)}" class="nav-top-link${isActive ? " active" : ""}">${p.label}</a></div>`;
     });
 
-  return builtinLinks.concat(customLinks).join("");
+  return builtinHtml.concat(customLinksHtml).join("");
 }
 
 function applySiteSettings(site) {
