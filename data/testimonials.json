@@ -1,4 +1,11 @@
 {
-  "coaches": [],
+  "coaches": [
+    {
+      "enabled": true,
+      "playerId": "psev",
+      "description": "psev has 100s of hours in coaching individuals, as well as team environments. He can do vods, live coaching, documents, anything you'd like. Mechanics, gamesense, just pick what you would like and book him through the site.",
+      "calLink": "https://cal.com/psevcoaching/1on1session"
+    }
+  ],
   "testimonials": []
 }
