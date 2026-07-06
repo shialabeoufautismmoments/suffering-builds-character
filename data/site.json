@@ -1,24 +1,24 @@
 {
   "accentBright": "#8f00ff",
   "pages": {
-    "home": {
-      "heading": "Welcome to Hone",
-      "intro": "A team built on precision, discipline, and constant improvement. Explore the roster, catch up on news, or book a coaching session below."
+    "staff": {
+      "heading": "Staff",
+      "intro": ""
+    },
+    "coaching": {
+      "heading": "Coaching",
+      "intro": ""
+    },
+    "threads": {
+      "heading": "Threads",
+      "intro": ""
     },
     "roster": {
       "heading": "Roster",
       "intro": ""
     },
-    "news": {
-      "heading": "News",
-      "intro": ""
-    },
-    "schedule": {
-      "heading": "Schedule",
-      "intro": ""
-    },
-    "staff": {
-      "heading": "Staff",
+    "reading": {
+      "heading": "Reading",
       "intro": ""
     },
     "about": {
@@ -29,21 +29,21 @@
       "heading": "Wiki",
       "intro": ""
     },
-    "threads": {
-      "heading": "Threads",
+    "news": {
+      "heading": "News",
+      "intro": ""
+    },
+    "schedule": {
+      "heading": "Schedule",
       "intro": ""
     },
     "roadmap": {
       "heading": "Roadmap",
       "intro": ""
     },
-    "coaching": {
-      "heading": "Coaching",
-      "intro": ""
-    },
-    "reading": {
-      "heading": "Reading",
-      "intro": ""
+    "home": {
+      "heading": "Welcome to Suffering Builds Character/Hone",
+      "intro": "A group built on improvement and bridging the gap between trainers and the game."
     }
   },
   "socials": [
@@ -55,13 +55,19 @@
   "footerText": "",
   "discordServerId": "1522649714150080772",
   "logo": "",
-  "tagline": "Suffering Exposes All",
+  "tagline": "Hone Your Skills",
   "siteName": "Hone",
   "navigation": [
     {
       "id": "home",
       "label": "Home",
       "path": "index.html",
+      "enabled": true
+    },
+    {
+      "id": "coaching",
+      "label": "Coaching",
+      "path": "coaching.html",
       "enabled": true
     },
     {
@@ -110,12 +116,6 @@
       "id": "roadmap",
       "label": "Roadmap",
       "path": "roadmap.html",
-      "enabled": true
-    },
-    {
-      "id": "coaching",
-      "label": "Coaching",
-      "path": "coaching.html",
       "enabled": true
     },
     {
