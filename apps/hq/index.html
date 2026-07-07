@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Language" content="en-US">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoachSBC HQ</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="access-gate" class="access-gate"></div>
+  <div class="app">
+    <nav class="nav">
+      <span class="brand" id="app-brand" onclick="App.nav('dashboard')" title="Open dashboard"><span class="dot"></span><span id="app-brand-name">CoachSBC HQ</span></span>
+      <div class="nav-groups">
+        <details class="nav-group" data-nav-group="clients">
+          <summary class="nav-group-trigger">Clients <span>v</span></summary>
+          <div class="nav-menu">
+            <label class="nav-client-picker"><span>Active client</span>
+              <select id="nav-client-select" onchange="Clients.selectFromNav(this.value)"><option value="">No clients</option></select>
+            </label>
+            <button class="nav-menu-item" data-view="dashboard" onclick="App.nav('dashboard')">Client dashboard</button>
+            <button class="nav-menu-item" data-view="clients" onclick="App.nav('clients')">Manage clients</button>
+            <button class="nav-menu-item" data-view="coaches" onclick="App.nav('coaches')">Team coaches</button>
+            <button class="nav-menu-item" data-view="waitlist" onclick="App.nav('waitlist')">Waitlist</button>
+            <div class="nav-menu-divider"></div>
+            <button class="nav-menu-item" data-view="matches" onclick="App.nav('matches')">Matches</button>
+            <button class="nav-menu-item" data-view="vods" onclick="App.nav('vods')">VODs</button>
+            <button class="nav-menu-item" data-view="plans" onclick="App.nav('plans')">Development</button>
+          </div>
+        </details>
+        <details class="nav-group" data-nav-group="training">
+          <summary class="nav-group-trigger">Training <span>v</span></summary>
+          <div class="nav-menu">
+            <button class="nav-menu-item" data-view="playlists" onclick="App.nav('playlists')">Playlists</button>
+            <button class="nav-menu-item" data-view="mechanics" onclick="App.nav('mechanics')">Mechanics</button>
+            <button class="nav-menu-item" data-view="telemetry" onclick="App.nav('telemetry')">Telemetry</button>
+          </div>
+        </details>
+        <details class="nav-group" data-nav-group="activity">
+          <summary class="nav-group-trigger">Activity <span>v</span></summary>
+          <div class="nav-menu">
+            <button class="nav-menu-item" data-view="today" onclick="App.nav('today')">Today</button>
+            <button class="nav-menu-item" data-view="sessions" onclick="App.nav('sessions')">Sessions</button>
+          </div>
+        </details>
+        <details class="nav-group" data-nav-group="business">
+          <summary class="nav-group-trigger">Business <span>v</span></summary>
+          <div class="nav-menu nav-menu-right">
+            <button class="nav-menu-item" data-view="business" onclick="App.nav('business')">Finance</button>
+            <button class="nav-menu-item" data-view="coachanalytics" onclick="App.nav('coachanalytics')">Analytics</button>
+            <button class="nav-menu-item" data-view="reports" onclick="App.nav('reports')">Reports</button>
+          </div>
+        </details>
+      </div>
+      <div class="nav-spacer"></div>
+      <label class="nav-coach-picker" title="Current coach">
+        <span>Coach</span>
+        <select id="nav-coach-select" onchange="Access.selectCoach(this.value)"></select>
+      </label>
+      <div class="client-pill" id="client-pill" onclick="App.nav('dashboard')" title="Open active client dashboard">
+        <span class="avatar" id="pill-ava">-</span>
+        <span id="pill-name">No client</span>
+      </div>
+      <button class="nav-tab nav-icon-btn" onclick="Search.open()" title="Search (Ctrl+K)">Search</button>
+      <button class="nav-tab nav-icon-btn" onclick="Data.settings()" title="Data &amp; backup">Settings</button>
+      <button class="nav-tab nav-icon-btn" onclick="Access.lock()" title="Lock program">Lock</button>
+    </nav>
+
+    <main class="main">
+      <div id="view-clients" class="view"></div>
+      <div id="view-coaches" class="view"></div>
+      <div id="view-waitlist" class="view"></div>
+      <div id="view-today" class="view"></div>
+      <div id="view-dashboard" class="view"></div>
+      <div id="view-plans" class="view"></div>
+      <div id="view-matches" class="view"></div>
+      <div id="view-playlists" class="view"></div>
+      <div id="view-mechanics" class="view"></div>
+      <div id="view-telemetry" class="view"></div>
+      <div id="view-vods" class="view"></div>
+      <div id="view-sessions" class="view"></div>
+      <div id="view-business" class="view"></div>
+      <div id="view-coachanalytics" class="view"></div>
+      <div id="view-reports" class="view"></div>
+    </main>
+  </div>
+
+  <div class="modal-bg" id="modal-bg">
+    <div class="modal" id="modal"></div>
+  </div>
+  <div id="toast-host"></div>
+
+  <script src="web-api.js"></script>
+  <script src="js/access.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/brand.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/timeline.js"></script>
+  <script src="js/clients.js"></script>
+  <script src="js/coaches.js"></script>
+  <script src="js/plans.js"></script>
+  <script src="js/waitlist.js"></script>
+  <script src="js/tracker.js"></script>
+  <script src="js/matches.js"></script>
+  <script src="js/playlists.js"></script>
+  <script src="js/mechanics.js"></script>
+  <script src="js/benchmarks.js"></script>
+  <script src="js/progress.js"></script>
+  <script src="js/telemetry.js"></script>
+  <script src="js/cal.js"></script>
+  <script src="js/business.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/gif.js"></script>
+  <script src="js/telestrator.js"></script>
+  <script src="js/vods.js"></script>
+  <script src="js/sessions.js"></script>
+  <script src="js/today.js"></script>
+  <script src="js/coach-analytics.js"></script>
+  <script src="js/discord.js"></script>
+  <script src="js/cards.js"></script>
+  <script src="js/portal.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/monthly-reports.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
