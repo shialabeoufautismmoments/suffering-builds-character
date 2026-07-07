@@ -37,6 +37,12 @@ const State = {
   fileUrl: '',
   fileName: '',
   sourceUrl: '',
+  mediaType: 'none',
+  youtubeId: '',
+  youtubePlayer: null,
+  youtubeReady: false,
+  pendingYoutubeSeek: 0,
+  summaryText: '',
   tool: 'pen',
   color: '#e8833a',
   size: 5,
@@ -47,6 +53,11 @@ const State = {
   draft: null,
   strokes: [],
   markers: [],
+};
+
+window.onYouTubeIframeAPIReady = function () {
+  State.youtubeReady = true;
+  if (State.youtubeId) loadYouTubePlayer();
 };
 
 const $ = id => document.getElementById(id);
@@ -115,10 +126,12 @@ function renderApp() {
         <div class="stage-wrap">
           <div class="stage" id="stage">
             <div class="media-plane" id="media-plane">
+              <div id="youtube-shell" class="youtube-frame"><div id="youtube-player"></div></div>
               <video id="video" controls playsinline></video>
+              <div id="youtube-blocker" class="youtube-blocker"></div>
               <canvas id="draw"></canvas>
             </div>
-            <div class="empty-stage" id="empty-stage"><div><b>Load a local VOD file</b><br>Drawing screenshots/GIFs require a local video file or a CORS-enabled video source.</div></div>
+            <div class="empty-stage" id="empty-stage"><div><b>Load a VOD</b><br>Use a local video for screenshots/GIFs/clips, or paste a YouTube link for timestamp review.</div></div>
           </div>
         </div>
         ${timelineHtml()}
@@ -127,6 +140,7 @@ function renderApp() {
     </div>
   </div>`;
   bindStage();
+  restoreMedia();
   refreshSide();
 }
 
@@ -134,8 +148,9 @@ function toolbarHtml() {
   const tools = [['pen', 'Pen'], ['line', 'Line'], ['arrow', 'Arrow'], ['rect', 'Box'], ['circle', 'Circle'], ['text', 'Text'], ['erase', 'Clear']];
   return `<div class="toolbar">
     <label class="btn btn-sm">Load video <input type="file" accept="video/*" onchange="loadVideo(this.files[0])" style="display:none"></label>
-    <input id="source-url" placeholder="Optional source URL / VOD link" onchange="State.sourceUrl=this.value.trim()" style="max-width:260px">
-    ${tools.map(([id, label]) => `<button class="btn btn-sm ${State.tool === id ? 'on' : ''}" onclick="setTool('${id}')">${label}</button>`).join('')}
+    <input id="source-url" placeholder="Paste YouTube URL or optional VOD link" value="${E(State.sourceUrl)}" onchange="State.sourceUrl=this.value.trim()" style="max-width:310px">
+    <button class="btn btn-sm" onclick="loadSourceUrl()">Load YouTube</button>
+    ${tools.map(([id, label]) => `<button data-tool="${id}" class="btn btn-sm ${State.tool === id ? 'on' : ''}" onclick="setTool('${id}')">${label}</button>`).join('')}
     <input class="color" type="color" value="${State.color}" onchange="State.color=this.value">
     <input class="number" type="number" min="1" max="40" value="${State.size}" onchange="State.size=+this.value||5" title="Brush size">
     <button class="btn btn-sm" onclick="undo()">Undo</button>
@@ -145,6 +160,7 @@ function toolbarHtml() {
 
 function timelineHtml() {
   return `<div class="timeline-tools">
+    <button class="btn btn-sm" onclick="togglePlay()">Play/Pause</button>
     <button class="btn btn-sm" onclick="seekBy(-5)">-5s</button>
     <button class="btn btn-sm" onclick="stepFrame(-1)">Prev frame</button>
     <button class="btn btn-sm" onclick="stepFrame(1)">Next frame</button>
@@ -161,9 +177,12 @@ function timelineHtml() {
 function refreshSide() {
   const c = State.workspace.clients.find(x => x.id === State.clientId);
   const bytes = reviewPayloadSize();
+  const captureNotice = State.mediaType === 'youtube'
+    ? '<p class="notice">YouTube mode publishes timestamp links, notes, homework, and client replies. For screenshots, GIFs, or WebM clips, load a local video file.</p>'
+    : '';
   $('side').innerHTML = `<div class="card">
     <div class="card-head"><h2>Publish review</h2><span class="pill">${E(c?.name || 'No client')}</span></div>
-    <label class="field"><span>Summary for client</span><textarea id="summary" placeholder="Main takeaways, priorities, homework, next session focus..."></textarea></label>
+    <label class="field"><span>Summary for client</span><textarea id="summary" placeholder="Main takeaways, priorities, homework, next session focus..." oninput="State.summaryText=this.value">${E(State.summaryText)}</textarea></label>
     <div class="small muted mb">Payload estimate: ${Math.round(bytes / 1024)} KB. Keep under ~3.5 MB for reliable sync.</div>
     <button class="btn btn-primary" onclick="publishReview()">Send Review to Client App</button>
   </div>
@@ -172,6 +191,7 @@ function refreshSide() {
     <div class="row"><label class="field"><span>GIF FPS</span><input id="gif-fps" type="number" min="5" max="30" value="20"></label><label class="field"><span>GIF seconds</span><input id="gif-seconds" type="number" min="1" max="8" value="3"></label></div>
     <div class="row"><label class="field"><span>Clip seconds</span><input id="clip-seconds" type="number" min="1" max="20" value="6"></label><label class="field"><span>Output width</span><input id="out-width" type="number" min="320" max="1280" value="720"></label></div>
     <p class="muted small">GIFs include the current zoom and drawings. High FPS/long GIFs get large fast.</p>
+    ${captureNotice}
   </div>
   <div class="card">
     <div class="card-head"><h2>Markers</h2><span class="pill">${State.markers.length}</span></div>
@@ -180,11 +200,16 @@ function refreshSide() {
 }
 
 function markerHtml(m) {
+  const sourceLink = markerSourceUrl(m);
   return `<div class="marker">
     <div class="flex between center gap"><button class="btn btn-sm" onclick="goTo(${m.time})">${fmtTime(m.time)}</button><button class="btn btn-sm btn-danger" onclick="removeMarker('${m.id}')">Remove</button></div>
+    ${sourceLink ? `<div class="small muted mt"><a href="${E(sourceLink)}" target="_blank" rel="noopener noreferrer">Open source at ${fmtTime(m.time)}</a></div>` : ''}
     <label class="field mt"><span>Title</span><input value="${E(m.title)}" onchange="updateMarker('${m.id}','title',this.value)"></label>
     <div class="row"><label class="field"><span>Tag</span><select onchange="updateMarker('${m.id}','tag',this.value)">${['Mistake','Good play','Drill','Decision','Positioning','Mechanics','Other'].map(x => `<option ${m.tag === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label><label class="field"><span>Severity</span><select onchange="updateMarker('${m.id}','severity',this.value)">${['Low','Medium','High','Key'].map(x => `<option ${m.severity === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label></div>
     <label class="field"><span>Coach note</span><textarea onchange="updateMarker('${m.id}','note',this.value)">${E(m.note)}</textarea></label>
+    <label class="field"><span>Homework / prescription from this moment</span><textarea placeholder="Optional: what the client should do before next session..." onchange="updateMarker('${m.id}','homework',this.value)">${E(m.homework || '')}</textarea></label>
+    <div class="row"><label class="field"><span>Due date</span><input type="date" value="${E(m.homeworkDue || '')}" onchange="updateMarker('${m.id}','homeworkDue',this.value)"></label><label class="field"><span>Client reply prompt</span><input value="${E(m.clientPrompt || '')}" placeholder="Ask the client a question..." onchange="updateMarker('${m.id}','clientPrompt',this.value)"></label></div>
+    ${(m.clientReplies || []).length ? `<div class="reply"><b>Client replies</b>${m.clientReplies.map(reply => `<div class="muted">${E(reply.text || '')}</div>`).join('')}</div>` : ''}
     ${m.imageDataUrl ? `<img src="${m.imageDataUrl}" alt="Screenshot">` : ''}
     ${m.gifDataUrl ? `<img src="${m.gifDataUrl}" alt="GIF">` : ''}
     ${m.clipDataUrl ? `<video src="${m.clipDataUrl}" controls></video>` : ''}
@@ -218,23 +243,163 @@ function bindStage() {
 function loadVideo(file) {
   if (!file) return;
   if (State.fileUrl) URL.revokeObjectURL(State.fileUrl);
+  State.mediaType = 'local';
+  State.youtubeId = '';
   State.fileUrl = URL.createObjectURL(file);
   State.fileName = file.name;
   $('video').src = State.fileUrl;
+  $('video').style.display = '';
+  const yt = $('youtube-shell'); if (yt) yt.style.display = 'none';
+  const blocker = $('youtube-blocker'); if (blocker) blocker.style.display = 'none';
   $('empty-stage').style.display = 'none';
   toast('Video loaded. Draw on top, then capture moments.', 'good');
+}
+function restoreMedia() {
+  const video = $('video');
+  if (State.mediaType === 'local' && State.fileUrl) {
+    video.src = State.fileUrl;
+    video.style.display = '';
+    $('empty-stage').style.display = 'none';
+    return;
+  }
+  if (State.mediaType === 'youtube' && State.youtubeId) {
+    video.style.display = 'none';
+    $('youtube-shell').style.display = 'block';
+    $('youtube-blocker').style.display = 'block';
+    $('empty-stage').style.display = 'none';
+    loadYouTubePlayer();
+  }
+}
+function loadSourceUrl() {
+  const url = ($('source-url')?.value || '').trim();
+  State.sourceUrl = url;
+  const id = parseYouTubeId(url);
+  if (!id) return toast('Paste a valid YouTube URL, or use Load video for local files.', 'bad');
+  loadYouTube(id, url, parseYouTubeStart(url));
+}
+function parseYouTubeId(url) {
+  const raw = String(url || '').trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
+  try {
+    const u = new URL(raw);
+    if (u.hostname.includes('youtu.be')) return u.pathname.split('/').filter(Boolean)[0] || '';
+    if (u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2] || '';
+    if (u.pathname.startsWith('/embed/')) return u.pathname.split('/')[2] || '';
+    return u.searchParams.get('v') || '';
+  } catch (e) { return ''; }
+}
+function parseYouTubeStart(url) {
+  try {
+    const u = new URL(String(url || '').trim());
+    return parseTimeCode(u.searchParams.get('t') || u.searchParams.get('start') || '');
+  } catch (e) { return 0; }
+}
+function parseTimeCode(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return 0;
+  if (/^\d+$/.test(raw)) return +raw;
+  const hours = /(\d+)h/.exec(raw)?.[1] || 0;
+  const minutes = /(\d+)m/.exec(raw)?.[1] || 0;
+  const seconds = /(\d+)s/.exec(raw)?.[1] || 0;
+  return (+hours * 3600) + (+minutes * 60) + (+seconds);
+}
+function loadYouTube(id, url, start = 0) {
+  State.mediaType = 'youtube';
+  State.youtubeId = id;
+  State.pendingYoutubeSeek = Math.max(0, start || 0);
+  State.sourceUrl = url || `https://www.youtube.com/watch?v=${id}`;
+  State.fileName = 'YouTube VOD';
+  const video = $('video');
+  if (video) { video.pause(); video.removeAttribute('src'); video.load(); video.style.display = 'none'; }
+  if ($('youtube-shell')) $('youtube-shell').style.display = 'block';
+  if ($('youtube-blocker')) $('youtube-blocker').style.display = 'block';
+  if ($('empty-stage')) $('empty-stage').style.display = 'none';
+  loadYouTubePlayer();
+  toast('YouTube VOD loaded. Timestamp notes and drawings are enabled; media capture is local-video only.', 'good');
+}
+function loadYouTubePlayer() {
+  if (!State.youtubeId || !window.YT || !YT.Player) return;
+  if (State.youtubePlayer && !$('youtube-shell')?.querySelector('iframe')) State.youtubePlayer = null;
+  if (State.youtubePlayer && State.youtubePlayer.loadVideoById) {
+    State.youtubePlayer.loadVideoById(State.youtubeId, State.pendingYoutubeSeek || 0);
+    return;
+  }
+  State.youtubePlayer = new YT.Player('youtube-player', {
+    videoId: State.youtubeId,
+    playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
+    events: {
+      onReady: () => {
+        State.youtubeReady = true;
+        if (State.pendingYoutubeSeek) State.youtubePlayer.seekTo(State.pendingYoutubeSeek, true);
+      },
+    },
+  });
 }
 function setTool(tool) {
   if (tool === 'erase') return clearDrawings();
   State.tool = tool;
-  renderApp();
+  document.querySelectorAll('[data-tool]').forEach(btn => btn.classList.toggle('on', btn.dataset.tool === tool));
 }
 function setZoom(z) { State.zoom = z; applyTransform(); }
 function resetView() { State.zoom = 1; State.panX = 0; State.panY = 0; $('zoom').value = 1; applyTransform(); }
 function applyTransform() { const p = $('media-plane'); if (p) p.style.transform = `translate(${State.panX}px,${State.panY}px) scale(${State.zoom})`; }
-function seekBy(sec) { const v = $('video'); v.currentTime = Math.max(0, Math.min(v.duration || 0, v.currentTime + sec)); }
+function currentTime() {
+  if (State.mediaType === 'youtube' && State.youtubePlayer?.getCurrentTime) return State.youtubePlayer.getCurrentTime() || 0;
+  return $('video')?.currentTime || 0;
+}
+function currentDuration() {
+  if (State.mediaType === 'youtube' && State.youtubePlayer?.getDuration) return State.youtubePlayer.getDuration() || 0;
+  return $('video')?.duration || 0;
+}
+function seekBy(sec) { seekToPlayer(currentTime() + sec); }
 function stepFrame(dir) { seekBy(dir / 60); }
-function goTo(sec) { $('video').currentTime = Math.max(0, sec || 0); }
+function goTo(sec) { seekToPlayer(sec || 0); }
+function seekToPlayer(sec) {
+  const next = Math.max(0, Math.min(currentDuration() || Number.MAX_SAFE_INTEGER, sec || 0));
+  if (State.mediaType === 'youtube') {
+    State.pendingYoutubeSeek = next;
+    if (State.youtubePlayer?.seekTo) State.youtubePlayer.seekTo(next, true);
+    return;
+  }
+  const v = $('video');
+  if (v) v.currentTime = next;
+}
+function togglePlay() {
+  if (State.mediaType === 'youtube' && State.youtubePlayer?.getPlayerState) {
+    const playing = State.youtubePlayer.getPlayerState() === YT.PlayerState.PLAYING;
+    return playing ? State.youtubePlayer.pauseVideo() : State.youtubePlayer.playVideo();
+  }
+  const v = $('video');
+  if (!v?.src) return toast('Load a VOD first.', 'bad');
+  return v.paused ? v.play() : v.pause();
+}
+function localCaptureAvailable() {
+  if (State.mediaType === 'youtube') {
+    toast('YouTube frame capture is blocked by the browser. Use timestamp links for YouTube reviews, or load a local file for screenshots/GIFs/clips.', 'bad');
+    return false;
+  }
+  if (!$('video')?.src) {
+    toast('Load a local video first.', 'bad');
+    return false;
+  }
+  return true;
+}
+function markerSourceUrl(marker) {
+  const t = Math.max(0, Math.round(marker?.time || 0));
+  if (State.mediaType === 'youtube' && State.youtubeId) return `https://www.youtube.com/watch?v=${State.youtubeId}&t=${t}s`;
+  if (State.sourceUrl) {
+    try {
+      const url = new URL(State.sourceUrl);
+      if (url.hostname.includes('youtube.com') || url.hostname.includes('youtu.be')) {
+        const id = parseYouTubeId(State.sourceUrl);
+        return id ? `https://www.youtube.com/watch?v=${id}&t=${t}s` : State.sourceUrl;
+      }
+      url.searchParams.set('t', `${t}s`);
+      return url.toString();
+    } catch (e) { return State.sourceUrl; }
+  }
+  return '';
+}
 
 function localPoint(e) {
   const canvas = $('draw'), rect = canvas.getBoundingClientRect();
@@ -308,6 +473,7 @@ function drawArrowHead(ctx, a, b, size) {
 
 function drawComposite(width = 1280) {
   const video = $('video'), overlay = $('draw'), stage = $('stage');
+  if (State.mediaType === 'youtube') throw new Error('YouTube frame capture is blocked by the browser. Load a local video for screenshots/GIFs/clips.');
   if (!video.src) throw new Error('Load a video first.');
   const rect = stage.getBoundingClientRect();
   const out = document.createElement('canvas');
@@ -326,12 +492,12 @@ function drawComposite(width = 1280) {
   return out;
 }
 function currentMarker() {
-  const t = $('video').currentTime || 0;
+  const t = currentTime();
   return State.markers.slice().sort((a, b) => Math.abs(a.time - t) - Math.abs(b.time - t))[0] || addMarker(true);
 }
 function addMarker(silent = false) {
-  const v = $('video');
-  const marker = { id: uid(), time: v.currentTime || 0, title: `Moment ${State.markers.length + 1}`, tag: 'Mistake', severity: 'Medium', note: '', createdAt: new Date().toISOString() };
+  if (State.mediaType === 'none') return toast('Load a local video or YouTube link first.', 'bad');
+  const marker = { id: uid(), time: currentTime(), title: `Moment ${State.markers.length + 1}`, tag: 'Mistake', severity: 'Medium', note: '', homework: '', homeworkDue: '', clientPrompt: '', sourceUrl: '', clientReplies: [], createdAt: new Date().toISOString() };
   State.markers.push(marker);
   if (!silent) { toast('Marker added.', 'good'); refreshSide(); }
   return marker;
@@ -339,6 +505,7 @@ function addMarker(silent = false) {
 function updateMarker(id, key, value) { const m = State.markers.find(x => x.id === id); if (m) m[key] = value; }
 function removeMarker(id) { State.markers = State.markers.filter(x => x.id !== id); refreshSide(); }
 function captureScreenshot() {
+  if (!localCaptureAvailable()) return;
   try {
     const width = Math.max(320, Math.min(1280, +$('out-width')?.value || 960));
     currentMarker().imageDataUrl = drawComposite(width).toDataURL('image/jpeg', .86);
@@ -348,7 +515,7 @@ function captureScreenshot() {
 }
 async function makeGif() {
   const video = $('video');
-  if (!video.src) return toast('Load a video first.', 'bad');
+  if (!localCaptureAvailable()) return;
   if (typeof GIF === 'undefined') return toast('GIF encoder did not load.', 'bad');
   const fps = Math.max(5, Math.min(30, +$('gif-fps').value || 20));
   const seconds = Math.max(1, Math.min(8, +$('gif-seconds').value || 3));
@@ -384,7 +551,7 @@ function seekTo(time) {
 }
 async function makeClip() {
   const video = $('video');
-  if (!video.src) return toast('Load a video first.', 'bad');
+  if (!localCaptureAvailable()) return;
   const seconds = Math.max(1, Math.min(20, +$('clip-seconds').value || 6));
   const width = Math.max(320, Math.min(1280, +$('out-width').value || 720));
   const canvas = drawComposite(width);
@@ -408,36 +575,83 @@ async function makeClip() {
 }
 
 function reviewPayloadSize() {
-  const payload = { markers: State.markers, summary: $('summary')?.value || '' };
+  State.summaryText = $('summary')?.value ?? State.summaryText;
+  const payload = { markers: State.markers, summary: State.summaryText };
   return new Blob([JSON.stringify(payload)]).size;
 }
 async function publishReview() {
   const clientId = State.clientId;
   if (!clientId) return toast('Choose a client first.', 'bad');
+  if (State.mediaType === 'none') return toast('Load a local video or YouTube link first.', 'bad');
+  State.summaryText = $('summary')?.value?.trim() || State.summaryText.trim();
+  State.sourceUrl = $('source-url')?.value.trim() || State.sourceUrl;
   const bytes = reviewPayloadSize();
   if (bytes > 3_600_000 && !confirm(`This review is about ${Math.round(bytes / 1024)} KB and may be too large to sync. Publish anyway?`)) return;
   const makeVod = workspace => {
     workspace.vods ||= [];
+    const now = new Date().toISOString();
+    const title = $('review-title').value.trim() || `VOD Review - ${today()}`;
+    const platform = State.mediaType === 'youtube' ? 'youtube' : 'local-video';
+    const reviewUrl = State.mediaType === 'youtube' && State.youtubeId
+      ? `https://www.youtube.com/watch?v=${State.youtubeId}`
+      : State.sourceUrl || $('source-url')?.value.trim() || '';
     const vod = {
       id: uid(),
       clientId,
-      title: $('review-title').value.trim() || `VOD Review - ${today()}`,
+      title,
       reviewStatus: 'complete',
-      platform: 'vod-review-web',
-      url: State.sourceUrl || $('source-url')?.value.trim() || '',
+      clientStatus: 'unread',
+      clientViewedAt: '',
+      platform,
+      videoId: State.youtubeId || '',
+      url: reviewUrl,
       date: today(),
       scenario: State.fileName || 'CoachSBC VOD Review Studio',
-      summary: $('summary').value.trim(),
+      summary: State.summaryText,
       notes: State.markers.map(m => ({
         id: m.id, t: Math.round(m.time || 0), text: m.note || m.title, tag: m.tag, severity: m.severity,
+        sourceUrl: markerSourceUrl(m),
+        homework: m.homework || '',
+        homeworkDue: m.homeworkDue || '',
+        clientPrompt: m.clientPrompt || '',
+        clientReplies: m.clientReplies || [],
         title: m.title, imageDataUrl: m.imageDataUrl || '', gifDataUrl: m.gifDataUrl || '', clipDataUrl: m.clipDataUrl || '',
-        createdAt: m.createdAt || new Date().toISOString(),
+        createdAt: m.createdAt || now,
       })),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      source: 'vod-review-web',
+      createdAt: now,
+      updatedAt: now,
+      source: 'vod-review-v2',
     };
     workspace.vods.push(vod);
+    const homeworkItems = State.markers
+      .filter(m => String(m.homework || '').trim())
+      .map(m => ({
+        id: uid(),
+        text: `${m.title || fmtTime(m.time)}: ${String(m.homework || '').trim()}`,
+        type: 'vod-review',
+        dueDate: m.homeworkDue || '',
+        done: false,
+        source: 'vod-review-v2',
+        vodId: vod.id,
+        markerId: m.id,
+      }));
+    if (homeworkItems.length) {
+      workspace.sessions ||= [];
+      workspace.sessions.push({
+        id: uid(),
+        clientId,
+        coachId: workspace.currentCoachId || '',
+        date: today(),
+        durationMin: 0,
+        prepMinutes: 0,
+        topics: `VOD Review: ${title}`,
+        notes: State.summaryText,
+        homework: homeworkItems,
+        createdAt: now,
+        updatedAt: now,
+        source: 'vod-review-v2',
+      });
+    }
     return workspace;
   };
   try {
@@ -452,6 +666,7 @@ async function publishReview() {
     if (!result.data) throw new Error(result.error || 'Could not publish review.');
     State.workspace = result.data;
     State.markers = [];
+    State.summaryText = '';
     toast('Review sent to the client app.', 'good');
     renderApp();
   } catch (e) {
