@@ -140,6 +140,22 @@
       "country": "US",
       "isStaff": false,
       "id": "matt"
+    },
+    {
+      "socials": {
+        "twitter": "https://x.com/Gweriaa"
+      },
+      "bio": "Gweria is a top tier aim trainer player and has been for years. He joins SBC/Hone to help players with their raw aim.",
+      "joined": "2026-07-07",
+      "accent": "#2300a5",
+      "name": "Gweria",
+      "rank": "GM",
+      "photo": "https://cdn.discordapp.com/avatars/490108507681718283/8f91f180fe05674f021b2ae104d9c70d.png?size=4096",
+      "game": "Aimbeast",
+      "role": "Coach",
+      "country": "DE",
+      "isStaff": true,
+      "id": "gweria"
     }
   ]
 }
