@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../css/style.css">
   <style>
     .app-launcher { min-height: 70vh; display: grid; place-items: center; padding: 2rem 1rem; }
-    .app-launcher-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; width: min(760px, 100%); }
+    .app-launcher-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; width: min(980px, 100%); }
     .app-launcher-card { border: 1px solid rgba(255,255,255,.16); border-radius: 16px; padding: 1.25rem; background: rgba(255,255,255,.045); }
     .app-launcher-card h2 { margin-top: 0; }
     .app-launcher-card p { color: var(--muted, #9aa6b2); }
@@ -18,16 +18,16 @@
   <main class="app-launcher">
     <div>
       <h1>CoachSBC Apps</h1>
-      <p>Browser versions for coaches and clients. No download required.</p>
+      <p>Browser tools for coaches and clients. No download required.</p>
       <div class="app-launcher-grid">
         <section class="app-launcher-card">
-          <h2>HQ Web App</h2>
-          <p>For coaches. Unlock with the coach workspace password and manage synced clients, sessions, plans, and logs.</p>
-          <a href="./hq/">Open HQ</a>
+          <h2>VOD Review Studio</h2>
+          <p>Coach-only tool for drawing, screenshots, clips, high-FPS GIFs, and publishing reviews to clients.</p>
+          <a href="./vod-review/">Open VOD Studio</a>
         </section>
         <section class="app-launcher-card">
-          <h2>Client Web App</h2>
-          <p>For clients. They enter their unique client code and only see their own assignments and logs.</p>
+          <h2>Client App</h2>
+          <p>Clients enter their unique code to view assignments, logs, and published VOD reviews.</p>
           <a href="./client/">Open Client App</a>
         </section>
       </div>
