@@ -21,9 +21,8 @@
     if (!response.ok) throw new Error(result.error || `Sync failed (${response.status}).`);
     return result;
   }
-  window.COACHSBC_WEB = true;
   window.clientApi = {
-    appVersion: async () => 'web-3.2.1',
+    appVersion: async () => 'web-3.3.0',
     cacheGet: async () => cacheGet(),
     cacheSet: async data => cacheSet(data),
     workspaceGet: async code => {

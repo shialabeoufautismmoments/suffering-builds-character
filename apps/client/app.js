@@ -55,10 +55,13 @@ function matches() { return State.data && State.data.matches || []; }
 function sessions() { return State.data && State.data.sessions || []; }
 function plans() { return State.data && State.data.developmentPlans || []; }
 function playlists() { return State.data && State.data.playlists || []; }
+function vods() { return State.data && State.data.vods || []; }
+function isVodUnread(vod) { return vod && vod.clientStatus !== 'watched' && !vod.clientViewedAt; }
+function unreadVods() { return vods().filter(isVodUnread); }
 
 function renderShell() {
   const c = client();
-  const tabs = [['dashboard', 'Dashboard'], ['matches', 'Matches'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['plans', 'Plan'], ['playlists', 'Playlists']];
+  const tabs = [['dashboard', 'Dashboard'], ['matches', 'Matches'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['plans', 'Plan'], ['playlists', 'Playlists'], ['vods', `Reviews${unreadVods().length ? ` (${unreadVods().length})` : ''}`]];
   app.innerHTML = `<div class="shell">
     <div class="topbar">
       <div class="brand"><span class="dot"></span>CoachSBC Client</div>
@@ -78,6 +81,7 @@ function renderView() {
   if (State.view === 'homework') return renderHomework();
   if (State.view === 'plans') return renderPlans();
   if (State.view === 'playlists') return renderPlaylists();
+  if (State.view === 'vods') return renderVods();
   return renderDashboard();
 }
 
@@ -93,6 +97,7 @@ function renderDashboard() {
       <div class="stat"><div class="label">Matches logged</div><div class="value">${matches().length}</div><div class="muted">${wins}-${losses}</div></div>
       <div class="stat"><div class="label">KovaaK's logs</div><div class="value accent">${statRows.length}</div><div class="muted">manual entries</div></div>
       <div class="stat"><div class="label">Open homework</div><div class="value ${openHw.length ? 'warn' : 'good'}">${openHw.length}</div><div class="muted">remaining</div></div>
+      <div class="stat"><div class="label">VOD reviews</div><div class="value">${vods().length}</div><div class="muted">${unreadVods().length ? `${unreadVods().length} unread` : 'from coach'}</div></div>
     </div>
     ${activePlan ? `<div class="card mb"><div class="card-head"><h2>${E(activePlan.title)}</h2><span class="pill">${E(activePlan.status)}</span></div><p class="muted">${E(activePlan.objective || 'No objective written yet.')}</p></div>` : ''}
     <div class="grid cols-2">
@@ -153,6 +158,31 @@ function renderPlaylists() {
     <div class="grid cols-2">${playlists().length ? playlists().map(p => `<div class="card"><div class="card-head"><h2>${E(p.name)}</h2><span class="pill">${(p.scenarios || []).length} scenarios</span></div>${p.notes ? `<p class="muted mb">${E(p.notes)}</p>` : ''}<table class="data"><thead><tr><th>Scenario</th><th>Reps</th></tr></thead><tbody>${(p.scenarios || []).map(s => `<tr><td><b>${E(s.name)}</b>${s.notes ? `<div class="muted">${E(s.notes)}</div>` : ''}</td><td>${E(s.reps || '')}</td></tr>`).join('')}</tbody></table></div>`).join('') : '<div class="empty">No playlists assigned yet.</div>'}</div>`;
 }
 
+function renderVods() {
+  const reviews = vods().slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || '').localeCompare(a.createdAt || ''));
+  return `<div class="page-head"><div><h1>VOD Reviews</h1><div class="sub">Coach review notes, drawings, screenshots, GIFs, and clips sent to you.</div></div></div>
+    <div class="grid cols-2">${reviews.length ? reviews.map(vod => `<div class="card">
+      <div class="card-head"><h2>${E(vod.title || 'VOD Review')}</h2><span class="pill">${isVodUnread(vod) ? 'Unread' : fmt(vod.date)}</span></div>
+      ${vod.summary ? `<p class="muted mb">${E(vod.summary)}</p>` : ''}
+      <div class="flex gap center mb">
+        ${vod.url ? `<a class="btn btn-sm" href="${E(vod.url)}" target="_blank" rel="noopener noreferrer">Open source VOD</a>` : ''}
+        ${isVodUnread(vod) ? `<button class="btn btn-sm btn-primary" onclick="markVodWatched('${vod.id}')">Mark watched</button>` : `<span class="muted small">Watched ${fmt(vod.clientViewedAt || vod.date)}</span>`}
+      </div>
+      ${(vod.notes || []).length ? (vod.notes || []).map(note => `<div class="marker">
+        <div class="flex between center gap"><b>${fmtVodTime(note.t)}</b><span class="pill">${E(note.tag || 'Review')}${note.severity ? ' - ' + E(note.severity) : ''}</span></div>
+        <p class="mt">${E(note.text || note.title || '')}</p>
+        ${note.sourceUrl ? `<p><a href="${E(note.sourceUrl)}" target="_blank" rel="noopener noreferrer">Open timestamp</a></p>` : ''}
+        ${note.homework ? `<div class="notice"><b>Homework:</b> ${E(note.homework)}${note.homeworkDue ? `<div class="muted">Due ${fmt(note.homeworkDue)}</div>` : ''}</div>` : ''}
+        ${note.clientPrompt ? `<p class="muted"><b>Coach asks:</b> ${E(note.clientPrompt)}</p>` : ''}
+        ${(note.clientReplies || []).length ? `<div class="reply"><b>Your replies</b>${note.clientReplies.map(reply => `<div class="muted">${E(reply.text || '')}</div>`).join('')}</div>` : ''}
+        <div class="row"><input id="reply-${vod.id}-${note.id}" placeholder="Reply to this moment..."><button class="btn btn-sm" onclick="replyVod('${vod.id}','${note.id}')">Send reply</button></div>
+        ${note.imageDataUrl ? `<img src="${note.imageDataUrl}" alt="Review screenshot">` : ''}
+        ${note.gifDataUrl ? `<img src="${note.gifDataUrl}" alt="Review GIF">` : ''}
+        ${note.clipDataUrl ? `<video src="${note.clipDataUrl}" controls></video>` : ''}
+      </div>`).join('') : '<div class="empty">No timestamp notes in this review.</div>'}
+    </div>`).join('') : '<div class="empty">No VOD reviews sent yet.</div>'}</div>`;
+}
+
 function matchTable(rows) {
   if (!rows.length) return '<div class="empty">No matches logged yet.</div>';
   return `<table class="data"><thead><tr><th>Date</th><th>Result</th><th>Map</th><th>Heroes</th><th>Notes</th></tr></thead><tbody>${rows.map(m => `<tr><td class="muted">${fmt(m.date)}</td><td class="${m.result === 'Win' ? 'good' : m.result === 'Loss' ? 'bad' : 'muted'}"><b>${E(m.result)}</b></td><td>${E(m.map || '-')}</td><td>${E((m.heroes || []).join(', ') || '-')}</td><td class="muted">${E(m.notes || '')}</td></tr>`).join('')}</tbody></table>`;
@@ -165,6 +195,11 @@ function prsTable(prs) {
   const rows = Object.entries(prs).sort((a, b) => Number(b[1].pr || 0) - Number(a[1].pr || 0));
   if (!rows.length) return '<div class="empty">No PRs yet.</div>';
   return `<table class="data"><thead><tr><th>Scenario</th><th>PR</th><th>Last</th></tr></thead><tbody>${rows.map(([name, pr]) => `<tr><td>${E(name)}</td><td class="accent"><b>${E(pr.pr)}</b></td><td class="muted">${fmt(pr.lastDate)}</td></tr>`).join('')}</tbody></table>`;
+}
+function fmtVodTime(sec) {
+  sec = Math.max(0, Math.floor(sec || 0));
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
 }
 function goalHtml(plan, goal) {
   return `<div class="list-row"><div><b>${E(goal.title)}</b><div class="muted">Current ${E(goal.current)}${E(goal.unit || '')} / target ${E(goal.target)}${E(goal.unit || '')}</div></div><button class="btn btn-sm" onclick="goalCheckIn('${plan.id}','${goal.id}')">Check in</button></div>`;
@@ -221,6 +256,15 @@ function goalCheckIn(planId, goalId) {
   if (value == null || value.trim() === '') return;
   const note = prompt('Optional note/evidence:', '') || '';
   return syncChanges({ goalCheckIns: [{ planId, goalId, date: today(), value, note }] }, 'Outcome check-in synced.');
+}
+function markVodWatched(vodId) {
+  return syncChanges({ vodWatched: [{ vodId }] }, 'Review marked watched.');
+}
+function replyVod(vodId, noteId) {
+  const input = document.getElementById(`reply-${vodId}-${noteId}`);
+  const text = input?.value.trim() || '';
+  if (!text) return toast('Write a reply first.', 'bad');
+  return syncChanges({ vodReplies: [{ vodId, noteId, text }] }, 'Reply sent to your coach.');
 }
 async function syncPull() {
   try {
