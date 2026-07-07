@@ -51,6 +51,28 @@ function publicPlan(plan) {
 function clientView(workspace, client) {
   const clientId = client.id;
   const sessions = (workspace.sessions || []).filter(session => session.clientId === clientId);
+  const publicVods = (workspace.vods || []).filter(item => item.clientId === clientId).map(vod => ({
+    id: vod.id,
+    title: vod.title || "",
+    reviewStatus: vod.reviewStatus || "",
+    platform: vod.platform || "",
+    url: vod.url || "",
+    date: vod.date || "",
+    scenario: vod.scenario || "",
+    summary: vod.summary || "",
+    source: vod.source || "",
+    notes: (vod.notes || []).map(note => ({
+      id: note.id,
+      t: note.t || 0,
+      title: note.title || "",
+      text: note.text || "",
+      tag: note.tag || "",
+      severity: note.severity || "",
+      imageDataUrl: note.imageDataUrl || "",
+      gifDataUrl: note.gifDataUrl || "",
+      clipDataUrl: note.clipDataUrl || ""
+    }))
+  }));
   return {
     cloud: workspace.cloud || { revision: 0, updatedAt: null },
     client: {
@@ -64,6 +86,7 @@ function clientView(workspace, client) {
       clientKovaaksStats: client.clientKovaaksStats || []
     },
     playlists: (workspace.playlists || []).filter(item => item.clientId === clientId),
+    vods: publicVods,
     matches: (workspace.matches || []).filter(item => item.clientId === clientId),
     sessions: sessions.map(session => ({
       id: session.id,
