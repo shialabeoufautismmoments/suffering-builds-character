@@ -56,11 +56,16 @@ function clientView(workspace, client) {
     title: vod.title || "",
     reviewStatus: vod.reviewStatus || "",
     platform: vod.platform || "",
+    videoId: vod.videoId || "",
     url: vod.url || "",
     date: vod.date || "",
     scenario: vod.scenario || "",
     summary: vod.summary || "",
     source: vod.source || "",
+    clientStatus: vod.clientStatus || "",
+    clientViewedAt: vod.clientViewedAt || "",
+    createdAt: vod.createdAt || "",
+    updatedAt: vod.updatedAt || "",
     notes: (vod.notes || []).map(note => ({
       id: note.id,
       t: note.t || 0,
@@ -68,6 +73,11 @@ function clientView(workspace, client) {
       text: note.text || "",
       tag: note.tag || "",
       severity: note.severity || "",
+      sourceUrl: note.sourceUrl || "",
+      homework: note.homework || "",
+      homeworkDue: note.homeworkDue || "",
+      clientPrompt: note.clientPrompt || "",
+      clientReplies: note.clientReplies || [],
       imageDataUrl: note.imageDataUrl || "",
       gifDataUrl: note.gifDataUrl || "",
       clipDataUrl: note.clipDataUrl || ""
@@ -206,6 +216,31 @@ function applyGoal(client, input) {
   });
 }
 
+function applyVodWatched(workspace, client, input) {
+  const vod = (workspace.vods || []).find(item => item.clientId === client.id && item.id === input.vodId);
+  if (!vod) return;
+  vod.clientStatus = "watched";
+  vod.clientViewedAt = new Date().toISOString();
+  vod.updatedAt = new Date().toISOString();
+}
+
+function applyVodReply(workspace, client, input) {
+  const vod = (workspace.vods || []).find(item => item.clientId === client.id && item.id === input.vodId);
+  const note = vod && (vod.notes || []).find(item => item.id === input.noteId);
+  const text = clean(input.text, 3000).trim();
+  if (!vod || !note || !text) return;
+  note.clientReplies ||= [];
+  note.clientReplies.push({
+    id: uid(),
+    text,
+    at: new Date().toISOString(),
+    source: "client-app"
+  });
+  vod.clientViewedAt ||= new Date().toISOString();
+  vod.clientStatus = "client-replied";
+  vod.updatedAt = new Date().toISOString();
+}
+
 export default async (request) => {
   const workspace = await store().get(key, { type: "json" }) || null;
   if (!workspace) return json({ error: "The coaching workspace has not been synced yet." }, 404);
@@ -228,6 +263,8 @@ export default async (request) => {
     (changes.homework || []).slice(0, 50).forEach(item => applyHomework(workspace, client, item));
     (changes.actionCompletions || []).slice(0, 50).forEach(item => applyAction(client, item));
     (changes.goalCheckIns || []).slice(0, 50).forEach(item => applyGoal(client, item));
+    (changes.vodWatched || []).slice(0, 25).forEach(item => applyVodWatched(workspace, client, item));
+    (changes.vodReplies || []).slice(0, 50).forEach(item => applyVodReply(workspace, client, item));
     client.updatedAt = new Date().toISOString();
     workspace.cloud = {
       ...(workspace.cloud || {}),
