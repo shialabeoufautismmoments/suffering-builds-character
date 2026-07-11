@@ -122,7 +122,7 @@ collections:
               - { label: "Slug", name: "slug", widget: "string", hint: "URL-safe, lowercase, no spaces (e.g. map-callouts)" }
               - { label: "Title", name: "title", widget: "string" }
               - { label: "Summary", name: "summary", widget: "string", required: false, hint: "Short teaser shown on the wiki index page." }
-              - { label: "Body", name: "body", widget: "text", hint: "Separate paragraphs with a blank line." }
+              - { label: "Body", name: "body", widget: "markdown", hint: "Full markdown editor — headings, bold/italic, links, lists, quotes, code all supported." }
               - { label: "PDF Attachment", name: "pdf", widget: "file", required: false, hint: "Optional. Upload a PDF to embed below the body, with a download link." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this entry without deleting it." }
 

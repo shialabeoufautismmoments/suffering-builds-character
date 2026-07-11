@@ -44,13 +44,11 @@ async function renderWikiEntry() {
 
   document.title = `${entry.title} — Suffering Builds Character`;
 
-  const bodyHtml = (entry.body || "")
-    .split(/\n\s*\n/)
-    .filter(p => p.trim())
-    .map(p => `<p class="story">${p.trim()}</p>`)
-    .join("");
+  const bodyHtml = typeof marked !== "undefined"
+    ? marked.parse(entry.body || "")
+    : `<p class="story">${entry.body || ""}</p>`;
 
-  container.innerHTML = `<h2 style="margin-top:0">${entry.title}</h2>${bodyHtml}${pdfEmbedHtml(entry.pdf)}`;
+  container.innerHTML = `<h2 style="margin-top:0">${entry.title}</h2><div class="markdown-body">${bodyHtml}</div>${pdfEmbedHtml(entry.pdf)}`;
 }
 
 document.addEventListener("DOMContentLoaded", renderWikiEntry);

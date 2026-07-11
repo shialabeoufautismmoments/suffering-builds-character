@@ -123,10 +123,14 @@ News entries), so there's nothing else to configure there.
 
 **Wiki** works like a mini knowledge base: each entry gets a title, optional
 short summary, and body text, and lives at its own page
-(`wiki-entry.html?slug=...`), listed on the `wiki.html` index. Wiki entries
-and Custom Pages both also have a **PDF Attachment** field — upload a PDF and
-it's embedded inline (viewable right on the page) below the body text, with a
-"Download PDF" link underneath. Leave it blank for no attachment.
+(`wiki-entry.html?slug=...`), listed on the `wiki.html` index. The **Body**
+field is a full markdown editor (headings, bold/italic, links, lists, quotes,
+code) — the page renders it with [marked](https://github.com/markedjs/marked)
+(loaded via CDN in `wiki-entry.html`) into styled HTML (`.markdown-body` in
+`css/style.css`). Wiki entries and Custom Pages both also have a **PDF
+Attachment** field — upload a PDF and it's embedded inline (viewable right on
+the page) below the body text, with a "Download PDF" link underneath. Leave
+it blank for no attachment.
 
 **Twitter Threads** "unrolls" a thread without needing any Twitter/X API
 access or developer account: paste each tweet's URL from the thread, **one
@@ -359,11 +363,14 @@ no spaces. `photo` is optional — omit it to keep the initials avatar.
   "slug": "map-callouts",
   "title": "Map Callouts",
   "summary": "Shorthand names for common map positions.",
-  "body": "First paragraph.\n\nSecond paragraph.",
+  "body": "## First paragraph\n\nSecond paragraph with **bold** and a [link](https://example.com).",
   "pdf": "assets/uploads/example.pdf",
   "enabled": true
 }
 ```
+
+`body` is markdown, rendered client-side with `marked` — headings, bold/italic,
+links, lists, blockquotes, and code blocks all work.
 
 `pdf` is optional — a path to an uploaded PDF (same `assets/uploads/` folder
 as photos), embedded inline below the body with a download link. Omit it for
