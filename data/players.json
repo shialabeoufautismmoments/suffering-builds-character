@@ -156,6 +156,22 @@
       "country": "DE",
       "isStaff": true,
       "id": "gweria"
+    },
+    {
+      "socials": {
+        "twitter": "https://x.com/toyota96615893"
+      },
+      "bio": "Quam is a top tier tank player and respected business owner in the Cayman Islands. Quam has invested into this project in hopes it helps players evolve to the next level.",
+      "joined": "2026-07-12",
+      "accent": "#218e00",
+      "name": "Quam",
+      "rank": "N/A",
+      "photo": "https://cdn.discordapp.com/avatars/377267005629267968/059e7c564862ad727e970b815cc5bbdb.png?size=4096",
+      "game": "Overwatch",
+      "role": "Co-Owner",
+      "country": "KY",
+      "isStaff": true,
+      "id": "quam"
     }
   ]
 }
