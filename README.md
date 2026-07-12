@@ -13,6 +13,7 @@ password-protected owner panel for editing player profiles.
 - `staff.html` — leadership/staff members (players flagged **Staff Member?** in Roster)
 - `about.html` — clan story and founding date
 - `wiki.html` / `wiki-entry.html` — wiki index and individual entry view (`?slug=<slug>`)
+- `vod-reviews.html` — public VOD review write-ups, each card links out to a Google Doc
 - `threads.html` / `thread.html` — Twitter/X thread index and unrolled-thread view (`?slug=<slug>`)
 - `roadmap.html` — planned/in-progress/completed milestones
 - `coaching.html` — bookable coaches (linking to their Cal.com page) and coaching testimonials
@@ -24,13 +25,14 @@ password-protected owner panel for editing player profiles.
 - `data/schedule.json` — events as `{ "events": [...] }`
 - `data/about.json` — about-page content as `{ "founded", "story" }`
 - `data/wiki.json` — wiki entries as `{ "entries": [...] }`
+- `data/vod-reviews.json` — VOD reviews as `{ "reviews": [...] }`
 - `data/threads.json` — Twitter/X threads as `{ "threads": [...] }`
 - `data/roadmap.json` — roadmap milestones as `{ "items": [...] }`
 - `data/testimonials.json` — bookable coaches + testimonials as `{ "coaches": [...], "testimonials": [...] }`
 - `data/books.json` — reading list as `{ "books": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, and builds the nav menu
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
@@ -125,12 +127,22 @@ News entries), so there's nothing else to configure there.
 short summary, and body text, and lives at its own page
 (`wiki-entry.html?slug=...`), listed on the `wiki.html` index. The **Body**
 field is a full markdown editor (headings, bold/italic, links, lists, quotes,
-code) — the page renders it with [marked](https://github.com/markedjs/marked)
-(loaded via CDN in `wiki-entry.html`) into styled HTML (`.markdown-body` in
-`css/style.css`). Wiki entries and Custom Pages both also have a **PDF
-Attachment** field — upload a PDF and it's embedded inline (viewable right on
-the page) below the body text, with a "Download PDF" link underneath. Leave
-it blank for no attachment.
+code, and images via the toolbar's image button — it uses the same
+`assets/uploads/` media library as every other image field) — the page
+renders it with [marked](https://github.com/markedjs/marked) (loaded via CDN
+in `wiki-entry.html`) into styled HTML (`.markdown-body` in `css/style.css`).
+Wiki entries and Custom Pages both also have a **PDF Attachment** field —
+upload a PDF and it's embedded inline (viewable right on the page) below the
+body text, with a "Download PDF" link underneath. Leave it blank for no
+attachment.
+
+**VOD Reviews** is a simple public list at `vod-reviews.html`: each entry is
+a title, optional player/team reviewed, optional date, optional short
+summary, and a **Google Doc Link**. Cards on the list page link straight out
+to the doc in a new tab — nothing is embedded inline, so there's no
+"publish to web" step. The doc just needs its sharing setting on **"Anyone
+with the link can view"**, or visitors hit a permission wall when they click
+through.
 
 **Twitter Threads** "unrolls" a thread without needing any Twitter/X API
 access or developer account: paste each tweet's URL from the thread, **one
@@ -249,7 +261,7 @@ field in Site Settings → Navigation Menu:
 
 Default grouping out of the box: **Home** → Roster, News, Schedule · **About**
 → Roster, Staff · **Coaching** → (no dropdown) · **Information** → Wiki,
-Threads, Roadmap, Reading.
+VOD Reviews, Threads, Roadmap, Reading.
 
 On screens narrower than 720px, the nav bar collapses into a hamburger button
 (☰) that toggles a full-width dropdown menu — this is automatic and not
@@ -264,8 +276,8 @@ Deleting that list entry removes the nav link and the page immediately (visiting
 the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
-**Built-in pages** (Home, Roster, News, Schedule, Staff, About, Wiki, Threads,
-Roadmap, Coaching, Reading) work a bit differently, because they're backed by real code (`roster.js`,
+**Built-in pages** (Home, Roster, News, Schedule, Staff, About, Wiki,
+VOD Reviews, Threads, Roadmap, Coaching, Reading) work a bit differently, because they're backed by real code (`roster.js`,
 `news.js`, etc.), not just content — so they can't be *deleted* outright
 without a developer removing files. What you *can* do from `/admin` → Site
 Settings → **Navigation Menu**:
@@ -371,6 +383,23 @@ no spaces. `photo` is optional — omit it to keep the initials avatar.
 
 `body` is markdown, rendered client-side with `marked` — headings, bold/italic,
 links, lists, blockquotes, and code blocks all work.
+
+`data/vod-reviews.json` — one object per entry in the `reviews` array:
+
+```json
+{
+  "title": "psev vs. Team X — Map 1 Review",
+  "subject": "psev",
+  "date": "2026-07-10",
+  "summary": "Positioning and cooldown tracking breakdown.",
+  "docUrl": "https://docs.google.com/document/d/EXAMPLE/edit?usp=sharing",
+  "enabled": true
+}
+```
+
+`docUrl` is whatever share link Google Docs gives you — the card links out to
+it directly in a new tab, so the doc's sharing setting needs to be "Anyone
+with the link can view."
 
 `pdf` is optional — a path to an uploaded PDF (same `assets/uploads/` folder
 as photos), embedded inline below the body with a download link. Omit it for

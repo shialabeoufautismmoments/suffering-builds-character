@@ -126,6 +126,26 @@ collections:
               - { label: "PDF Attachment", name: "pdf", widget: "file", required: false, hint: "Optional. Upload a PDF to embed below the body, with a download link." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this entry without deleting it." }
 
+  - name: "vod_reviews"
+    label: "VOD Reviews"
+    files:
+      - file: "data/vod-reviews.json"
+        label: "Reviews"
+        name: "vod_reviews"
+        fields:
+          - label: "Reviews"
+            name: "reviews"
+            widget: "list"
+            summary: "{{fields.title}}"
+            hint: "Public VOD review write-ups. Paste a Google Doc link — make sure the doc's sharing setting is \"Anyone with the link can view\", or visitors won't be able to open it."
+            fields:
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Player / Team Reviewed", name: "subject", widget: "string", required: false }
+              - { label: "Date", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false }
+              - { label: "Summary", name: "summary", widget: "text", required: false, hint: "Short teaser shown on the list before visitors click through." }
+              - { label: "Google Doc Link", name: "docUrl", widget: "string", hint: "Paste the doc's share link. Set sharing to \"Anyone with the link can view\" first." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this review without deleting it." }
+
   - name: "threads"
     label: "Twitter Threads"
     files:
@@ -241,9 +261,9 @@ collections:
             summary: "{{fields.label}}"
             hint: "Controls the nav bar: order, labels, visibility, AND grouping into hover dropdowns (see Parent Group(s) below). The 12 built-in entries (home/roster/news/schedule/staff/about/wiki/threads/roadmap/coaching/reading/information) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / schedule / staff / about / wiki / threads / roadmap / coaching / reading / information. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / schedule / staff / about / wiki / vod-reviews / threads / roadmap / coaching / reading / information. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / schedule.html / staff.html / about.html / wiki.html / threads.html / roadmap.html / coaching.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
+              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / schedule.html / staff.html / about.html / wiki.html / vod-reviews.html / threads.html / roadmap.html / coaching.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
               - { label: "Parent Group(s)", name: "parents", widget: "string", required: false, hint: "Leave blank to show this item as its own top-level nav button. To nest it as a hover-dropdown item instead, put the ID(s) of the top-level item(s) it should appear under, comma-separated if more than one (e.g. \"home\" or \"home,about\"). An item with children automatically gets a hover dropdown; hovering an item with no children does nothing." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
@@ -320,6 +340,12 @@ collections:
                   - { label: "Intro text", name: "intro", widget: "text", required: false }
               - label: "Reading Page"
                 name: "reading"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "VOD Reviews Page"
+                name: "vod-reviews"
                 widget: "object"
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }

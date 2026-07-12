@@ -794,6 +794,12 @@ footer {
   font-size: 0.85rem;
 }
 
+.card-list-item .vod-review-meta {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  color: var(--accent-bright);
+}
+
 .tweet-embed {
   margin-bottom: 20px;
   display: flex;

@@ -29,6 +29,10 @@
       "heading": "Wiki",
       "intro": ""
     },
+    "vod-reviews": {
+      "heading": "VOD Reviews",
+      "intro": ""
+    },
     "news": {
       "heading": "News",
       "intro": ""
@@ -118,6 +122,13 @@
       "id": "wiki",
       "label": "Wiki",
       "path": "wiki.html",
+      "enabled": true,
+      "parents": "information"
+    },
+    {
+      "id": "vod-reviews",
+      "label": "VOD Reviews",
+      "path": "vod-reviews.html",
       "enabled": true,
       "parents": "information"
     },
