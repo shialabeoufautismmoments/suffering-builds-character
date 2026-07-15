@@ -107,6 +107,26 @@ function activityDates() {
   return dates;
 }
 
+// Generic mini trend line for a { date, value } series, used for goal
+// check-in history and KovaaK's PR history. Returns '' below 2 points.
+function sparklineSvg(points) {
+  const clean = (points || [])
+    .filter(p => p && p.date && Number.isFinite(Number(p.value)))
+    .sort((a, b) => a.date.localeCompare(b.date));
+  if (clean.length < 2) return '';
+  const width = 120, height = 32, pad = 3;
+  const values = clean.map(p => Number(p.value));
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = (max - min) || 1;
+  const stepX = (width - pad * 2) / (clean.length - 1);
+  const coords = values.map((v, i) => {
+    const x = pad + i * stepX;
+    const y = height - pad - ((v - min) / range) * (height - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  return `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" style="display:block;flex-shrink:0"><polyline points="${coords}" fill="none" stroke="var(--accent)" stroke-width="2"/></svg>`;
+}
+
 function computeStreak() {
   const dates = activityDates();
   const activeToday = dates.has(today());
@@ -119,6 +139,58 @@ function computeStreak() {
     cursor.setDate(cursor.getDate() - 1);
   }
   return { streak, activeToday };
+}
+
+function buildShareCanvas() {
+  const c = client();
+  const { streak } = computeStreak();
+  const canvas = document.createElement('canvas');
+  canvas.width = 800; canvas.height = 420;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 800, 420);
+  grad.addColorStop(0, '#11161d');
+  grad.addColorStop(1, '#0d1117');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 800, 420);
+  ctx.fillStyle = '#e8833a';
+  ctx.beginPath(); ctx.arc(48, 56, 8, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#e6edf3';
+  ctx.font = '700 22px Segoe UI, sans-serif';
+  ctx.fillText('CoachSBC', 66, 64);
+  ctx.fillStyle = '#e8833a';
+  ctx.font = '800 140px Segoe UI, sans-serif';
+  ctx.fillText(String(streak), 48, 250);
+  ctx.fillStyle = '#e6edf3';
+  ctx.font = '600 28px Segoe UI, sans-serif';
+  ctx.fillText(`${streak === 1 ? 'day' : 'days'} practice streak`, 48, 290);
+  ctx.fillStyle = '#9aa6b2';
+  ctx.font = '500 20px Segoe UI, sans-serif';
+  ctx.fillText(c.name || 'Client', 48, 330);
+  const topPr = Object.entries(c.prs || {}).sort((a, b) => (b[1].lastDate || '').localeCompare(a[1].lastDate || ''))[0];
+  if (topPr) {
+    ctx.fillStyle = '#3fb950';
+    ctx.font = '600 18px Segoe UI, sans-serif';
+    ctx.fillText(`Latest PR: ${topPr[0]} - ${topPr[1].pr}`, 48, 365);
+  }
+  return canvas;
+}
+
+async function shareStreak() {
+  const canvas = buildShareCanvas();
+  canvas.toBlob(async blob => {
+    if (!blob) return toast('Could not generate image.', 'bad');
+    try {
+      if (!navigator.clipboard || !window.ClipboardItem) throw new Error('unsupported');
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      toast('Streak card copied - paste it in Discord.', 'good');
+    } catch (e) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'coachsbc-streak.png';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      toast('Streak card downloaded.', 'good');
+    }
+  }, 'image/png');
 }
 
 function renderToday() {
@@ -138,23 +210,22 @@ function renderToday() {
 
   return `<div class="page-head"><div><h1>Today</h1><div class="sub">${fmt(today())}</div></div></div>
     <div class="grid cols-3 mb">
-      <div class="stat"><div class="label">Current streak</div><div class="value ${streak > 0 ? 'accent' : ''}">${streak}</div><div class="muted">day${streak === 1 ? '' : 's'}${activeToday ? '' : ' - not logged today yet'}</div></div>
+      <div class="stat">
+        <div class="label">Current streak</div>
+        <div class="value ${streak > 0 ? 'accent' : ''}">${streak}</div>
+        <div class="muted">day${streak === 1 ? '' : 's'}${activeToday ? '' : ' - not logged today yet'}</div>
+        ${streak > 0 ? `<button class="btn btn-sm mt" onclick="shareStreak()">Share streak card</button>` : ''}
+      </div>
       <div class="stat"><div class="label">Due today</div><div class="value ${dueOrOverdue.length ? 'warn' : 'good'}">${dueOrOverdue.length}</div><div class="muted">homework item${dueOrOverdue.length === 1 ? '' : 's'}</div></div>
       <div class="stat"><div class="label">Prescriptions on pace</div><div class="value">${prescriptions.filter(p => p.onPace).length}/${prescriptions.length}</div><div class="muted">this week</div></div>
     </div>
     ${activePlan ? `<div class="card mb">
       <div class="card-head"><h2>Today's prescriptions</h2><span class="pill">${E(activePlan.title)}</span></div>
-      ${prescriptions.length ? prescriptions.map(({ action, weekCount, doneToday }) => `<div class="list-row">
-        <div><b>${E(action.title)}</b><div class="muted">${E(action.type)} - ${weekCount}/${action.targetPerWeek || 1} this week${doneToday ? ' - done today' : ''}</div></div>
-        <button class="btn btn-sm ${doneToday ? '' : 'btn-primary'}" ${doneToday ? 'disabled' : ''} onclick="completeAction('${activePlan.id}','${action.id}')">${doneToday ? 'Logged today' : '+ Done'}</button>
-      </div>`).join('') : '<div class="empty">No weekly prescriptions assigned.</div>'}
+      ${(activePlan.actions || []).length ? (activePlan.actions || []).map(action => actionRowHtml(activePlan, action)).join('') : '<div class="empty">No weekly prescriptions assigned.</div>'}
     </div>` : ''}
     <div class="grid cols-2">
       <div class="card"><div class="card-head"><h2>Homework due</h2><button class="btn btn-sm" onclick="nav('homework')">View all</button></div>
-        ${dueHomework.length ? dueHomework.slice(0, 5).map(h => `<div class="list-row">
-          <div><b>${E(h.text)}</b><div class="muted">${h.dueDate ? 'Due ' + fmt(h.dueDate) : 'No due date'}</div></div>
-          <button class="btn btn-sm btn-primary" onclick="toggleHomework('${h.session.id}','${h.id}',true)">Mark done</button>
-        </div>`).join('') : '<div class="empty">Nothing due. Nice.</div>'}
+        ${dueHomework.length ? dueHomework.slice(0, 5).map(h => homeworkRowHtml(h.session, h)).join('') : '<div class="empty">Nothing due. Nice.</div>'}
       </div>
       <div class="card"><div class="card-head"><h2>Today's training</h2><button class="btn btn-sm" onclick="nav('playlists')">View all</button></div>
         ${playlists().length ? playlists().slice(0, 3).map(p => `<div class="list-row"><div><b>${E(p.name)}</b><div class="muted">${(p.scenarios || []).length} scenarios</div></div></div>`).join('') : '<div class="empty">No playlists assigned yet.</div>'}
@@ -205,17 +276,24 @@ function renderKovaaks() {
     </form></div>
     <div class="grid cols-2">
       <div class="card"><div class="card-head"><h2>Manual log</h2></div>${kovaaksTable((c.clientKovaaksStats || []).slice().reverse())}</div>
-      <div class="card"><div class="card-head"><h2>Current PRs</h2></div>${prsTable(c.prs || {})}</div>
+      <div class="card"><div class="card-head"><h2>Current PRs</h2></div>${prsTable(c.prs || {}, c.prHistory || {})}</div>
     </div>`;
 }
 
 function renderHomework() {
   const rows = sessions().flatMap(session => (session.homework || []).map(homework => ({ session, homework }))).sort((a, b) => (a.homework.dueDate || '').localeCompare(b.homework.dueDate || ''));
   return `<div class="page-head"><div><h1>Homework</h1><div class="sub">Mark completed work and leave notes for your coach.</div></div></div>
-    <div class="card">${rows.length ? rows.map(({ session, homework }) => `<div class="list-row">
-      <div><b style="${homework.done ? 'text-decoration:line-through;color:var(--dim)' : ''}">${E(homework.text)}</b><div class="muted">${E(homework.type)} ${homework.dueDate ? '- due ' + fmt(homework.dueDate) : '- assigned ' + fmt(session.date)}</div>${homework.clientNote ? `<div class="muted">Note: ${E(homework.clientNote)}</div>` : ''}</div>
-      <div><button class="btn btn-sm ${homework.done ? '' : 'btn-primary'}" onclick="toggleHomework('${session.id}','${homework.id}',${homework.done ? 'false' : 'true'})">${homework.done ? 'Reopen' : 'Mark done'}</button></div>
-    </div>`).join('') : '<div class="empty">No homework assigned yet.</div>'}</div>`;
+    <div class="card">${rows.length ? rows.map(({ session, homework }) => homeworkRowHtml(session, homework)).join('') : '<div class="empty">No homework assigned yet.</div>'}</div>`;
+}
+
+function homeworkRowHtml(session, homework) {
+  const noteId = `hw-note-${homework.id}`;
+  return `<div class="list-row-block">
+    <div><b style="${homework.done ? 'text-decoration:line-through;color:var(--dim)' : ''}">${E(homework.text)}</b><div class="muted">${E(homework.type)} ${homework.dueDate ? '- due ' + fmt(homework.dueDate) : '- assigned ' + fmt(session.date)}</div>${homework.clientNote ? `<div class="muted">Note: ${E(homework.clientNote)}</div>` : ''}</div>
+    ${homework.done
+      ? `<div class="mt"><button class="btn btn-sm" onclick="toggleHomework('${session.id}','${homework.id}',false)">Reopen</button></div>`
+      : `<div class="row mt"><input id="${noteId}" placeholder="Optional note..."><button class="btn btn-sm btn-primary" onclick="toggleHomework('${session.id}','${homework.id}',true,'${noteId}')">Mark done</button></div>`}
+  </div>`;
 }
 
 function renderPlans() {
@@ -225,7 +303,7 @@ function renderPlans() {
       <p class="muted mb">${E(plan.objective || '')}</p>
       <div class="grid cols-2">
         <div><h2 class="mb">Outcomes</h2>${(plan.goals || []).length ? plan.goals.map(goal => goalHtml(plan, goal)).join('') : '<div class="empty">No outcomes yet.</div>'}</div>
-        <div><h2 class="mb">Weekly prescriptions</h2>${(plan.actions || []).length ? plan.actions.map(action => actionHtml(plan, action)).join('') : '<div class="empty">No prescriptions yet.</div>'}</div>
+        <div><h2 class="mb">Weekly prescriptions</h2>${(plan.actions || []).length ? plan.actions.map(action => actionRowHtml(plan, action)).join('') : '<div class="empty">No prescriptions yet.</div>'}</div>
       </div>
     </div>`).join('') : '<div class="empty">No development plan assigned yet.</div>'}`;
 }
@@ -268,10 +346,13 @@ function kovaaksTable(rows) {
   if (!rows.length) return "<div class=\"empty\">No KovaaK's stats logged yet.</div>";
   return `<table class="data"><thead><tr><th>Date</th><th>Scenario</th><th>Score</th><th>Accuracy</th><th>Notes</th></tr></thead><tbody>${rows.map(s => `<tr><td class="muted">${fmt(s.date)}</td><td><b>${E(s.scenario)}</b></td><td class="accent"><b>${E(s.score)}</b></td><td>${s.accuracy == null ? '-' : E(s.accuracy) + '%'}</td><td class="muted">${E(s.notes || '')}</td></tr>`).join('')}</tbody></table>`;
 }
-function prsTable(prs) {
+function prsTable(prs, prHistory) {
   const rows = Object.entries(prs).sort((a, b) => Number(b[1].pr || 0) - Number(a[1].pr || 0));
   if (!rows.length) return '<div class="empty">No PRs yet.</div>';
-  return `<table class="data"><thead><tr><th>Scenario</th><th>PR</th><th>Last</th></tr></thead><tbody>${rows.map(([name, pr]) => `<tr><td>${E(name)}</td><td class="accent"><b>${E(pr.pr)}</b></td><td class="muted">${fmt(pr.lastDate)}</td></tr>`).join('')}</tbody></table>`;
+  return `<table class="data"><thead><tr><th>Scenario</th><th>PR</th><th>Trend</th><th>Last</th></tr></thead><tbody>${rows.map(([name, pr]) => {
+    const hist = ((prHistory && prHistory[name]) || []).map(h => ({ date: h.d, value: h.pr }));
+    return `<tr><td>${E(name)}</td><td class="accent"><b>${E(pr.pr)}</b></td><td>${sparklineSvg(hist)}</td><td class="muted">${fmt(pr.lastDate)}</td></tr>`;
+  }).join('')}</tbody></table>`;
 }
 function fmtVodTime(sec) {
   sec = Math.max(0, Math.floor(sec || 0));
@@ -279,11 +360,28 @@ function fmtVodTime(sec) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 function goalHtml(plan, goal) {
-  return `<div class="list-row"><div><b>${E(goal.title)}</b><div class="muted">Current ${E(goal.current)}${E(goal.unit || '')} / target ${E(goal.target)}${E(goal.unit || '')}</div></div><button class="btn btn-sm" onclick="goalCheckIn('${plan.id}','${goal.id}')">Check in</button></div>`;
+  const history = (goal.history || []).slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const recent = history.slice(-3).reverse();
+  const valId = `goal-val-${goal.id}`, noteId = `goal-note-${goal.id}`;
+  return `<div class="list-row-block">
+    <div class="split">
+      <div><b>${E(goal.title)}</b><div class="muted">Current ${E(goal.current)}${E(goal.unit || '')} / target ${E(goal.target)}${E(goal.unit || '')}</div></div>
+      ${sparklineSvg(history.map(h => ({ date: h.date, value: h.value })))}
+    </div>
+    <div class="row mt"><input id="${valId}" type="number" step="any" placeholder="New value"><input id="${noteId}" placeholder="Optional note/evidence..."><button class="btn btn-sm" onclick="goalCheckIn('${plan.id}','${goal.id}','${valId}','${noteId}')">Check in</button></div>
+    ${recent.length ? `<div class="muted small mt">${recent.map(h => `${fmt(h.date)}: ${E(h.value)}${E(goal.unit || '')}${h.note ? ' - ' + E(h.note) : ''}`).join('<br>')}</div>` : ''}
+  </div>`;
 }
-function actionHtml(plan, action) {
+function actionRowHtml(plan, action) {
   const weekCount = (action.completions || []).filter(c => c.date >= weekStart()).length;
-  return `<div class="list-row"><div><b>${E(action.title)}</b><div class="muted">${E(action.type)} - ${weekCount}/${action.targetPerWeek || 1} this week</div></div><button class="btn btn-sm btn-primary" onclick="completeAction('${plan.id}','${action.id}')">+ Done</button></div>`;
+  const doneToday = (action.completions || []).some(c => c.date === today());
+  const noteId = `act-note-${action.id}`;
+  return `<div class="list-row-block">
+    <div><b>${E(action.title)}</b><div class="muted">${E(action.type)} - ${weekCount}/${action.targetPerWeek || 1} this week${doneToday ? ' - done today' : ''}</div></div>
+    ${doneToday
+      ? `<div class="mt"><button class="btn btn-sm" disabled>Logged today</button></div>`
+      : `<div class="row mt"><input id="${noteId}" placeholder="Optional note..."><button class="btn btn-sm btn-primary" onclick="completeAction('${plan.id}','${action.id}','${noteId}')">+ Done</button></div>`}
+  </div>`;
 }
 function weekStart() {
   const d = new Date(); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day);
@@ -320,18 +418,18 @@ function submitKovaaks(event) {
   if (!val('k-scenario') || !val('k-score')) return toast('Scenario and score are required.', 'bad');
   return syncChanges({ kovaaksStats: [{ id: uid(), date: val('k-date') || today(), scenario: val('k-scenario'), score: val('k-score'), accuracy: val('k-accuracy'), notes: val('k-notes') }] }, "KovaaK's stat synced to your coach.");
 }
-function toggleHomework(sessionId, homeworkId, done) {
-  const note = done ? prompt('Optional note for your coach:', '') || '' : '';
+function toggleHomework(sessionId, homeworkId, done, noteId) {
+  const note = done && noteId ? (document.getElementById(noteId)?.value.trim() || '') : '';
   return syncChanges({ homework: [{ sessionId, homeworkId, done, note }] }, done ? 'Homework marked done.' : 'Homework reopened.');
 }
-function completeAction(planId, actionId) {
-  const note = prompt('Optional note for your coach:', '') || '';
+function completeAction(planId, actionId, noteId) {
+  const note = noteId ? (document.getElementById(noteId)?.value.trim() || '') : '';
   return syncChanges({ actionCompletions: [{ planId, actionId, date: today(), note }] }, 'Prescription completion synced.');
 }
-function goalCheckIn(planId, goalId) {
-  const value = prompt('Current value:');
-  if (value == null || value.trim() === '') return;
-  const note = prompt('Optional note/evidence:', '') || '';
+function goalCheckIn(planId, goalId, valId, noteId) {
+  const value = document.getElementById(valId)?.value.trim();
+  if (!value) return toast('Enter a value first.', 'bad');
+  const note = document.getElementById(noteId)?.value.trim() || '';
   return syncChanges({ goalCheckIns: [{ planId, goalId, date: today(), value, note }] }, 'Outcome check-in synced.');
 }
 function markVodWatched(vodId) {

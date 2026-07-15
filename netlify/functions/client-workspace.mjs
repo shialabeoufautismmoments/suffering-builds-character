@@ -93,6 +93,7 @@ function clientView(workspace, client) {
       notes: client.notes || "",
       goals: client.goals || [],
       prs: client.prs || {},
+      prHistory: client.prHistory || {},
       clientKovaaksStats: client.clientKovaaksStats || []
     },
     playlists: (workspace.playlists || []).filter(item => item.clientId === clientId),
