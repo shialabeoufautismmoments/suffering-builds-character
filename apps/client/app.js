@@ -1,4 +1,4 @@
-const State = { code: '', data: null, view: 'dashboard', busy: false };
+const State = { code: '', data: null, view: 'today', busy: false };
 const app = document.getElementById('app');
 const E = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -61,7 +61,7 @@ function unreadVods() { return vods().filter(isVodUnread); }
 
 function renderShell() {
   const c = client();
-  const tabs = [['dashboard', 'Dashboard'], ['matches', 'Matches'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['plans', 'Plan'], ['playlists', 'Playlists'], ['vods', `Reviews${unreadVods().length ? ` (${unreadVods().length})` : ''}`]];
+  const tabs = [['today', 'Today'], ['dashboard', 'Overview'], ['matches', 'Matches'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['plans', 'Plan'], ['playlists', 'Playlists'], ['vods', `Reviews${unreadVods().length ? ` (${unreadVods().length})` : ''}`]];
   app.innerHTML = `<div class="shell">
     <div class="topbar">
       <div class="brand"><span class="dot"></span>CoachSBC Client</div>
@@ -76,6 +76,7 @@ function renderShell() {
 }
 
 function renderView() {
+  if (State.view === 'today') return renderToday();
   if (State.view === 'matches') return renderMatches();
   if (State.view === 'kovaaks') return renderKovaaks();
   if (State.view === 'homework') return renderHomework();
@@ -83,6 +84,82 @@ function renderView() {
   if (State.view === 'playlists') return renderPlaylists();
   if (State.view === 'vods') return renderVods();
   return renderDashboard();
+}
+
+// Every date the client did *something* — logged a match/stat, completed
+// homework or a prescription, checked in a goal, or engaged with a VOD
+// review. Streak is derived from this instead of a separate tracked field,
+// so it needs no backend changes and can't drift out of sync with the data.
+function activityDates() {
+  const c = client();
+  const dates = new Set();
+  matches().forEach(m => m.date && dates.add(m.date));
+  (c.clientKovaaksStats || []).forEach(s => s.date && dates.add(s.date));
+  sessions().forEach(s => (s.homework || []).forEach(h => h.clientCompletedAt && dates.add(h.clientCompletedAt.slice(0, 10))));
+  plans().forEach(p => {
+    (p.actions || []).forEach(a => (a.completions || []).forEach(comp => comp.date && dates.add(comp.date)));
+    (p.goals || []).forEach(g => (g.history || []).forEach(h => h.date && dates.add(h.date)));
+  });
+  vods().forEach(v => {
+    if (v.clientViewedAt) dates.add(v.clientViewedAt.slice(0, 10));
+    (v.notes || []).forEach(n => (n.clientReplies || []).forEach(r => r.at && dates.add(r.at.slice(0, 10))));
+  });
+  return dates;
+}
+
+function computeStreak() {
+  const dates = activityDates();
+  const activeToday = dates.has(today());
+  // Don't zero out the streak just because today isn't logged yet — the day
+  // isn't over. Start counting from yesterday in that case.
+  const cursor = activeToday ? new Date() : new Date(Date.now() - 86400000);
+  let streak = 0;
+  while (dates.has(cursor.toISOString().slice(0, 10))) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return { streak, activeToday };
+}
+
+function renderToday() {
+  const activePlan = plans().find(p => p.status === 'active') || plans()[0];
+  const { streak, activeToday } = computeStreak();
+
+  const dueHomework = sessions().flatMap(s => (s.homework || []).map(h => ({ ...h, session: s })))
+    .filter(h => !h.done)
+    .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
+  const dueOrOverdue = dueHomework.filter(h => h.dueDate && h.dueDate <= today());
+
+  const prescriptions = activePlan ? (activePlan.actions || []).map(a => {
+    const weekCount = (a.completions || []).filter(c => c.date >= weekStart()).length;
+    const doneToday = (a.completions || []).some(c => c.date === today());
+    return { action: a, weekCount, doneToday, onPace: weekCount >= (a.targetPerWeek || 1) };
+  }) : [];
+
+  return `<div class="page-head"><div><h1>Today</h1><div class="sub">${fmt(today())}</div></div></div>
+    <div class="grid cols-3 mb">
+      <div class="stat"><div class="label">Current streak</div><div class="value ${streak > 0 ? 'accent' : ''}">${streak}</div><div class="muted">day${streak === 1 ? '' : 's'}${activeToday ? '' : ' - not logged today yet'}</div></div>
+      <div class="stat"><div class="label">Due today</div><div class="value ${dueOrOverdue.length ? 'warn' : 'good'}">${dueOrOverdue.length}</div><div class="muted">homework item${dueOrOverdue.length === 1 ? '' : 's'}</div></div>
+      <div class="stat"><div class="label">Prescriptions on pace</div><div class="value">${prescriptions.filter(p => p.onPace).length}/${prescriptions.length}</div><div class="muted">this week</div></div>
+    </div>
+    ${activePlan ? `<div class="card mb">
+      <div class="card-head"><h2>Today's prescriptions</h2><span class="pill">${E(activePlan.title)}</span></div>
+      ${prescriptions.length ? prescriptions.map(({ action, weekCount, doneToday }) => `<div class="list-row">
+        <div><b>${E(action.title)}</b><div class="muted">${E(action.type)} - ${weekCount}/${action.targetPerWeek || 1} this week${doneToday ? ' - done today' : ''}</div></div>
+        <button class="btn btn-sm ${doneToday ? '' : 'btn-primary'}" ${doneToday ? 'disabled' : ''} onclick="completeAction('${activePlan.id}','${action.id}')">${doneToday ? 'Logged today' : '+ Done'}</button>
+      </div>`).join('') : '<div class="empty">No weekly prescriptions assigned.</div>'}
+    </div>` : ''}
+    <div class="grid cols-2">
+      <div class="card"><div class="card-head"><h2>Homework due</h2><button class="btn btn-sm" onclick="nav('homework')">View all</button></div>
+        ${dueHomework.length ? dueHomework.slice(0, 5).map(h => `<div class="list-row">
+          <div><b>${E(h.text)}</b><div class="muted">${h.dueDate ? 'Due ' + fmt(h.dueDate) : 'No due date'}</div></div>
+          <button class="btn btn-sm btn-primary" onclick="toggleHomework('${h.session.id}','${h.id}',true)">Mark done</button>
+        </div>`).join('') : '<div class="empty">Nothing due. Nice.</div>'}
+      </div>
+      <div class="card"><div class="card-head"><h2>Today's training</h2><button class="btn btn-sm" onclick="nav('playlists')">View all</button></div>
+        ${playlists().length ? playlists().slice(0, 3).map(p => `<div class="list-row"><div><b>${E(p.name)}</b><div class="muted">${(p.scenarios || []).length} scenarios</div></div></div>`).join('') : '<div class="empty">No playlists assigned yet.</div>'}
+      </div>
+    </div>`;
 }
 
 function renderDashboard() {
