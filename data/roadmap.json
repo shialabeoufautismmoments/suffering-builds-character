@@ -1,3 +1,16 @@
 {
-  "items": []
+  "items": [
+    {
+      "status": "In Progress",
+      "title": "Develop Proof of Concept",
+      "description": "We are working with Extinction across several teams as well as team members or people we've decided would be good for this project, and developing into the players they can be if they reached their fullest potential.",
+      "target": "Q3 2026"
+    },
+    {
+      "status": "Planned",
+      "title": "Reach Out to More Teams and Advertise",
+      "description": "The goal is to reach out to more teams to gain more partnerships after we've developed proof of concept.",
+      "target": "Q4 2026"
+    }
+  ]
 }
