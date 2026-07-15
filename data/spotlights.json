@@ -1,3 +1,12 @@
 {
-  "spotlights": []
+  "spotlights": [
+    {
+      "enabled": true,
+      "slug": "beleosplotlight",
+      "playerName": "Beleo",
+      "photo": "https://cdn.discordapp.com/avatars/1200154824772157553/ee3a6303b077212f8c9ce8727a232d44.png?size=4096",
+      "summary": "Beleo has improved from High Masters/Low GM to x in several weeks.",
+      "notes": "test"
+    }
+  ]
 }
