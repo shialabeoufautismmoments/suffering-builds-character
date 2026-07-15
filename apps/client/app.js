@@ -1,4 +1,4 @@
-const State = { code: '', data: null, view: 'today', busy: false };
+const State = { code: '', data: null, view: 'today', busy: false, since: null };
 const app = document.getElementById('app');
 const E = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -13,12 +13,62 @@ function toast(message, type = '') {
   setTimeout(() => el.remove(), 3200);
 }
 
+const QUEUE_KEY = 'coachsbc-client-pending';
+const SEEN_KEY = 'coachsbc-client-seen';
+function lsGet(key, fallback) {
+  try { const v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; }
+  catch (e) { return fallback; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+}
+function loadQueue() { return lsGet(QUEUE_KEY, []); }
+function saveQueue(q) { lsSet(QUEUE_KEY, q || []); }
+
+// Concatenate several change-sets into one, merging same-named arrays — used
+// to flush a backlog of offline edits in a single request.
+function mergeChanges(list) {
+  const merged = {};
+  (list || []).forEach(ch => Object.entries(ch || {}).forEach(([k, v]) => {
+    if (Array.isArray(v)) merged[k] = (merged[k] || []).concat(v);
+  }));
+  return merged;
+}
+
+// Snapshot the IDs currently on screen so the next visit can diff against them.
+function markSeen() {
+  lsSet(SEEN_KEY, {
+    vods: vods().map(v => v.id),
+    homework: sessions().flatMap(s => (s.homework || []).map(h => h.id)),
+    sessions: sessions().map(s => s.id)
+  });
+}
+
+// New-since-last-open counts, from diffing current IDs against the set saved
+// on the previous visit. Null on a first visit or when nothing is new.
+function computeSinceLastVisit() {
+  const seen = lsGet(SEEN_KEY, null);
+  if (!seen || !seen.vods) return null;
+  const absent = (arr, id) => !(arr || []).includes(id);
+  const newVods = vods().filter(v => absent(seen.vods, v.id)).length;
+  const newHw = sessions().flatMap(s => (s.homework || []).map(h => h.id)).filter(id => absent(seen.homework, id)).length;
+  const newSessions = sessions().filter(s => absent(seen.sessions, s.id)).length;
+  if (!newVods && !newHw && !newSessions) return null;
+  return { newVods, newHw, newSessions };
+}
+
 async function boot() {
   const cache = await window.clientApi.cacheGet();
   State.code = cache.lastCode || '';
   State.data = cache.workspace || null;
-  if (State.data && State.code) renderShell();
-  else renderLogin();
+  if (State.data && State.code) {
+    State.since = computeSinceLastVisit();
+    markSeen();
+    flushQueue(true);
+    renderShell();
+  } else {
+    renderLogin();
+  }
 }
 
 function renderLogin(error = '') {
@@ -43,6 +93,8 @@ async function login(event) {
     const result = await window.clientApi.workspaceGet(code);
     State.code = code;
     State.data = result.data;
+    State.since = computeSinceLastVisit();
+    markSeen();
     renderShell();
   } catch (e) {
     renderLogin(e.message || 'Could not unlock this client.');
@@ -61,25 +113,39 @@ function unreadVods() { return vods().filter(isVodUnread); }
 
 function renderShell() {
   const c = client();
-  const tabs = [['today', 'Today'], ['dashboard', 'Overview'], ['matches', 'Matches'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['plans', 'Plan'], ['playlists', 'Playlists'], ['vods', `Reviews${unreadVods().length ? ` (${unreadVods().length})` : ''}`]];
+  const pending = loadQueue().length;
+  const tabs = [['today', 'Today'], ['dashboard', 'Overview'], ['matches', 'Matches'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['sessions', 'Sessions'], ['plans', 'Plan'], ['playlists', 'Playlists'], ['vods', `Reviews${unreadVods().length ? ` (${unreadVods().length})` : ''}`]];
   app.innerHTML = `<div class="shell">
     <div class="topbar">
       <div class="brand"><span class="dot"></span>CoachSBC Client</div>
       <div class="tabs">${tabs.map(([id, label]) => `<button class="tab ${State.view === id ? 'on' : ''}" onclick="nav('${id}')">${label}</button>`).join('')}</div>
       <div class="spacer"></div>
+      ${pending ? `<span class="pill pending-pill" title="Changes waiting to sync">${pending} pending</span>` : ''}
       <div class="client-badge">${E(c.name || 'Client')} ${c.rank ? '- ' + E(c.rank) : ''}</div>
       <button class="btn btn-sm" onclick="syncPull()">Refresh</button>
       <button class="btn btn-sm" onclick="logout()">Lock</button>
     </div>
-    <main class="main">${renderView()}</main>
+    <main class="main">${bannerHtml()}${renderView()}</main>
   </div>`;
 }
+
+function bannerHtml() {
+  if (!State.since) return '';
+  const parts = [];
+  if (State.since.newVods) parts.push(`${State.since.newVods} new review${State.since.newVods === 1 ? '' : 's'}`);
+  if (State.since.newHw) parts.push(`${State.since.newHw} new homework`);
+  if (State.since.newSessions) parts.push(`${State.since.newSessions} new session note${State.since.newSessions === 1 ? '' : 's'}`);
+  if (!parts.length) return '';
+  return `<div class="banner"><span>Since your last visit: <b>${parts.join(', ')}</b>.</span><button class="banner-x" onclick="dismissBanner()">Dismiss</button></div>`;
+}
+function dismissBanner() { State.since = null; renderShell(); }
 
 function renderView() {
   if (State.view === 'today') return renderToday();
   if (State.view === 'matches') return renderMatches();
   if (State.view === 'kovaaks') return renderKovaaks();
   if (State.view === 'homework') return renderHomework();
+  if (State.view === 'sessions') return renderSessions();
   if (State.view === 'plans') return renderPlans();
   if (State.view === 'playlists') return renderPlaylists();
   if (State.view === 'vods') return renderVods();
@@ -266,11 +332,20 @@ function renderMatches() {
     <div class="card"><div class="card-head"><h2>Match log</h2></div>${matchTable(matches().slice().reverse())}</div>`;
 }
 
+function scenarioNames() {
+  const c = client();
+  const names = new Set();
+  Object.keys(c.prs || {}).forEach(n => names.add(n));
+  (c.clientKovaaksStats || []).forEach(s => s.scenario && names.add(s.scenario));
+  playlists().forEach(p => (p.scenarios || []).forEach(sc => sc.name && names.add(sc.name)));
+  return [...names].sort();
+}
+
 function renderKovaaks() {
   const c = client();
   return `<div class="page-head"><div><h1>KovaaK's Stats</h1><div class="sub">Manual stat log for scores, accuracy, and notes. Your best scores update the coach dashboard.</div></div></div>
     <div class="card mb"><form onsubmit="submitKovaaks(event)">
-      <div class="row"><label class="field"><span>Date</span><input id="k-date" type="date" value="${today()}"></label><label class="field"><span>Scenario</span><input id="k-scenario" placeholder="Pasuing Voltaic Easy"></label><label class="field"><span>Score</span><input id="k-score" type="number" step="any" placeholder="12345"></label></div>
+      <div class="row"><label class="field"><span>Date</span><input id="k-date" type="date" value="${today()}"></label><label class="field"><span>Scenario</span><input id="k-scenario" list="scenario-options" placeholder="Pasuing Voltaic Easy"><datalist id="scenario-options">${scenarioNames().map(n => `<option value="${E(n)}"></option>`).join('')}</datalist></label><label class="field"><span>Score</span><input id="k-score" type="number" step="any" placeholder="12345"></label></div>
       <div class="row"><label class="field"><span>Accuracy %</span><input id="k-accuracy" type="number" step="any" placeholder="optional"></label><label class="field"><span>Notes</span><input id="k-notes" placeholder="felt shaky, new sens, etc."></label></div>
       <button class="btn btn-primary">Save KovaaK's stat</button>
     </form></div>
@@ -294,6 +369,16 @@ function homeworkRowHtml(session, homework) {
       ? `<div class="mt"><button class="btn btn-sm" onclick="toggleHomework('${session.id}','${homework.id}',false)">Reopen</button></div>`
       : `<div class="row mt"><input id="${noteId}" placeholder="Optional note..."><button class="btn btn-sm btn-primary" onclick="toggleHomework('${session.id}','${homework.id}',true,'${noteId}')">Mark done</button></div>`}
   </div>`;
+}
+
+function renderSessions() {
+  const rows = sessions().slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  return `<div class="page-head"><div><h1>Session Notes</h1><div class="sub">Recaps your coach wrote up after each session.</div></div></div>
+    ${rows.length ? rows.map(s => `<div class="card mb">
+      <div class="card-head"><h2>${s.topics ? E(s.topics) : 'Session'}</h2><span class="pill">${fmt(s.date)}</span></div>
+      ${s.notes ? `<p class="mb" style="white-space:pre-wrap">${E(s.notes)}</p>` : '<p class="muted mb">No written recap for this session.</p>'}
+      ${(s.homework || []).length ? `<h2 class="mb">Homework from this session</h2>${s.homework.map(h => `<div class="list-row"><div><b style="${h.done ? 'text-decoration:line-through;color:var(--dim)' : ''}">${E(h.text)}</b><div class="muted">${E(h.type)}${h.dueDate ? ' - due ' + fmt(h.dueDate) : ''}</div></div><span class="pill" style="${h.done ? '' : 'color:var(--warn);border-color:var(--warn)'}">${h.done ? 'Done' : 'Open'}</span></div>`).join('')}` : ''}
+    </div>`).join('') : '<div class="empty">No session notes yet.</div>'}`;
 }
 
 function renderPlans() {
@@ -388,16 +473,43 @@ function weekStart() {
   return d.toISOString().slice(0, 10);
 }
 
+// Sends this change plus anything queued from earlier failures in one request.
+// On network failure the change is persisted to the offline queue and retried
+// later (on reconnect, next boot, or the next successful sync) rather than lost.
 async function syncChanges(changes, success) {
   if (State.busy) return;
   State.busy = true;
+  const queued = loadQueue();
   try {
-    const result = await window.clientApi.workspacePut(State.code, { changes });
+    const result = await window.clientApi.workspacePut(State.code, { changes: mergeChanges([...queued, changes]) });
     State.data = result.data;
+    saveQueue([]);
     toast(success, 'good');
     renderShell();
   } catch (e) {
-    toast(e.message || 'Sync failed.', 'bad');
+    saveQueue([...queued, changes]);
+    toast('Saved offline - will sync when you reconnect.', '');
+    renderShell();
+  } finally {
+    State.busy = false;
+  }
+}
+
+// Best-effort flush of any queued offline changes. Silent when nothing is
+// pending or the network is still down.
+async function flushQueue(silent) {
+  if (State.busy) return;
+  const queued = loadQueue();
+  if (!queued.length || !State.code) return;
+  State.busy = true;
+  try {
+    const result = await window.clientApi.workspacePut(State.code, { changes: mergeChanges(queued) });
+    State.data = result.data;
+    saveQueue([]);
+    if (!silent) toast(`Synced ${queued.length} offline change${queued.length === 1 ? '' : 's'}.`, 'good');
+    renderShell();
+  } catch (e) {
+    // Still offline — leave the queue in place for the next attempt.
   } finally {
     State.busy = false;
   }
@@ -450,10 +562,17 @@ async function syncPull() {
   } catch (e) { toast(e.message || 'Refresh failed.', 'bad'); }
 }
 async function logout() {
+  await flushQueue(true);
+  // Clear per-device state so a different client code doesn't inherit this
+  // one's queued changes or "since last visit" baseline.
+  saveQueue([]);
+  lsSet(SEEN_KEY, null);
   State.code = '';
   State.data = null;
+  State.since = null;
   await window.clientApi.cacheSet({});
   renderLogin();
 }
 
+window.addEventListener('online', () => flushQueue());
 window.addEventListener('DOMContentLoaded', boot);
