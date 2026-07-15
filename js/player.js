@@ -15,10 +15,6 @@ function formatDate(iso) {
   });
 }
 
-function achievementLines(text) {
-  return (text || "").split("\n").map(a => a.trim()).filter(Boolean);
-}
-
 function youtubeIdFromUrl(url) {
   const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
   return match ? match[1] : null;
@@ -112,8 +108,6 @@ async function renderPlayer() {
 
   document.title = `${player.name} — Suffering Builds Character`;
 
-  const achievementsHtml = achievementLines(player.achievements).map(a => `<li>${a}</li>`).join("");
-
   container.style.setProperty("--card-accent", player.accent);
   container.innerHTML = `
     <div class="player-detail-header">
@@ -128,9 +122,6 @@ async function renderPlayer() {
       <div>
         <h4>Bio</h4>
         <p class="bio">${player.bio}</p>
-
-        <h4 style="margin-top:24px">Achievements</h4>
-        <ul class="achievements-list">${achievementsHtml}</ul>
 
         ${videosHtml(player.youtubeVideos)}
       </div>

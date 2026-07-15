@@ -25,6 +25,10 @@
       "heading": "About",
       "intro": ""
     },
+    "partners": {
+      "heading": "Partners",
+      "intro": ""
+    },
     "wiki": {
       "heading": "Wiki",
       "intro": ""
@@ -101,6 +105,13 @@
       "id": "staff",
       "label": "Staff",
       "path": "staff.html",
+      "enabled": true,
+      "parents": "about"
+    },
+    {
+      "id": "partners",
+      "label": "Partners",
+      "path": "partners.html",
       "enabled": true,
       "parents": "about"
     },

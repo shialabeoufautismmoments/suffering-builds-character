@@ -84,6 +84,24 @@ collections:
           - { label: "Founded", name: "founded", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
           - { label: "Story", name: "story", widget: "text" }
 
+  - name: "partners"
+    label: "Partners"
+    files:
+      - file: "data/partners.json"
+        label: "Partners"
+        name: "partners"
+        fields:
+          - label: "Partners"
+            name: "partners"
+            widget: "list"
+            summary: "{{fields.name}}"
+            fields:
+              - { label: "Name", name: "name", widget: "string" }
+              - { label: "Logo", name: "logo", widget: "image", required: false, hint: "Optional. Falls back to a text card with the partner's name if left blank." }
+              - { label: "Website URL", name: "url", widget: "string", required: false, hint: "Optional. Makes the card clickable, opening in a new tab. Leave blank for a non-clickable card." }
+              - { label: "Description", name: "description", widget: "text", required: false, hint: "Optional short blurb about the partnership." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this partner without deleting it." }
+
   - name: "roadmap"
     label: "Roadmap"
     files:
@@ -121,6 +139,7 @@ collections:
             fields:
               - { label: "Slug", name: "slug", widget: "string", hint: "URL-safe, lowercase, no spaces (e.g. map-callouts)" }
               - { label: "Title", name: "title", widget: "string" }
+              - { label: "Category", name: "category", widget: "string", required: false, hint: "e.g. Movement, Aim Training, Game Sense. Type the exact same name on other entries to group them together — the Wiki page builds its filter tabs from whatever category names are actually in use, so there's nothing else to set up. Leave blank to leave this entry uncategorized." }
               - { label: "Summary", name: "summary", widget: "string", required: false, hint: "Short teaser shown on the wiki index page." }
               - { label: "Body", name: "body", widget: "markdown", hint: "Full markdown editor — headings, bold/italic, links, lists, quotes, code all supported." }
               - { label: "PDF Attachment", name: "pdf", widget: "file", required: false, hint: "Optional. Upload a PDF to embed below the body, with a download link." }
@@ -261,9 +280,9 @@ collections:
             summary: "{{fields.label}}"
             hint: "Controls the nav bar: order, labels, visibility, AND grouping into hover dropdowns (see Parent Group(s) below). The 12 built-in entries (home/roster/news/schedule/staff/about/wiki/threads/roadmap/coaching/reading/information) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / schedule / staff / about / wiki / vod-reviews / threads / roadmap / coaching / reading / information. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / schedule / staff / about / partners / wiki / vod-reviews / threads / roadmap / coaching / reading / information. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / schedule.html / staff.html / about.html / wiki.html / vod-reviews.html / threads.html / roadmap.html / coaching.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
+              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / schedule.html / staff.html / about.html / partners.html / wiki.html / vod-reviews.html / threads.html / roadmap.html / coaching.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
               - { label: "Parent Group(s)", name: "parents", widget: "string", required: false, hint: "Leave blank to show this item as its own top-level nav button. To nest it as a hover-dropdown item instead, put the ID(s) of the top-level item(s) it should appear under, comma-separated if more than one (e.g. \"home\" or \"home,about\"). An item with children automatically gets a hover dropdown; hovering an item with no children does nothing." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
@@ -310,6 +329,12 @@ collections:
                   - { label: "Intro text", name: "intro", widget: "text", required: false }
               - label: "About Page"
                 name: "about"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "Partners Page"
+                name: "partners"
                 widget: "object"
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }

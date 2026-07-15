@@ -12,6 +12,7 @@ password-protected owner panel for editing player profiles.
 - `schedule.html` — upcoming scrims/tournaments, past events shown greyed out
 - `staff.html` — leadership/staff members (players flagged **Staff Member?** in Roster)
 - `about.html` — clan story and founding date
+- `partners.html` — partner/sponsor logo grid, each card optionally links out to the partner's site
 - `wiki.html` / `wiki-entry.html` — wiki index and individual entry view (`?slug=<slug>`)
 - `vod-reviews.html` — public VOD review write-ups, each card links out to a Google Doc
 - `threads.html` / `thread.html` — Twitter/X thread index and unrolled-thread view (`?slug=<slug>`)
@@ -24,6 +25,7 @@ password-protected owner panel for editing player profiles.
 - `data/news.json` — announcements as `{ "news": [...] }`
 - `data/schedule.json` — events as `{ "events": [...] }`
 - `data/about.json` — about-page content as `{ "founded", "story" }`
+- `data/partners.json` — partners/sponsors as `{ "partners": [...] }`
 - `data/wiki.json` — wiki entries as `{ "entries": [...] }`
 - `data/vod-reviews.json` — VOD reviews as `{ "reviews": [...] }`
 - `data/threads.json` — Twitter/X threads as `{ "threads": [...] }`
@@ -32,7 +34,7 @@ password-protected owner panel for editing player profiles.
 - `data/books.json` — reading list as `{ "books": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/partners.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, and builds the nav menu
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
@@ -103,19 +105,24 @@ the fix from there.
 
 ## Editing content
 
-**Preferred:** log into `/admin` (see above). You'll see eleven sections —
-Roster, News, Schedule, About, **Wiki**, **Twitter Threads**, **Roadmap**,
-**Coaching / Testimonials**, **Reading**, **Custom Pages**, and **Site Settings**. Roster entries have a **Photo** field: upload an image
-there and it replaces that player's initials avatar automatically, everywhere
-on the site. Roster entries also have a **Staff Member?** checkbox — check it
-to include that player on the Staff page (`staff.html`), which shows their
-photo, name/flag, role, and full bio; and a **Country Code** field
-(2-letter ISO code, e.g. `US`, `KR`, `BR`) that renders a flag next to the
-player's name on the roster, player page, and Staff page — leave it blank for
-no flag. There's also a **YouTube Videos** field (same one-per-line plain text
-pattern as Tweet URLs below): paste any number of YouTube video URLs, one per
-line, and they embed as responsive players on that player's page under their
-achievements. Leave blank for no videos.
+**Preferred:** log into `/admin` (see above). You'll see sections for
+Roster, News, Schedule, About, **Partners**, **Wiki**, **VOD Reviews**,
+**Twitter Threads**, **Roadmap**, **Coaching / Testimonials**, **Reading**,
+**Custom Pages**, and **Site Settings**. Roster entries have a **Photo**
+field: upload an image there and it replaces that player's initials avatar
+automatically, everywhere on the site. Roster entries also have a **Staff
+Member?** checkbox — check it to include that player on the Staff page
+(`staff.html`), which shows their photo, name/flag, role, and full bio; and a
+**Country Code** field (2-letter ISO code, e.g. `US`, `KR`, `BR`) that
+renders a flag next to the player's name on the roster, player page, and
+Staff page — leave it blank for no flag. There's also a **YouTube Videos**
+field (same one-per-line plain text pattern as Tweet URLs below): paste any
+number of YouTube video URLs, one per line, and they embed as responsive
+players on that player's page below their bio. Leave blank for no videos.
+Player profiles used to have an **Achievements** field that showed as a list
+on the player page — that display was removed by request, but the field
+itself is still in the CMS schema (harmless, just unused) in case it's wanted
+back later.
 
 **Home** (`index.html`) isn't its own CMS section — its welcome heading/intro
 text come from Site Settings → Page Headings & Intros → **Home Page**, same
@@ -135,6 +142,16 @@ Wiki entries and Custom Pages both also have a **PDF Attachment** field —
 upload a PDF and it's embedded inline (viewable right on the page) below the
 body text, with a "Download PDF" link underneath. Leave it blank for no
 attachment.
+
+Each wiki entry also has an optional **Category** field (plain text — type
+whatever name you want, e.g. "Movement" or "Aim Training"). There's no
+separate place to pre-define categories: the `wiki.html` index reads whatever
+category names are actually in use across entries and builds filter tabs
+from them automatically (alphabetical, with an "Uncategorized" tab last if
+any entries have no category set). Reuse the exact same name (case-sensitive)
+across entries to group them under the same tab. Filtering happens client-side
+— no reload. If only zero or one category is in use, the tab row is hidden
+since there's nothing to filter.
 
 **VOD Reviews** is a simple public list at `vod-reviews.html`: each entry is
 a title, optional player/team reviewed, optional date, optional short
@@ -260,8 +277,8 @@ field in Site Settings → Navigation Menu:
   viewing the Roster page, since Roster is nested under both).
 
 Default grouping out of the box: **Home** → Roster, News, Schedule · **About**
-→ Roster, Staff · **Coaching** → (no dropdown) · **Information** → Wiki,
-VOD Reviews, Threads, Roadmap, Reading.
+→ Roster, Staff, Partners · **Coaching** → (no dropdown) · **Information** →
+Wiki, VOD Reviews, Threads, Roadmap, Reading.
 
 On screens narrower than 720px, the nav bar collapses into a hamburger button
 (☰) that toggles a full-width dropdown menu — this is automatic and not
@@ -276,7 +293,7 @@ Deleting that list entry removes the nav link and the page immediately (visiting
 the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
-**Built-in pages** (Home, Roster, News, Schedule, Staff, About, Wiki,
+**Built-in pages** (Home, Roster, News, Schedule, Staff, About, Partners, Wiki,
 VOD Reviews, Threads, Roadmap, Coaching, Reading) work a bit differently, because they're backed by real code (`roster.js`,
 `news.js`, etc.), not just content — so they can't be *deleted* outright
 without a developer removing files. What you *can* do from `/admin` → Site
@@ -368,12 +385,29 @@ no spaces. `photo` is optional — omit it to keep the initials avatar.
 }
 ```
 
+`data/partners.json` — one object per entry in the `partners` array:
+
+```json
+{
+  "name": "Example Gear Co.",
+  "logo": "assets/uploads/example-logo.png",
+  "url": "https://example.com",
+  "description": "Official peripherals partner.",
+  "enabled": true
+}
+```
+
+`logo` is optional — falls back to a plain text card with the partner's name
+if left blank. `url` is optional — if set, the whole card links out to it in
+a new tab; if left blank, the card is just static (not clickable).
+
 `data/wiki.json` — one object per entry in the `entries` array:
 
 ```json
 {
   "slug": "map-callouts",
   "title": "Map Callouts",
+  "category": "Game Sense",
   "summary": "Shorthand names for common map positions.",
   "body": "## First paragraph\n\nSecond paragraph with **bold** and a [link](https://example.com).",
   "pdf": "assets/uploads/example.pdf",
