@@ -219,6 +219,27 @@ collections:
               - { label: "PDF Attachment", name: "pdf", widget: "file", required: false, hint: "Optional. e.g. a written coaching session report." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this testimonial without deleting it." }
 
+  - name: "spotlights"
+    label: "Player Spotlights"
+    files:
+      - file: "data/spotlights.json"
+        label: "Spotlights"
+        name: "spotlights"
+        fields:
+          - label: "Spotlights"
+            name: "spotlights"
+            widget: "list"
+            summary: "{{fields.playerName}}"
+            hint: "A public case study for one player: what coaching work was done, before/after screenshots, and notes. Each gets its own page at player-spotlight.html?slug=... and is listed on the Player Spotlights index. This is public — get the player's OK before posting their name, screenshots, or progress."
+            fields:
+              - { label: "Slug", name: "slug", widget: "string", hint: "URL-safe, lowercase, no spaces (e.g. peanut-aim-arc)" }
+              - { label: "Player Name", name: "playerName", widget: "string" }
+              - { label: "Photo", name: "photo", widget: "image", required: false, hint: "Optional portrait/avatar. Falls back to initials if left blank." }
+              - { label: "Summary", name: "summary", widget: "string", required: false, hint: "Short teaser shown on the index page (e.g. \"Diamond 2 to Masters in 6 weeks\")." }
+              - { label: "Notes", name: "notes", widget: "markdown", hint: "The write-up: what was worked on, progress over time, etc. Full markdown editor — use the image button in the toolbar to embed before/after screenshots directly in the text, right where they're relevant." }
+              - { label: "Document", name: "document", widget: "file", required: false, hint: "Optional. Upload one PDF (a written report, a training plan, etc.) to embed below the notes, with a download link. For more documents, just link them from within the Notes text instead." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this spotlight without deleting it." }
+
   - name: "reading"
     label: "Reading"
     files:
@@ -259,11 +280,11 @@ collections:
             name: "navigation"
             widget: "list"
             summary: "{{fields.label}}"
-            hint: "Controls the nav bar: order, labels, visibility, AND grouping into hover dropdowns (see Parent Group(s) below). The 13 built-in entries (home/roster/news/staff/about/partners/wiki/vod-reviews/threads/roadmap/coaching/reading/information) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            hint: "Controls the nav bar: order, labels, visibility, AND grouping into hover dropdowns (see Parent Group(s) below). The 14 built-in entries (home/roster/news/staff/about/partners/wiki/vod-reviews/threads/roadmap/coaching/spotlights/reading/information) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / staff / about / partners / wiki / vod-reviews / threads / roadmap / coaching / reading / information. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / staff / about / partners / wiki / vod-reviews / threads / roadmap / coaching / spotlights / reading / information. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / staff.html / about.html / partners.html / wiki.html / vod-reviews.html / threads.html / roadmap.html / coaching.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
+              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / staff.html / about.html / partners.html / wiki.html / vod-reviews.html / threads.html / roadmap.html / coaching.html / player-spotlights.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
               - { label: "Parent Group(s)", name: "parents", widget: "string", required: false, hint: "Leave blank to show this item as its own top-level nav button. To nest it as a hover-dropdown item instead, put the ID(s) of the top-level item(s) it should appear under, comma-separated if more than one (e.g. \"home\" or \"home,about\"). An item with children automatically gets a hover dropdown; hovering an item with no children does nothing." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
@@ -334,6 +355,12 @@ collections:
                   - { label: "Intro text", name: "intro", widget: "text", required: false }
               - label: "Coaching Page"
                 name: "coaching"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "Player Spotlights Page"
+                name: "spotlights"
                 widget: "object"
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }

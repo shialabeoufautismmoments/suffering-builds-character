@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Player Spotlights — Hone</title>
+  <meta name="description" content="Player spotlights and case studies from Suffering Builds Character coaching." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Suffering Builds Character" />
+  <meta property="og:title" content="Suffering Builds Character" />
+  <meta property="og:description" content="Player spotlights and case studies from Suffering Builds Character coaching." />
+  <meta property="og:image" content="assets/logo.svg" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Suffering Builds Character" />
+  <meta name="twitter:description" content="Player spotlights and case studies from Suffering Builds Character coaching." />
+  <meta name="twitter:image" content="assets/logo.svg" />
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="spotlights">
+  <header class="site-header">
+    <img src="assets/logo.svg" alt="Hone logo" data-site-logo />
+    <div class="titles">
+      <a href="index.html"><h1 data-site-name>Hone</h1></a>
+      <p class="tagline" data-site-tagline>Sharpen your edge.</p>
+    </div>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
+    <nav class="site-nav" id="site-nav"></nav>
+    <button class="search-toggle" id="search-toggle" aria-label="Search the site">
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><line x1="14" y1="14" x2="18" y2="18"/></svg>
+    </button>
+    <div class="search-panel" id="search-panel" hidden>
+      <input type="text" id="search-input" class="search-input" placeholder="Search Wiki, Threads, Roadmap, VOD Reviews, News..." autocomplete="off" />
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </header>
+
+  <main>
+    <h2 class="section-title" data-page-heading>Player Spotlights</h2>
+    <p class="page-intro" data-page-intro></p>
+    <div class="staff-grid" id="spotlights-grid"></div>
+  </main>
+
+  <footer>
+    <div id="footer-extra"></div>
+    <div id="discord-widget"></div>
+    <p>&copy; <span id="year"></span> <span data-site-name>Hone</span>
+    &middot; <a href="#" id="owner-login">Owner Login</a></p>
+  </footer>
+
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/player-spotlights.js"></script>
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

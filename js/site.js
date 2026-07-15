@@ -169,17 +169,19 @@ function plainTextExcerpt(text, maxLen) {
   return stripped.length > maxLen ? stripped.slice(0, maxLen - 1).trim() + "…" : stripped;
 }
 
-// Fetches Wiki/Threads/Roadmap/VOD Reviews/News/Custom Pages once and flattens
-// them into one searchable list. Only called the first time someone opens the
-// search panel, so pages that never use search don't pay for six extra fetches.
+// Fetches Wiki/Threads/Roadmap/VOD Reviews/News/Custom Pages/Player Spotlights
+// once and flattens them into one searchable list. Only called the first time
+// someone opens the search panel, so pages that never use search don't pay
+// for the extra fetches.
 async function buildSearchIndex() {
-  const [wiki, threads, roadmap, vod, news, pages] = await Promise.all([
+  const [wiki, threads, roadmap, vod, news, pages, spotlights] = await Promise.all([
     fetch("data/wiki.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ entries: [] })),
     fetch("data/threads.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ threads: [] })),
     fetch("data/roadmap.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ items: [] })),
     fetch("data/vod-reviews.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ reviews: [] })),
     fetch("data/news.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ news: [] })),
-    fetch("data/pages.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ pages: [] }))
+    fetch("data/pages.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ pages: [] })),
+    fetch("data/spotlights.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ spotlights: [] }))
   ]);
 
   const items = [];
@@ -204,6 +206,10 @@ async function buildSearchIndex() {
   (pages.pages || []).filter(p => p.enabled !== false).forEach(p => items.push({
     type: "Page", title: p.heading || p.label, snippet: "",
     url: `page.html?slug=${encodeURIComponent(p.slug)}`
+  }));
+  (spotlights.spotlights || []).filter(s => s.enabled !== false).forEach(s => items.push({
+    type: "Spotlight", title: s.playerName, snippet: s.summary || "",
+    url: `player-spotlight.html?slug=${encodeURIComponent(s.slug)}`
   }));
 
   return items;

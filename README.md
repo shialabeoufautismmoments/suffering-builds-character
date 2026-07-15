@@ -17,6 +17,7 @@ password-protected owner panel for editing player profiles.
 - `threads.html` / `thread.html` — Twitter/X thread index and unrolled-thread view (`?slug=<slug>`)
 - `roadmap.html` — planned/in-progress/completed milestones
 - `coaching.html` — bookable coaches (linking to their Cal.com page) and coaching testimonials
+- `player-spotlights.html` / `player-spotlight.html` — public case-study index and individual player spotlight view (`?slug=<slug>`)
 - `reading.html` / `notes.html` — book list (cover, region-aware Amazon link, summary) and per-book notes view (`?slug=<slug>`)
 - `page.html` — generic template for owner-created custom pages, reads `?slug=<slug>` from the URL
 - `404.html` — themed not-found page, served automatically by Netlify
@@ -29,16 +30,17 @@ password-protected owner panel for editing player profiles.
 - `data/threads.json` — Twitter/X threads as `{ "threads": [...] }`
 - `data/roadmap.json` — roadmap milestones as `{ "items": [...] }`
 - `data/testimonials.json` — bookable coaches + testimonials as `{ "coaches": [...], "testimonials": [...] }`
+- `data/spotlights.json` — player spotlights as `{ "spotlights": [...] }`
 - `data/books.json` — reading list as `{ "books": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/staff.js` / `js/about.js` / `js/partners.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/staff.js` / `js/about.js` / `js/partners.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/player-spotlights.js` / `js/player-spotlight.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, builds the nav menu, and wires up the header search
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
 - `assets/logo.svg` — the mascot logo, recreated as SVG so it stays crisp at any size
 - `admin/` — the owner panel (Decap CMS). This is what makes editing possible without touching code.
-- `sitemap.xml` / `robots.txt` — lists the 13 top-level section pages for search engines. Static, hand-maintained — see "Search & discoverability" below.
+- `sitemap.xml` / `robots.txt` — lists the 14 top-level section pages for search engines. Static, hand-maintained — see "Search & discoverability" below.
 
 ## How the owner login works
 
@@ -106,8 +108,9 @@ the fix from there.
 
 **Preferred:** log into `/admin` (see above). You'll see sections for
 Roster, News, About, **Partners**, **Wiki**, **VOD Reviews**,
-**Twitter Threads**, **Roadmap**, **Coaching / Testimonials**, **Reading**,
-**Custom Pages**, and **Site Settings**. Roster entries have a **Photo**
+**Twitter Threads**, **Roadmap**, **Coaching / Testimonials**,
+**Player Spotlights**, **Reading**, **Custom Pages**, and **Site Settings**.
+Roster entries have a **Photo**
 field: upload an image there and it replaces that player's initials avatar
 automatically, everywhere on the site. Roster entries also have a **Staff
 Member?** checkbox — check it to include that player on the Staff page
@@ -210,6 +213,20 @@ Both are plain list-of-objects (siblings in the same file, not nested inside
 each other), same safe pattern as Roadmap and Site Settings' Navigation Menu
 + Social Links, so Add/reorder work normally.
 
+**Player Spotlights** (`player-spotlights.html` / `player-spotlight.html`) is
+a public case-study page per player — nested under the Coaching dropdown in
+the nav. Each entry has a Slug, Player Name, optional Photo (falls back to
+initials, same as Roster/Staff), optional Summary (short teaser on the index
+card), a **Notes** field, and an optional **Document**. Notes is a full
+markdown editor, same as Wiki's Body field — write the case-study narrative
+and use the toolbar's image button to embed before/after screenshots right
+where they're relevant in the text, instead of managing a separate photo
+gallery field. Document is a single optional PDF, embedded inline with a
+download link (same pattern as Wiki's PDF Attachment) — for more than one
+document, just link the others from inside the Notes text. **This page is
+public** — get the player's OK before posting their name, screenshots, or
+progress details.
+
 **Reading** (`reading.html`) is a book list — each entry has a Slug, Title,
 optional Author, optional Cover Image, optional Amazon Link, optional
 Summary, and optional Notes. A few things worth knowing:
@@ -276,8 +293,8 @@ field in Site Settings → Navigation Menu:
   viewing the Roster page, since Roster is nested under both).
 
 Default grouping out of the box: **Home** → Roster, News · **About**
-→ Roster, Staff, Partners · **Coaching** → (no dropdown) · **Information** →
-Wiki, VOD Reviews, Threads, Roadmap, Reading.
+→ Roster, Staff, Partners · **Coaching** → Player Spotlights ·
+**Information** → Wiki, VOD Reviews, Threads, Roadmap, Reading.
 
 On screens narrower than 720px, the nav bar collapses into a hamburger button
 (☰) that toggles a full-width dropdown menu — this is automatic and not
@@ -293,7 +310,7 @@ the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
 **Built-in pages** (Home, Roster, News, Staff, About, Partners, Wiki,
-VOD Reviews, Threads, Roadmap, Coaching, Reading) work a bit differently, because they're backed by real code (`roster.js`,
+VOD Reviews, Threads, Roadmap, Coaching, Player Spotlights, Reading) work a bit differently, because they're backed by real code (`roster.js`,
 `news.js`, etc.), not just content — so they can't be *deleted* outright
 without a developer removing files. What you *can* do from `/admin` → Site
 Settings → **Navigation Menu**:
@@ -401,6 +418,25 @@ a new tab; if left blank, the card is just static (not clickable).
 
 `body` is markdown, rendered client-side with `marked` — headings, bold/italic,
 links, lists, blockquotes, and code blocks all work.
+
+`data/spotlights.json` — one object per entry in the `spotlights` array:
+
+```json
+{
+  "slug": "peanut-aim-arc",
+  "playerName": "Peanut",
+  "photo": "assets/uploads/peanut.jpg",
+  "summary": "Diamond 2 to Masters in 6 weeks.",
+  "notes": "## Week 1\n\nStarting point.\n\n![Week 1 stats](assets/uploads/peanut-week1.png)\n\n## Week 6\n\nAfter six weeks of focused tracking work...",
+  "document": "assets/uploads/peanut-training-plan.pdf",
+  "enabled": true
+}
+```
+
+`notes` is markdown, same as `wiki.json`'s `body` — screenshots get embedded
+directly in the text via standard markdown image syntax (the CMS's image
+toolbar button inserts this for you). `photo` and `document` are both
+optional.
 
 `data/vod-reviews.json` — one object per entry in the `reviews` array:
 
@@ -585,9 +621,9 @@ dynamic `og:image` when one's uploaded, falling back to the logo otherwise.
 
 ## Search & discoverability
 
-**`sitemap.xml` / `robots.txt`** list the 12 top-level section pages (Home,
+**`sitemap.xml` / `robots.txt`** list the 14 top-level section pages (Home,
 Roster, News, Staff, About, Partners, Wiki, VOD Reviews, Threads,
-Roadmap, Coaching, Reading) so search engines discover and index them
+Roadmap, Coaching, Player Spotlights, Reading) so search engines discover and index them
 directly instead of relying on crawling nav links. They're static,
 hand-maintained files — **individual entries (a specific wiki article,
 thread, player profile, book, or custom page) are intentionally NOT listed**,
@@ -601,16 +637,17 @@ one.
 **Site search** is the icon in the top-right of the header on every page,
 wired up in `js/site.js`. On first click, it fetches `data/wiki.json`,
 `data/threads.json`, `data/roadmap.json`, `data/vod-reviews.json`,
-`data/news.json`, and `data/pages.json` once, flattens them into one
-in-memory list, and filters it client-side as you type (title + summary
-substring match, case-insensitive, 2+ characters). Results link straight to
-the matching page — VOD Reviews open the Google Doc directly since they don't
-have an on-site page of their own. It only fetches those six files the first
-time someone actually opens the search panel, so pages that never use it
-don't pay for the extra requests. Roster/Staff/Coaching/Reading aren't
-included in the search index (players, coaches, and books aren't stored with
-enough of a free-text body to search meaningfully) — if that's wanted later,
-it's a small addition to `buildSearchIndex()` in `js/site.js`.
+`data/news.json`, `data/pages.json`, and `data/spotlights.json` once,
+flattens them into one in-memory list, and filters it client-side as you type
+(title + summary substring match, case-insensitive, 2+ characters). Results
+link straight to the matching page — VOD Reviews open the Google Doc directly
+since they don't have an on-site page of their own. It only fetches those
+files the first time someone actually opens the search panel, so pages that
+never use it don't pay for the extra requests. Roster/Staff/Coaching/Partners/Reading
+aren't included in the search index (players, coaches, partners, and books
+aren't stored with enough of a free-text body to search meaningfully) — if
+that's wanted later, it's a small addition to `buildSearchIndex()` in
+`js/site.js`.
 
 ## Local preview
 
