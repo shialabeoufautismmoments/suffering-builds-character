@@ -172,6 +172,23 @@
       "country": "KY",
       "isStaff": true,
       "id": "quam"
+    },
+    {
+      "socials": {
+        "twitter": "https://x.com/Osiren_",
+        "pyvno": "https://pyvno.xyz/osiren"
+      },
+      "bio": "Osiren is joining us to help us with graphics and GFX.",
+      "joined": "2026-07-15",
+      "accent": "#722e2e",
+      "name": "Osiren",
+      "rank": "N/A",
+      "photo": "https://cdn.discordapp.com/avatars/227239594033152001/fdec6c7a9da6e08661355169b1eeae97.png?size=4096",
+      "game": "Overwatch",
+      "role": "Artist and GFX",
+      "country": "US",
+      "isStaff": true,
+      "id": "osiren"
     }
   ]
 }
