@@ -3,7 +3,9 @@
     {
       "enabled": true,
       "name": "Extinction",
-      "logo": "/assets/uploads/675px-extinction_-overwatch_team-_allmode.png"
+      "logo": "/assets/uploads/675px-extinction_-overwatch_team-_allmode.png",
+      "url": "https://x.com/ExtinctionNA",
+      "description": "HONE is a partner of Extinction, focusing on developing their players."
     }
   ]
 }
