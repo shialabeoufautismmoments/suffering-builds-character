@@ -32,4 +32,5 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 .banner{display:flex;align-items:center;justify-content:space-between;gap:.8rem;background:var(--accent-soft);border:1px solid rgba(232,131,58,.3);border-radius:10px;padding:.6rem .9rem;margin-bottom:1rem}
 .banner-x{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:.3rem .7rem;cursor:pointer;font:inherit;white-space:nowrap}.banner-x:hover{color:var(--text);border-color:var(--accent)}
 .pending-pill{color:var(--warn);border-color:var(--warn)}
+.nowrap{white-space:nowrap}
 @media(max-width:760px){.topbar{align-items:flex-start;flex-direction:column}.spacer{display:none}.row{flex-direction:column}.main{padding:1rem}.client-badge{white-space:normal}}

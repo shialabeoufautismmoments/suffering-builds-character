@@ -177,6 +177,61 @@ function applyKovaaksStat(client, input) {
   client.activity[date.replace(/-/g, ".")] = num(client.activity[date.replace(/-/g, ".")]) + 1;
 }
 
+// Rebuilds a scenario's PR + PR-history from the client's remaining stats,
+// after a delete/edit. Only ever touches client-app-sourced PRs so it can't
+// clobber values the coach set. Without this, deleting a mis-logged record
+// score would leave the inflated PR standing (the normal add path only ever
+// raises the PR, never lowers it).
+function recomputeClientPr(client, scenario) {
+  if (!scenario) return;
+  client.prs ||= {};
+  client.prHistory ||= {};
+  const existing = client.prs[scenario];
+  if (existing && existing.source !== "client-app") return;
+  const rows = (client.clientKovaaksStats || [])
+    .filter(stat => stat.scenario === scenario)
+    .sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
+  if (!rows.length) {
+    delete client.prs[scenario];
+    delete client.prHistory[scenario];
+    return;
+  }
+  let runningMax = -Infinity, lastDate = "";
+  const history = [];
+  rows.forEach(row => {
+    const score = num(row.score);
+    if (score > runningMax) {
+      runningMax = score;
+      history.push({ d: row.date, pr: score, source: "client-app" });
+    }
+    lastDate = row.date || lastDate;
+  });
+  client.prs[scenario] = { pr: runningMax, plays: rows.length, lastDate, source: "client-app" };
+  client.prHistory[scenario] = history;
+}
+
+// Removes client-created matches by id — never coach-logged ones.
+function deleteMatches(workspace, client, ids) {
+  const del = new Set(ids.map(id => clean(id, 80)).filter(Boolean));
+  if (!del.size) return;
+  workspace.matches = (workspace.matches || []).filter(match =>
+    !(match.clientId === client.id && match.source === "client-app" && del.has(match.id)));
+}
+
+// Removes client-created KovaaK's stats by id, then recomputes any affected
+// scenario's PR from what's left.
+function deleteKovaaksStats(client, ids) {
+  const del = new Set(ids.map(id => clean(id, 80)).filter(Boolean));
+  if (!del.size) return;
+  const touched = new Set();
+  (client.clientKovaaksStats || []).forEach(stat => {
+    if (del.has(stat.id) && stat.source === "client-app") touched.add(stat.scenario);
+  });
+  client.clientKovaaksStats = (client.clientKovaaksStats || []).filter(stat =>
+    !(del.has(stat.id) && stat.source === "client-app"));
+  touched.forEach(scenario => recomputeClientPr(client, scenario));
+}
+
 function applyHomework(workspace, client, input) {
   const session = (workspace.sessions || []).find(item => item.clientId === client.id && item.id === input.sessionId);
   const homework = session && (session.homework || []).find(item => item.id === input.homeworkId);
@@ -266,6 +321,10 @@ export default async (request) => {
     (changes.goalCheckIns || []).slice(0, 50).forEach(item => applyGoal(client, item));
     (changes.vodWatched || []).slice(0, 25).forEach(item => applyVodWatched(workspace, client, item));
     (changes.vodReplies || []).slice(0, 50).forEach(item => applyVodReply(workspace, client, item));
+    // Deletes run after adds so an edit (delete old id + add new) leaves the
+    // recomputed PR reflecting the new value.
+    deleteMatches(workspace, client, (changes.deleteMatches || []).slice(0, 50));
+    deleteKovaaksStats(client, (changes.deleteKovaaksStats || []).slice(0, 50));
     client.updatedAt = new Date().toISOString();
     workspace.cloud = {
       ...(workspace.cloud || {}),

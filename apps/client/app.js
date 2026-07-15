@@ -1,4 +1,4 @@
-const State = { code: '', data: null, view: 'today', busy: false, since: null };
+const State = { code: '', data: null, view: 'today', busy: false, since: null, editMatch: null, editStat: null };
 const app = document.getElementById('app');
 const E = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -101,7 +101,12 @@ async function login(event) {
   }
 }
 
-function nav(view) { State.view = view; renderShell(); }
+function nav(view) {
+  if (view !== 'matches') State.editMatch = null;
+  if (view !== 'kovaaks') State.editStat = null;
+  State.view = view;
+  renderShell();
+}
 function client() { return State.data && State.data.client || {}; }
 function matches() { return State.data && State.data.matches || []; }
 function sessions() { return State.data && State.data.sessions || []; }
@@ -321,15 +326,20 @@ function renderDashboard() {
 }
 
 function renderMatches() {
+  const em = State.editMatch || {};
+  const editing = !!State.editMatch;
+  const opt = (x, sel) => `<option ${sel === x ? 'selected' : ''}>${x}</option>`;
   return `<div class="page-head"><div><h1>Match Tracker</h1><div class="sub">Manually enter ranked games, scrims, replay codes, heroes, and notes.</div></div></div>
     <div class="card mb"><form onsubmit="submitMatch(event)">
-      <div class="row"><label class="field"><span>Date</span><input id="m-date" type="date" value="${today()}"></label><label class="field"><span>Type</span><select id="m-type">${['Competitive','Scrim','Quick Play','Custom','Tournament'].map(x => `<option>${x}</option>`).join('')}</select></label><label class="field"><span>Result</span><select id="m-result">${['Win','Loss','Draw'].map(x => `<option>${x}</option>`).join('')}</select></label></div>
-      <div class="row"><label class="field"><span>Role</span><input id="m-role" placeholder="Damage, Support, Tank..."></label><label class="field"><span>Map</span><input id="m-map" placeholder="King's Row"></label><label class="field"><span>Heroes</span><input id="m-heroes" placeholder="Tracer, Cassidy"></label></div>
-      <div class="row"><label class="field"><span>Rank before</span><input id="m-rankBefore" placeholder="Diamond 3"></label><label class="field"><span>Rank after</span><input id="m-rankAfter" placeholder="Diamond 2"></label><label class="field"><span>Replay code</span><input id="m-replayCode" placeholder="ABC123"></label></div>
-      <label class="field"><span>Notes</span><textarea id="m-notes" placeholder="What happened, key mistakes, what to ask your coach about..."></textarea></label>
-      <button class="btn btn-primary">Save match</button>
+      ${editing ? `<p class="mb"><span class="pill pending-pill">Editing a match</span></p>` : ''}
+      <div class="row"><label class="field"><span>Date</span><input id="m-date" type="date" value="${E(em.date || today())}"></label><label class="field"><span>Type</span><select id="m-type">${['Competitive','Scrim','Quick Play','Custom','Tournament'].map(x => opt(x, em.type)).join('')}</select></label><label class="field"><span>Result</span><select id="m-result">${['Win','Loss','Draw'].map(x => opt(x, em.result)).join('')}</select></label></div>
+      <div class="row"><label class="field"><span>Role</span><input id="m-role" value="${E(em.role || '')}" placeholder="Damage, Support, Tank..."></label><label class="field"><span>Map</span><input id="m-map" value="${E(em.map || '')}" placeholder="King's Row"></label><label class="field"><span>Heroes</span><input id="m-heroes" value="${E((em.heroes || []).join(', '))}" placeholder="Tracer, Cassidy"></label></div>
+      <div class="row"><label class="field"><span>Rank before</span><input id="m-rankBefore" value="${E(em.rankBefore || '')}" placeholder="Diamond 3"></label><label class="field"><span>Rank after</span><input id="m-rankAfter" value="${E(em.rankAfter || '')}" placeholder="Diamond 2"></label><label class="field"><span>Replay code</span><input id="m-replayCode" value="${E(em.replayCode || '')}" placeholder="ABC123"></label></div>
+      <label class="field"><span>Notes</span><textarea id="m-notes" placeholder="What happened, key mistakes, what to ask your coach about...">${E(em.notes || '')}</textarea></label>
+      <button class="btn btn-primary">${editing ? 'Update match' : 'Save match'}</button>
+      ${editing ? `<button type="button" class="btn btn-sm" onclick="cancelEditMatch()">Cancel</button>` : ''}
     </form></div>
-    <div class="card"><div class="card-head"><h2>Match log</h2></div>${matchTable(matches().slice().reverse())}</div>`;
+    <div class="card"><div class="card-head"><h2>Match log</h2></div>${matchTable(matches().slice().reverse(), true)}</div>`;
 }
 
 function scenarioNames() {
@@ -343,14 +353,18 @@ function scenarioNames() {
 
 function renderKovaaks() {
   const c = client();
+  const es = State.editStat || {};
+  const editing = !!State.editStat;
   return `<div class="page-head"><div><h1>KovaaK's Stats</h1><div class="sub">Manual stat log for scores, accuracy, and notes. Your best scores update the coach dashboard.</div></div></div>
     <div class="card mb"><form onsubmit="submitKovaaks(event)">
-      <div class="row"><label class="field"><span>Date</span><input id="k-date" type="date" value="${today()}"></label><label class="field"><span>Scenario</span><input id="k-scenario" list="scenario-options" placeholder="Pasuing Voltaic Easy"><datalist id="scenario-options">${scenarioNames().map(n => `<option value="${E(n)}"></option>`).join('')}</datalist></label><label class="field"><span>Score</span><input id="k-score" type="number" step="any" placeholder="12345"></label></div>
-      <div class="row"><label class="field"><span>Accuracy %</span><input id="k-accuracy" type="number" step="any" placeholder="optional"></label><label class="field"><span>Notes</span><input id="k-notes" placeholder="felt shaky, new sens, etc."></label></div>
-      <button class="btn btn-primary">Save KovaaK's stat</button>
+      ${editing ? `<p class="mb"><span class="pill pending-pill">Editing a stat</span></p>` : ''}
+      <div class="row"><label class="field"><span>Date</span><input id="k-date" type="date" value="${E(es.date || today())}"></label><label class="field"><span>Scenario</span><input id="k-scenario" list="scenario-options" value="${E(es.scenario || '')}" placeholder="Pasuing Voltaic Easy"><datalist id="scenario-options">${scenarioNames().map(n => `<option value="${E(n)}"></option>`).join('')}</datalist></label><label class="field"><span>Score</span><input id="k-score" type="number" step="any" value="${es.score == null ? '' : E(es.score)}" placeholder="12345"></label></div>
+      <div class="row"><label class="field"><span>Accuracy %</span><input id="k-accuracy" type="number" step="any" value="${es.accuracy == null ? '' : E(es.accuracy)}" placeholder="optional"></label><label class="field"><span>Notes</span><input id="k-notes" value="${E(es.notes || '')}" placeholder="felt shaky, new sens, etc."></label></div>
+      <button class="btn btn-primary">${editing ? "Update stat" : "Save KovaaK's stat"}</button>
+      ${editing ? `<button type="button" class="btn btn-sm" onclick="cancelEditStat()">Cancel</button>` : ''}
     </form></div>
     <div class="grid cols-2">
-      <div class="card"><div class="card-head"><h2>Manual log</h2></div>${kovaaksTable((c.clientKovaaksStats || []).slice().reverse())}</div>
+      <div class="card"><div class="card-head"><h2>Manual log</h2></div>${kovaaksTable((c.clientKovaaksStats || []).slice().reverse(), true)}</div>
       <div class="card"><div class="card-head"><h2>Current PRs</h2></div>${prsTable(c.prs || {}, c.prHistory || {})}</div>
     </div>`;
 }
@@ -423,13 +437,17 @@ function renderVods() {
     </div>`).join('') : '<div class="empty">No VOD reviews sent yet.</div>'}</div>`;
 }
 
-function matchTable(rows) {
-  if (!rows.length) return '<div class="empty">No matches logged yet.</div>';
-  return `<table class="data"><thead><tr><th>Date</th><th>Result</th><th>Map</th><th>Heroes</th><th>Notes</th></tr></thead><tbody>${rows.map(m => `<tr><td class="muted">${fmt(m.date)}</td><td class="${m.result === 'Win' ? 'good' : m.result === 'Loss' ? 'bad' : 'muted'}"><b>${E(m.result)}</b></td><td>${E(m.map || '-')}</td><td>${E((m.heroes || []).join(', ') || '-')}</td><td class="muted">${E(m.notes || '')}</td></tr>`).join('')}</tbody></table>`;
+function rowActions(id, kind, source) {
+  if (source !== 'client-app') return '<span class="muted small">coach</span>';
+  return `<button class="btn btn-sm" onclick="edit${kind}('${id}')">Edit</button> <button class="btn btn-sm" onclick="delete${kind}('${id}')">Del</button>`;
 }
-function kovaaksTable(rows) {
+function matchTable(rows, editable) {
+  if (!rows.length) return '<div class="empty">No matches logged yet.</div>';
+  return `<table class="data"><thead><tr><th>Date</th><th>Result</th><th>Map</th><th>Heroes</th><th>Notes</th>${editable ? '<th></th>' : ''}</tr></thead><tbody>${rows.map(m => `<tr><td class="muted">${fmt(m.date)}</td><td class="${m.result === 'Win' ? 'good' : m.result === 'Loss' ? 'bad' : 'muted'}"><b>${E(m.result)}</b></td><td>${E(m.map || '-')}</td><td>${E((m.heroes || []).join(', ') || '-')}</td><td class="muted">${E(m.notes || '')}</td>${editable ? `<td class="nowrap">${rowActions(m.id, 'Match', m.source)}</td>` : ''}</tr>`).join('')}</tbody></table>`;
+}
+function kovaaksTable(rows, editable) {
   if (!rows.length) return "<div class=\"empty\">No KovaaK's stats logged yet.</div>";
-  return `<table class="data"><thead><tr><th>Date</th><th>Scenario</th><th>Score</th><th>Accuracy</th><th>Notes</th></tr></thead><tbody>${rows.map(s => `<tr><td class="muted">${fmt(s.date)}</td><td><b>${E(s.scenario)}</b></td><td class="accent"><b>${E(s.score)}</b></td><td>${s.accuracy == null ? '-' : E(s.accuracy) + '%'}</td><td class="muted">${E(s.notes || '')}</td></tr>`).join('')}</tbody></table>`;
+  return `<table class="data"><thead><tr><th>Date</th><th>Scenario</th><th>Score</th><th>Accuracy</th><th>Notes</th>${editable ? '<th></th>' : ''}</tr></thead><tbody>${rows.map(s => `<tr><td class="muted">${fmt(s.date)}</td><td><b>${E(s.scenario)}</b></td><td class="accent"><b>${E(s.score)}</b></td><td>${s.accuracy == null ? '-' : E(s.accuracy) + '%'}</td><td class="muted">${E(s.notes || '')}</td>${editable ? `<td class="nowrap">${rowActions(s.id, 'Stat', s.source)}</td>` : ''}</tr>`).join('')}</tbody></table>`;
 }
 function prsTable(prs, prHistory) {
   const rows = Object.entries(prs).sort((a, b) => Number(b[1].pr || 0) - Number(a[1].pr || 0));
@@ -519,17 +537,51 @@ async function flushQueue(silent) {
 function submitMatch(event) {
   event.preventDefault();
   const val = id => document.getElementById(id).value.trim();
+  const editing = !!State.editMatch;
+  const id = editing ? State.editMatch.id : uid();
+  State.editMatch = null;
   return syncChanges({ matches: [{
-    id: uid(), date: val('m-date') || today(), type: val('m-type'), result: val('m-result'),
+    id, date: val('m-date') || today(), type: val('m-type'), result: val('m-result'),
     role: val('m-role'), map: val('m-map'), heroes: val('m-heroes').split(',').map(x => x.trim()).filter(Boolean),
     rankBefore: val('m-rankBefore'), rankAfter: val('m-rankAfter'), replayCode: val('m-replayCode'), notes: val('m-notes')
-  }] }, 'Match synced to your coach.');
+  }] }, editing ? 'Match updated.' : 'Match synced to your coach.');
 }
+function editMatch(id) {
+  State.editMatch = matches().find(m => m.id === id) || null;
+  State.view = 'matches';
+  renderShell();
+  window.scrollTo(0, 0);
+}
+function cancelEditMatch() { State.editMatch = null; renderShell(); }
+function deleteMatch(id) {
+  if (!confirm('Delete this match? This cannot be undone.')) return;
+  if (State.editMatch && State.editMatch.id === id) State.editMatch = null;
+  return syncChanges({ deleteMatches: [id] }, 'Match deleted.');
+}
+
 function submitKovaaks(event) {
   event.preventDefault();
   const val = id => document.getElementById(id).value.trim();
   if (!val('k-scenario') || !val('k-score')) return toast('Scenario and score are required.', 'bad');
-  return syncChanges({ kovaaksStats: [{ id: uid(), date: val('k-date') || today(), scenario: val('k-scenario'), score: val('k-score'), accuracy: val('k-accuracy'), notes: val('k-notes') }] }, "KovaaK's stat synced to your coach.");
+  const editing = State.editStat;
+  // An edit is sent as delete-old + add-new so the backend recomputes the PR
+  // from scratch (the plain add path only ever raises a PR, never corrects it).
+  const changes = { kovaaksStats: [{ id: uid(), date: val('k-date') || today(), scenario: val('k-scenario'), score: val('k-score'), accuracy: val('k-accuracy'), notes: val('k-notes') }] };
+  if (editing) changes.deleteKovaaksStats = [editing.id];
+  State.editStat = null;
+  return syncChanges(changes, editing ? "Stat updated." : "KovaaK's stat synced to your coach.");
+}
+function editStat(id) {
+  State.editStat = (client().clientKovaaksStats || []).find(s => s.id === id) || null;
+  State.view = 'kovaaks';
+  renderShell();
+  window.scrollTo(0, 0);
+}
+function cancelEditStat() { State.editStat = null; renderShell(); }
+function deleteStat(id) {
+  if (!confirm('Delete this stat? If it was a personal record, your PR will be recalculated.')) return;
+  if (State.editStat && State.editStat.id === id) State.editStat = null;
+  return syncChanges({ deleteKovaaksStats: [id] }, 'Stat deleted.');
 }
 function toggleHomework(sessionId, homeworkId, done, noteId) {
   const note = done && noteId ? (document.getElementById(noteId)?.value.trim() || '') : '';
