@@ -39,7 +39,10 @@ async function renderThread() {
     return;
   }
 
-  document.title = `${thread.title} — Suffering Builds Character`;
+  setMetaTags({
+    title: `${thread.title} — Suffering Builds Character`,
+    description: `"${thread.title}" — an unrolled Twitter/X thread from Suffering Builds Character.`
+  });
   if (titleEl) titleEl.textContent = thread.title;
 
   const urls = (thread.tweetUrls || "")

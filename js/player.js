@@ -106,7 +106,11 @@ async function renderPlayer() {
     return;
   }
 
-  document.title = `${player.name} — Suffering Builds Character`;
+  setMetaTags({
+    title: `${player.name} — Suffering Builds Character`,
+    description: `${player.role} · ${player.game}. ${plainTextExcerpt(player.bio, 120)}`,
+    image: player.photo || undefined
+  });
 
   container.style.setProperty("--card-accent", player.accent);
   container.innerHTML = `

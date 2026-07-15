@@ -43,7 +43,10 @@ async function renderCustomPage() {
     return;
   }
 
-  document.title = `${page.heading} — Suffering Builds Character`;
+  setMetaTags({
+    title: `${page.heading} — Suffering Builds Character`,
+    description: plainTextExcerpt(page.body, 160)
+  });
 
   const headingEl = document.querySelector("[data-page-heading]");
   if (headingEl) headingEl.textContent = page.heading;

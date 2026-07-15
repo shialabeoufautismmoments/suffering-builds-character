@@ -32,7 +32,10 @@ async function renderNotes() {
     return;
   }
 
-  document.title = `Notes: ${book.title} — Suffering Builds Character`;
+  setMetaTags({
+    title: `Notes: ${book.title} — Suffering Builds Character`,
+    description: book.summary || `Reading notes for "${book.title}."`
+  });
 
   const notesHtml = book.notes
     .split(/\n\s*\n/)

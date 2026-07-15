@@ -42,7 +42,10 @@ async function renderWikiEntry() {
     return;
   }
 
-  document.title = `${entry.title} — Suffering Builds Character`;
+  setMetaTags({
+    title: `${entry.title} — Suffering Builds Character`,
+    description: entry.summary || plainTextExcerpt(entry.body, 160)
+  });
 
   const bodyHtml = typeof marked !== "undefined"
     ? marked.parse(entry.body || "")
