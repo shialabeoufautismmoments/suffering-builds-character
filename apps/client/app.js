@@ -459,13 +459,14 @@ function goalHtml(plan, goal) {
 }
 function actionRowHtml(plan, action) {
   const weekCount = (action.completions || []).filter(c => c.date >= weekStart()).length;
-  const doneToday = (action.completions || []).some(c => c.date === today());
+  const todayCount = (action.completions || []).filter(c => c.date === today()).length;
   const noteId = `act-note-${action.id}`;
+  // The button stays enabled all day — a client who does an assigned routine
+  // more than once in a day can log each rep, and they all count toward the
+  // weekly target.
   return `<div class="list-row-block">
-    <div><b>${E(action.title)}</b><div class="muted">${E(action.type)} - ${weekCount}/${action.targetPerWeek || 1} this week${doneToday ? ' - done today' : ''}</div></div>
-    ${doneToday
-      ? `<div class="mt"><button class="btn btn-sm" disabled>Logged today</button></div>`
-      : `<div class="row mt"><input id="${noteId}" placeholder="Optional note..."><button class="btn btn-sm btn-primary" onclick="completeAction('${plan.id}','${action.id}','${noteId}')">+ Done</button></div>`}
+    <div><b>${E(action.title)}</b><div class="muted">${E(action.type)} - ${weekCount}/${action.targetPerWeek || 1} this week${todayCount ? ` - logged ${todayCount}x today` : ''}</div></div>
+    <div class="row mt"><input id="${noteId}" placeholder="Optional note..."><button class="btn btn-sm btn-primary" onclick="completeAction('${plan.id}','${action.id}','${noteId}')">+ Done</button></div>
   </div>`;
 }
 function weekStart() {
