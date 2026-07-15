@@ -1,3 +1,9 @@
 {
-  "partners": []
+  "partners": [
+    {
+      "enabled": true,
+      "name": "Extinction",
+      "logo": "/assets/uploads/675px-extinction_-overwatch_team-_allmode.png"
+    }
+  ]
 }
