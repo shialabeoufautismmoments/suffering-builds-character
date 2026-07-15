@@ -41,10 +41,6 @@
       "heading": "News",
       "intro": ""
     },
-    "schedule": {
-      "heading": "Schedule",
-      "intro": ""
-    },
     "roadmap": {
       "heading": "Roadmap",
       "intro": ""
@@ -84,13 +80,6 @@
       "id": "news",
       "label": "News",
       "path": "news.html",
-      "enabled": true,
-      "parents": "home"
-    },
-    {
-      "id": "schedule",
-      "label": "Schedule",
-      "path": "schedule.html",
       "enabled": true,
       "parents": "home"
     },

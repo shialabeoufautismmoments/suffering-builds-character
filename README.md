@@ -9,7 +9,6 @@ password-protected owner panel for editing player profiles.
 - `roster.html` — roster grid, one card per player (this used to be at `index.html` — moved when the home page was added)
 - `player.html` — player detail page, reads `?id=<player-id>` from the URL
 - `news.html` — announcements feed, most recent first
-- `schedule.html` — upcoming scrims/tournaments, past events shown greyed out
 - `staff.html` — leadership/staff members (players flagged **Staff Member?** in Roster)
 - `about.html` — clan story and founding date
 - `partners.html` — partner/sponsor logo grid, each card optionally links out to the partner's site
@@ -23,7 +22,6 @@ password-protected owner panel for editing player profiles.
 - `404.html` — themed not-found page, served automatically by Netlify
 - `data/players.json` — roster data as `{ "players": [...] }`
 - `data/news.json` — announcements as `{ "news": [...] }`
-- `data/schedule.json` — events as `{ "events": [...] }`
 - `data/about.json` — about-page content as `{ "founded", "story" }`
 - `data/partners.json` — partners/sponsors as `{ "partners": [...] }`
 - `data/wiki.json` — wiki entries as `{ "entries": [...] }`
@@ -34,7 +32,7 @@ password-protected owner panel for editing player profiles.
 - `data/books.json` — reading list as `{ "books": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/partners.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/staff.js` / `js/about.js` / `js/partners.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, builds the nav menu, and wires up the header search
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
@@ -107,7 +105,7 @@ the fix from there.
 ## Editing content
 
 **Preferred:** log into `/admin` (see above). You'll see sections for
-Roster, News, Schedule, About, **Partners**, **Wiki**, **VOD Reviews**,
+Roster, News, About, **Partners**, **Wiki**, **VOD Reviews**,
 **Twitter Threads**, **Roadmap**, **Coaching / Testimonials**, **Reading**,
 **Custom Pages**, and **Site Settings**. Roster entries have a **Photo**
 field: upload an image there and it replaces that player's initials avatar
@@ -247,7 +245,7 @@ that used to be hardcoded in the HTML/CSS:
 - Social/contact links (any number of label+URL pairs, shown in the footer)
 - A Discord Server ID, which shows a live member widget in the footer of
   every page (see "Discord widget" below)
-- Heading and intro text for each page (Roster, News, Schedule, Staff,
+- Heading and intro text for each page (Roster, News, Staff,
   About) — e.g. add a sentence under "Roster" explaining who's on it
 - **Navigation Menu** — order, labels, visibility, *and grouping into hover
   dropdowns* for every nav link (see below)
@@ -277,7 +275,7 @@ field in Site Settings → Navigation Menu:
   button is also highlighted as active (both Home and About light up when
   viewing the Roster page, since Roster is nested under both).
 
-Default grouping out of the box: **Home** → Roster, News, Schedule · **About**
+Default grouping out of the box: **Home** → Roster, News · **About**
 → Roster, Staff, Partners · **Coaching** → (no dropdown) · **Information** →
 Wiki, VOD Reviews, Threads, Roadmap, Reading.
 
@@ -294,7 +292,7 @@ Deleting that list entry removes the nav link and the page immediately (visiting
 the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
-**Built-in pages** (Home, Roster, News, Schedule, Staff, About, Partners, Wiki,
+**Built-in pages** (Home, Roster, News, Staff, About, Partners, Wiki,
 VOD Reviews, Threads, Roadmap, Coaching, Reading) work a bit differently, because they're backed by real code (`roster.js`,
 `news.js`, etc.), not just content — so they can't be *deleted* outright
 without a developer removing files. What you *can* do from `/admin` → Site
@@ -361,21 +359,6 @@ no spaces. `photo` is optional — omit it to keep the initials avatar.
 ```json
 { "date": "2026-07-01", "title": "Headline", "body": "The announcement text." }
 ```
-
-`data/schedule.json` — one object per event in the `events` array:
-
-```json
-{
-  "date": "2026-07-12",
-  "time": "7:00 PM ET",
-  "title": "Scrim vs Rival Clan",
-  "game": "Valorant",
-  "notes": "Optional details.",
-  "link": "https://twitch.tv/..."
-}
-```
-
-`time`, `game`, `notes`, and `link` are all optional.
 
 `data/about.json` — a single object, not an array:
 
@@ -602,8 +585,8 @@ dynamic `og:image` when one's uploaded, falling back to the logo otherwise.
 
 ## Search & discoverability
 
-**`sitemap.xml` / `robots.txt`** list the 13 top-level section pages (Home,
-Roster, News, Schedule, Staff, About, Partners, Wiki, VOD Reviews, Threads,
+**`sitemap.xml` / `robots.txt`** list the 12 top-level section pages (Home,
+Roster, News, Staff, About, Partners, Wiki, VOD Reviews, Threads,
 Roadmap, Coaching, Reading) so search engines discover and index them
 directly instead of relying on crawling nav links. They're static,
 hand-maintained files — **individual entries (a specific wiki article,

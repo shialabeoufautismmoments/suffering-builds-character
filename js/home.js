@@ -7,10 +7,11 @@ function formatDate(iso) {
 const HOME_TILE_DESCRIPTIONS = {
   roster: "Meet the team",
   news: "Announcements & updates",
-  schedule: "Upcoming scrims & events",
   staff: "Leadership & staff",
   about: "Our story",
+  partners: "Who backs us",
   wiki: "Strategy & reference notes",
+  "vod-reviews": "Public VOD breakdowns",
   threads: "Unrolled Twitter/X threads",
   roadmap: "What's coming next",
   coaching: "Get personalized feedback"

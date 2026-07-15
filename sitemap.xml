@@ -16,11 +16,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sufferingbuildscharacter.com/schedule.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://sufferingbuildscharacter.com/staff.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
