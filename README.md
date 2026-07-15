@@ -35,11 +35,12 @@ password-protected owner panel for editing player profiles.
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
 - `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/schedule.js` / `js/staff.js` / `js/about.js` / `js/partners.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
-- `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, and builds the nav menu
+- `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, builds the nav menu, and wires up the header search
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
 - `assets/logo.svg` — the mascot logo, recreated as SVG so it stays crisp at any size
 - `admin/` — the owner panel (Decap CMS). This is what makes editing possible without touching code.
+- `sitemap.xml` / `robots.txt` — lists the 13 top-level section pages for search engines. Static, hand-maintained — see "Search & discoverability" below.
 
 ## How the owner login works
 
@@ -558,16 +559,35 @@ Twitter, etc. show a title, description, and image.
 
 **Deliberate split from the visible site branding:** the site itself displays
 as "Hone" (header, footer, page titles — all driven by `data/site.json` via
-`js/site.js`), but every page's `og:title` / `twitter:title` / `og:site_name`
-are hardcoded to always say **"Suffering Builds Character"**, uniformly
-across every page, regardless of which page it is. This is intentional — link
-previews should keep showing the old name/logo even though the on-site brand
-changed. Unlike the rest of the site's branding, these are **not** wired up
-to Site Settings — they're static text in each HTML file's `<head>`, so
-changing them means editing the `og:title`/`twitter:title`/`og:site_name`
-lines directly in every `*.html` file (the per-page `og:description` /
-`twitter:description` / `<meta name="description">` are still page-specific
-and safe to edit individually).
+`js/site.js`), but `og:site_name` is hardcoded to always say **"Suffering
+Builds Character"** across every page. This is intentional — link previews
+should keep showing the old name even though the on-site brand changed.
+`og:site_name` is **not** wired up to Site Settings — it's static text in
+each HTML file's `<head>`.
+
+**`og:title` / `twitter:title` / `og:description` / `twitter:description` /
+`<meta name="description">`, on the other hand, are dynamic on the five
+per-entry pages** — `wiki-entry.html`, `thread.html`, `notes.html`,
+`page.html`, and `player.html`. Each one's render script (`js/wiki-entry.js`
+etc.) calls a shared `setMetaTags({ title, description, image })` helper in
+`js/site.js` once its content loads, overwriting the generic placeholder tags
+baked into the HTML with that specific entry's real title/summary (falling
+back to a plain-text excerpt of the body if no summary field exists). Every
+other page (Home, Roster, News, Wiki index, VOD Reviews index, etc.) still
+shows the static generic copy from its own `<head>` — only individual-entry
+pages get this treatment.
+
+**Important limitation:** `setMetaTags` runs in JavaScript after a fetch
+resolves, so it only changes what a browser sees — it does **not** by itself
+fix what Discord/Twitter/Facebook/Slack show in a link preview, because those
+crawlers fetch the raw HTML and don't execute JS. To make link previews
+actually reflect the dynamic per-entry tags, turn on **Prerendering** in the
+Netlify dashboard (Site configuration → Build & deploy → Post processing →
+Prerendering) — a one-click toggle, no code changes needed. Netlify detects
+known bot user-agents and serves them a post-JS-execution snapshot instead of
+the raw HTML. Without it, link previews for wiki entries/threads/etc. will
+still show the generic placeholder copy even though the browser tab title is
+correct.
 
 The image points at `assets/logo.svg` — that renders fine in some places
 (Discord) but **not reliably everywhere** (Twitter/X doesn't support SVG
@@ -577,11 +597,37 @@ values in each HTML file's `<head>` to point at it. Also worth doing once you
 know your final domain: those `content` values are currently relative paths,
 but Open Graph technically wants absolute URLs (e.g.
 `https://yoursite.netlify.app/assets/social.png`) for maximum compatibility
-with link-preview crawlers.
+with link-preview crawlers. Player pages pass their own `photo` as the
+dynamic `og:image` when one's uploaded, falling back to the logo otherwise.
 
-Note: `player.html` shows the same generic preview for every player (no
-per-player title/image), since there's no server rendering here — the page
-fetches player data client-side, after most crawlers have already read the tags.
+## Search & discoverability
+
+**`sitemap.xml` / `robots.txt`** list the 13 top-level section pages (Home,
+Roster, News, Schedule, Staff, About, Partners, Wiki, VOD Reviews, Threads,
+Roadmap, Coaching, Reading) so search engines discover and index them
+directly instead of relying on crawling nav links. They're static,
+hand-maintained files — **individual entries (a specific wiki article,
+thread, player profile, book, or custom page) are intentionally NOT listed**,
+since those are data-driven with no build step to enumerate what currently
+exists. Those still get indexed the normal way, by crawling internal links
+from their index pages (`wiki.html`, `roster.html`, etc.) — they just aren't
+explicitly prioritized in the sitemap. Add a new top-level page (a new
+built-in section, not a CMS entry) to `sitemap.xml` manually if you ever add
+one.
+
+**Site search** is the icon in the top-right of the header on every page,
+wired up in `js/site.js`. On first click, it fetches `data/wiki.json`,
+`data/threads.json`, `data/roadmap.json`, `data/vod-reviews.json`,
+`data/news.json`, and `data/pages.json` once, flattens them into one
+in-memory list, and filters it client-side as you type (title + summary
+substring match, case-insensitive, 2+ characters). Results link straight to
+the matching page — VOD Reviews open the Google Doc directly since they don't
+have an on-site page of their own. It only fetches those six files the first
+time someone actually opens the search panel, so pages that never use it
+don't pay for the extra requests. Roster/Staff/Coaching/Reading aren't
+included in the search index (players, coaches, and books aren't stored with
+enough of a free-text body to search meaningfully) — if that's wanted later,
+it's a small addition to `buildSearchIndex()` in `js/site.js`.
 
 ## Local preview
 
