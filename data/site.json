@@ -13,6 +13,10 @@
       "heading": "Player Spotlights",
       "intro": ""
     },
+    "team-coaching": {
+      "heading": "Team Coaching",
+      "intro": ""
+    },
     "threads": {
       "heading": "Threads",
       "intro": ""
@@ -119,6 +123,13 @@
       "id": "spotlights",
       "label": "Player Spotlights",
       "path": "player-spotlights.html",
+      "enabled": true,
+      "parents": "coaching"
+    },
+    {
+      "id": "team-coaching",
+      "label": "Team Coaching",
+      "path": "team-coaching.html",
       "enabled": true,
       "parents": "coaching"
     },

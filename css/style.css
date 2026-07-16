@@ -1257,3 +1257,114 @@ a.partner-card:hover .partner-logo {
   color: var(--text-dim);
 }
 
+.pricing-page-cta {
+  margin: -12px 0 32px;
+}
+
+.pricing-page-tagline {
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 640px;
+  margin: 0 0 20px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.pricing-card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 32px 26px;
+  text-align: center;
+}
+
+.pricing-card.pricing-featured {
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 0 1px var(--accent-bright), 0 20px 50px -20px rgba(255, 43, 43, 0.35);
+  transform: translateY(-8px);
+}
+
+.pricing-badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-bright);
+  color: #050505;
+  font-family: 'Oswald', 'Segoe UI', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 14px;
+  white-space: nowrap;
+}
+
+.pricing-card h3 {
+  margin: 0 0 10px;
+  font-family: 'Oswald', 'Segoe UI', sans-serif;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pricing-price {
+  font-family: 'Oswald', 'Segoe UI', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--accent-bright);
+  margin-bottom: 8px;
+}
+
+.pricing-tagline {
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+
+.pricing-features {
+  list-style: none;
+  margin: 0 0 26px;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--border);
+  text-align: left;
+}
+
+.pricing-features li {
+  font-size: 0.85rem;
+  color: #c9c4c4;
+  padding: 7px 0 7px 22px;
+  position: relative;
+}
+
+.pricing-features li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 14px;
+  width: 8px;
+  height: 8px;
+  background: var(--accent-bright);
+}
+
+.pricing-card .hero-button {
+  display: block;
+  width: 100%;
+}
+
+.pricing-cta-disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.pricing-cta-disabled:hover {
+  background: transparent;
+  box-shadow: none;
+}
+

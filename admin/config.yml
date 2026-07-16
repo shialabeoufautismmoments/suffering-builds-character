@@ -240,6 +240,31 @@ collections:
               - { label: "Document", name: "document", widget: "file", required: false, hint: "Optional. Upload one PDF (a written report, a training plan, etc.) to embed below the notes, with a download link. For more documents, just link them from within the Notes text instead." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this spotlight without deleting it." }
 
+  - name: "team_coaching"
+    label: "Team Coaching"
+    files:
+      - file: "data/team-coaching.json"
+        label: "Team Coaching"
+        name: "team_coaching"
+        fields:
+          - { label: "Tagline", name: "tagline", widget: "string", required: false, hint: "Short pitch shown under the page heading, e.g. \"Get your whole roster coached together.\"" }
+          - { label: "Contact Button Label", name: "contactLabel", widget: "string", required: false, hint: "Default: \"Contact us for a custom quote\". Shown at the top of the page and as the fallback button on any package that doesn't have its own CTA link." }
+          - { label: "Contact Button URL", name: "contactUrl", widget: "string", required: false, hint: "Where the general contact button links — Discord, email (mailto:you@example.com), a form, etc." }
+          - label: "Packages"
+            name: "packages"
+            widget: "list"
+            summary: "{{fields.name}}"
+            hint: "One pricing tier per entry, shown as a card on the Team Coaching page."
+            fields:
+              - { label: "Package Name", name: "name", widget: "string", hint: "e.g. Starter, Pro, Elite" }
+              - { label: "Price", name: "price", widget: "string", hint: "e.g. \"$500/mo\" or \"Custom pricing\"" }
+              - { label: "Tagline", name: "tagline", widget: "string", required: false, hint: "Short one-line pitch for this package." }
+              - { label: "Features", name: "features", widget: "text", required: false, hint: "One feature per line — shown as a checklist on the card." }
+              - { label: "Featured?", name: "featured", widget: "boolean", default: false, hint: "Visually highlights this package as the recommended tier." }
+              - { label: "CTA Label", name: "ctaLabel", widget: "string", required: false, hint: "Defaults to the page's Contact Button Label if left blank." }
+              - { label: "CTA URL", name: "ctaUrl", widget: "string", required: false, hint: "Booking link, Discord, contact form, etc. Leave blank to fall back to the page's Contact Button URL above." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this package without deleting it." }
+
   - name: "reading"
     label: "Reading"
     files:
@@ -280,11 +305,11 @@ collections:
             name: "navigation"
             widget: "list"
             summary: "{{fields.label}}"
-            hint: "Controls the nav bar: order, labels, visibility, AND grouping into hover dropdowns (see Parent Group(s) below). The 14 built-in entries (home/roster/news/staff/about/partners/wiki/vod-reviews/threads/roadmap/coaching/spotlights/reading/information) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            hint: "Controls the nav bar: order, labels, visibility, AND grouping into hover dropdowns (see Parent Group(s) below). The 15 built-in entries (home/roster/news/staff/about/partners/wiki/vod-reviews/threads/roadmap/coaching/spotlights/team-coaching/reading/information) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / staff / about / partners / wiki / vod-reviews / threads / roadmap / coaching / spotlights / reading / information. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / staff / about / partners / wiki / vod-reviews / threads / roadmap / coaching / spotlights / team-coaching / reading / information. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / staff.html / about.html / partners.html / wiki.html / vod-reviews.html / threads.html / roadmap.html / coaching.html / player-spotlights.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
+              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / staff.html / about.html / partners.html / wiki.html / vod-reviews.html / threads.html / roadmap.html / coaching.html / player-spotlights.html / team-coaching.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
               - { label: "Parent Group(s)", name: "parents", widget: "string", required: false, hint: "Leave blank to show this item as its own top-level nav button. To nest it as a hover-dropdown item instead, put the ID(s) of the top-level item(s) it should appear under, comma-separated if more than one (e.g. \"home\" or \"home,about\"). An item with children automatically gets a hover dropdown; hovering an item with no children does nothing." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
@@ -373,6 +398,12 @@ collections:
                   - { label: "Intro text", name: "intro", widget: "text", required: false }
               - label: "VOD Reviews Page"
                 name: "vod-reviews"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "Team Coaching Page"
+                name: "team-coaching"
                 widget: "object"
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }

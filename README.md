@@ -18,6 +18,7 @@ password-protected owner panel for editing player profiles.
 - `roadmap.html` — planned/in-progress/completed milestones
 - `coaching.html` — bookable coaches (linking to their Cal.com page) and coaching testimonials
 - `player-spotlights.html` / `player-spotlight.html` — public case-study index and individual player spotlight view (`?slug=<slug>`)
+- `team-coaching.html` — pricing packages for teams/orgs, separate from individual coaching
 - `reading.html` / `notes.html` — book list (cover, region-aware Amazon link, summary) and per-book notes view (`?slug=<slug>`)
 - `page.html` — generic template for owner-created custom pages, reads `?slug=<slug>` from the URL
 - `404.html` — themed not-found page, served automatically by Netlify
@@ -31,16 +32,17 @@ password-protected owner panel for editing player profiles.
 - `data/roadmap.json` — roadmap milestones as `{ "items": [...] }`
 - `data/testimonials.json` — bookable coaches + testimonials as `{ "coaches": [...], "testimonials": [...] }`
 - `data/spotlights.json` — player spotlights as `{ "spotlights": [...] }`
+- `data/team-coaching.json` — team coaching pricing packages as `{ "tagline", "contactLabel", "contactUrl", "packages": [...] }`
 - `data/books.json` — reading list as `{ "books": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/staff.js` / `js/about.js` / `js/partners.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/player-spotlights.js` / `js/player-spotlight.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/staff.js` / `js/about.js` / `js/partners.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/player-spotlights.js` / `js/player-spotlight.js` / `js/team-coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, builds the nav menu, and wires up the header search
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
 - `assets/logo.svg` — the mascot logo, recreated as SVG so it stays crisp at any size
 - `admin/` — the owner panel (Decap CMS). This is what makes editing possible without touching code.
-- `sitemap.xml` / `robots.txt` — lists the 14 top-level section pages for search engines. Static, hand-maintained — see "Search & discoverability" below.
+- `sitemap.xml` / `robots.txt` — lists the 15 top-level section pages for search engines. Static, hand-maintained — see "Search & discoverability" below.
 
 ## How the owner login works
 
@@ -227,6 +229,23 @@ document, just link the others from inside the Notes text. **This page is
 public** — get the player's OK before posting their name, screenshots, or
 progress details.
 
+**Team Coaching** (`team-coaching.html`) is a pricing/sales page for teams
+and orgs buying coaching for a whole roster, deliberately separate from the
+**Coaching** page (which is for individual players booking their own 1-on-1
+sessions with a specific coach) — nested under the same Coaching dropdown in
+the nav. There's a page-level **Tagline** (short pitch under the heading) and
+a general **Contact Button** (label + URL — point it at Discord, a
+`mailto:` link, or a form), plus a **Packages** list where each entry is one
+pricing tier: Name, Price, an optional one-line Tagline, **Features** (same
+one-per-line plain-text pattern as Achievements/Tweet URLs — shown as a
+checklist), a **Featured?** toggle that visually highlights that tier as
+recommended, and its own optional CTA Label/URL. If a package's CTA URL is
+left blank, its button falls back to the page's general Contact Button
+instead — so you can give one or two packages their own direct booking link
+while the rest funnel into "contact us for a quote." Packages without an
+enabled CTA (no package URL and no page-level Contact URL) render as a
+disabled-looking button rather than a dead link.
+
 **Reading** (`reading.html`) is a book list — each entry has a Slug, Title,
 optional Author, optional Cover Image, optional Amazon Link, optional
 Summary, and optional Notes. A few things worth knowing:
@@ -293,7 +312,7 @@ field in Site Settings → Navigation Menu:
   viewing the Roster page, since Roster is nested under both).
 
 Default grouping out of the box: **Home** → Roster, News · **About**
-→ Roster, Staff, Partners · **Coaching** → Player Spotlights ·
+→ Roster, Staff, Partners · **Coaching** → Player Spotlights, Team Coaching ·
 **Information** → Wiki, VOD Reviews, Threads, Roadmap, Reading.
 
 On screens narrower than 720px, the nav bar collapses into a hamburger button
@@ -310,7 +329,7 @@ the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
 **Built-in pages** (Home, Roster, News, Staff, About, Partners, Wiki,
-VOD Reviews, Threads, Roadmap, Coaching, Player Spotlights, Reading) work a bit differently, because they're backed by real code (`roster.js`,
+VOD Reviews, Threads, Roadmap, Coaching, Player Spotlights, Team Coaching, Reading) work a bit differently, because they're backed by real code (`roster.js`,
 `news.js`, etc.), not just content — so they can't be *deleted* outright
 without a developer removing files. What you *can* do from `/admin` → Site
 Settings → **Navigation Menu**:
@@ -437,6 +456,42 @@ links, lists, blockquotes, and code blocks all work.
 directly in the text via standard markdown image syntax (the CMS's image
 toolbar button inserts this for you). `photo` and `document` are both
 optional.
+
+`data/team-coaching.json` — a single object, not a list of entries:
+
+```json
+{
+  "tagline": "Get your whole roster coached together.",
+  "contactLabel": "Contact us for a custom quote",
+  "contactUrl": "mailto:hello@sufferingbuildscharacter.com",
+  "packages": [
+    {
+      "name": "Starter",
+      "price": "$400/mo",
+      "tagline": "For teams just getting into structured practice.",
+      "features": "1 team VOD review per month\nShared warmup playlist\nDiscord Q&A access",
+      "featured": false,
+      "ctaLabel": "",
+      "ctaUrl": "",
+      "enabled": true
+    },
+    {
+      "name": "Pro",
+      "price": "$900/mo",
+      "tagline": "Our most popular package for competitive rosters.",
+      "features": "Weekly team VOD review\nIndividual playlists per player\nMonthly progress reports\nPriority scheduling",
+      "featured": true,
+      "ctaLabel": "Book a call",
+      "ctaUrl": "https://cal.com/your-name/team-intro",
+      "enabled": true
+    }
+  ]
+}
+```
+
+`packages[].features` is the same one-per-line plain-text pattern as Roster's
+Achievements field. A package's `ctaUrl` (if set) takes priority over the
+page-level `contactUrl` for that package's button.
 
 `data/vod-reviews.json` — one object per entry in the `reviews` array:
 
