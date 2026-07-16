@@ -10,18 +10,18 @@
       "price": "$125 USD/week ($500 USD/mo)",
       "tagline": "Best option for Overwatch.",
       "features": "2 slots for player development coaching (+ $100 USD/mo for additional slot)\nCustom benchmarking\nAccess to coaching software\n2 sessions a week per player\nContact aidan1v1 on discord for booking and more information",
-      "ctaUrl": "https://discord.gg/YPPY6qwwWm",
-      "ctaLabel": "Booking (Discord)"
+      "ctaUrl": "https://buy.stripe.com/fZu8wP9zq2ro4rBbBn9AA00",
+      "ctaLabel": "Purchase"
     },
     {
       "featured": false,
       "enabled": true,
-      "name": "Pro Package",
+      "name": "Elite Package",
       "tagline": "Recommended for Valorant or if you need more slots.",
       "price": "$180 USD/week ($720 USD/mo)",
       "features": "5 slots for player development coaching\nCustom benchmarking\nAccess to coaching software\n2 sessions a week per player\nContact aidan1v1 on discord for booking and more information",
-      "ctaLabel": "Booking (Discord)",
-      "ctaUrl": "https://discord.gg/YPPY6qwwWm"
+      "ctaLabel": "Purchase",
+      "ctaUrl": "https://buy.stripe.com/6oU9AT7ri5DA1fp20N9AA01"
     }
   ]
 }
