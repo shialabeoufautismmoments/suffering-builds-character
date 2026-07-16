@@ -2,5 +2,14 @@
   "tagline": "",
   "contactLabel": "Contact us for a custom quote",
   "contactUrl": "",
-  "packages": []
+  "packages": [
+    {
+      "featured": true,
+      "enabled": true,
+      "name": "Basic Package",
+      "price": "$320 USD/mo",
+      "tagline": "Best option for developing players mechanically.",
+      "features": "2 slots for player development coaching (+ $50 USD/mo for additional slot)\nCustom benchmarking\nAccess to coaching software\n2 sessions a week\n"
+    }
+  ]
 }
