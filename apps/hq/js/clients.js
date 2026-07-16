@@ -306,6 +306,11 @@ Clients.edit = function (id) {
       <label class="field"><span>In-game Sens</span><input id="c-sens" value="${f('sens')}" placeholder="5.0"></label>
       <label class="field"><span>cm / 360</span><input id="c-cm360" value="${f('cm360')}" placeholder="auto / manual"></label>
     </div>
+    <div class="row">
+      <label class="field"><span>Mouse (+ mods)</span><input id="c-mouse" value="${f('mouse')}" placeholder="e.g. Logitech G Pro X Superlight, skates swapped"></label>
+      <label class="field"><span>Mousepad</span><input id="c-mousepad" value="${f('mousepad')}" placeholder="e.g. Artisan Zero XSOFT"></label>
+      <label class="field"><span>Aim trainer experience</span><input id="c-aimTrainerExperience" value="${f('aimTrainerExperience')}" placeholder="e.g. KovaaK's 2yrs, some Aimlabs"></label>
+    </div>
     <label class="field"><span>Coaching notes / goals (free text)</span><textarea id="c-notes" placeholder="Background, focus areas, weaknesses...">${f('notes')}</textarea></label>
     <label class="field"><span>Discord webhook URL (optional -enables one-click posting)</span><input id="c-webhook" value="${f('webhook')}" placeholder="https://discord.com/api/webhooks/..."></label>
     <label class="field"><span>Cal.com booking link override (optional -defaults to your global link)</span><input id="c-calLink" value="${f('calLink')}" placeholder="e.g. your-name/overwatch-coaching"></label>
@@ -327,7 +332,8 @@ Clients.save = function (id) {
     discord, discordId: Clients.pendingDiscordId || (discordIdMatch && discordIdMatch[1]) || '',
     avatar: UI.safeAvatar(Clients.pendingAvatar), webhook: get('webhook'), calLink: get('calLink'),
     owName: get('owName'), owTag: get('owTag'), trackerUrl: get('trackerUrl'),
-    steamId: get('steamId'), dpi: get('dpi'), sens: get('sens'), cm360: get('cm360'), notes: get('notes'),
+    steamId: get('steamId'), dpi: get('dpi'), sens: get('sens'), cm360: get('cm360'),
+    mouse: get('mouse'), mousepad: get('mousepad'), aimTrainerExperience: get('aimTrainerExperience'), notes: get('notes'),
     clientCode: get('clientCode').toUpperCase(),
   };
 

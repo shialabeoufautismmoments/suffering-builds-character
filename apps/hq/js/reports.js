@@ -184,6 +184,9 @@ Reports.client = function (clientId) {
       ${c.dpi ? `<div><b>DPI:</b> ${UI.escape(c.dpi)}</div>` : ''}
       ${c.sens ? `<div><b>Sens:</b> ${UI.escape(c.sens)}</div>` : ''}
       ${c.cm360 ? `<div><b>cm/360:</b> ${UI.escape(c.cm360)}</div>` : ''}
+      ${c.mouse ? `<div><b>Mouse:</b> ${UI.escape(c.mouse)}</div>` : ''}
+      ${c.mousepad ? `<div><b>Mousepad:</b> ${UI.escape(c.mousepad)}</div>` : ''}
+      ${c.aimTrainerExperience ? `<div><b>Aim trainer exp:</b> ${UI.escape(c.aimTrainerExperience)}</div>` : ''}
     </div>
     ${c.notes ? `<div class="summary-box">${UI.escape(c.notes)}</div>` : ''}
     ${heroes.length ? `<div style="margin:6pt 0"><b style="font-size:9.5pt;color:#555">Hero pool:</b> ${heroes.map(h => `<span class="chip">${UI.escape(h.name)}${h.main ? ' main' : ''}</span>`).join(' ')}</div>` : ''}

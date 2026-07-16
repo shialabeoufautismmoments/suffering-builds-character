@@ -20,7 +20,7 @@ Search.run = function (q) {
   if (q.length < 2) { box.innerHTML = '<div class="muted" style="font-size:.82rem;padding:.5rem">Type at least 2 characters...</div>'; return; }
   const E = UI.escape, R = [];
 
-  DB.clients.filter(c => [c.name, c.discord, c.rank, c.game, c.team].some(v => (v || '').toLowerCase().includes(q)))
+  DB.clients.filter(c => [c.name, c.discord, c.rank, c.game, c.team, c.mouse, c.mousepad, c.aimTrainerExperience].some(v => (v || '').toLowerCase().includes(q)))
     .forEach(c => R.push({ t: 'Client', l: c.name, s: [c.team, c.rank].filter(Boolean).join(' - '), a: `Search.go('client','${c.id}')` }));
   (DB.leads || []).filter(l => [l.discord, l.name, l.rank].some(v => (v || '').toLowerCase().includes(q)))
     .forEach(l => R.push({ t: 'Lead', l: l.discord || l.name || '-', s: l.rank || '', a: `Search.go('nav','waitlist')` }));
