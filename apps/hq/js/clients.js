@@ -285,7 +285,7 @@ Clients.edit = function (id) {
           <button class="btn btn-sm" id="discord-avatar-fetch" onclick="Clients.lookupDiscordAvatar()">Grab Discord icon</button>
           <button class="btn btn-sm btn-ghost" id="discord-avatar-remove" onclick="Clients.removeDiscordAvatar()" ${Clients.pendingAvatar ? '' : 'style="display:none"'}>Remove</button>
         </div>
-        <div class="discord-avatar-note">Avatar lookup requires a numeric Discord User ID (or copied user mention). The ID is sent to PfpFinder.com, and the returned Discord CDN image is saved locally with this client.</div>
+        <div class="discord-avatar-note">Avatar lookup requires a numeric Discord User ID (or copied user mention). Looked up via Discord's API and saved with this client - nothing else about the account is read.</div>
       </div>
     </div>
     <div class="row">

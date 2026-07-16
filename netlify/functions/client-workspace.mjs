@@ -11,6 +11,36 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 const today = () => new Date().toISOString().slice(0, 10);
 const clean = (value, max = 5000) => String(value ?? "").slice(0, max);
 const num = value => Number.isFinite(+value) ? +value : 0;
+const discordIdFrom = value => /^(?:<@!?)?(\d{17,20})>?$/.exec(String(value || "").trim())?.[1] || "";
+
+// The client app's match form takes role/map/heroes as free text (unlike
+// HQ's own pickers), so a client typing "tracer" vs "Tracer" would otherwise
+// split one hero's win-rate stats across two rows in HQ's Matches view.
+// These mirror the canonical spellings in apps/hq/js/mechanics.js (HEROES)
+// and apps/hq/js/matches.js (OW_MAPS) - update both places if a hero/map
+// is added there.
+const OW_ROLES = ["Tank", "Damage", "Support"];
+const OW_HERO_NAMES = [
+  "Ashe", "Bastion", "Cassidy", "Echo", "Freja", "Genji", "Hanzo", "Junkrat", "Mei", "Pharah",
+  "Reaper", "Sojourn", "Soldier: 76", "Sombra", "Symmetra", "Torbjorn", "Tracer", "Venture", "Widowmaker",
+  "D.Va", "Doomfist", "Hazard", "Junker Queen", "Mauga", "Orisa", "Ramattra", "Reinhardt", "Roadhog",
+  "Sigma", "Winston", "Wrecking Ball", "Zarya",
+  "Ana", "Baptiste", "Brigitte", "Illari", "Juno", "Kiriko", "Lifeweaver", "Lucio", "Mercy", "Moira", "Zenyatta",
+];
+const OW_MAP_NAMES = [
+  "Antarctic Peninsula", "Busan", "Ilios", "Lijiang Tower", "Nepal", "Oasis", "Samoa",
+  "Circuit Royal", "Dorado", "Havana", "Junkertown", "Rialto", "Route 66", "Shambali Monastery", "Watchpoint: Gibraltar",
+  "Blizzard World", "Eichenwalde", "Hollywood", "King's Row", "Midtown", "Numbani", "Paraiso",
+  "Colosseo", "Esperanca", "New Queen Street", "Runasapi", "New Junk City", "Suravasa", "Hanaoka", "Throne of Anubis",
+];
+// Case-insensitive match against a canonical list; falls back to the value
+// as typed if it's not recognized (a typo or a hero/map not yet in the list
+// shouldn't get silently dropped).
+const canonicalize = (value, list) => {
+  const v = String(value ?? "").trim();
+  if (!v) return v;
+  return list.find(x => x.toLowerCase() === v.toLowerCase()) || v;
+};
 
 function findClient(workspace, code) {
   const normalized = normalizeCode(code);
@@ -94,7 +124,9 @@ function clientView(workspace, client) {
       goals: client.goals || [],
       prs: client.prs || {},
       prHistory: client.prHistory || {},
-      clientKovaaksStats: client.clientKovaaksStats || []
+      clientKovaaksStats: client.clientKovaaksStats || [],
+      discordId: client.discordId || "",
+      avatar: client.avatar || ""
     },
     playlists: (workspace.playlists || []).filter(item => item.clientId === clientId),
     vods: publicVods,
@@ -122,16 +154,19 @@ function applyMatch(workspace, client, input) {
   workspace.matches ||= [];
   const id = clean(input.id, 80) || uid();
   const existing = workspace.matches.find(match => match.id === id && match.clientId === client.id);
+  const result = canonicalize(input.result, ["Win", "Loss", "Draw"]);
   const data = {
     id,
     clientId: client.id,
     date: clean(input.date, 20) || today(),
     type: clean(input.type, 80) || "Competitive",
-    result: ["Win", "Loss", "Draw"].includes(input.result) ? input.result : "Win",
-    role: clean(input.role, 80),
-    map: clean(input.map, 120),
+    result: ["Win", "Loss", "Draw"].includes(result) ? result : "Win",
+    role: canonicalize(clean(input.role, 80), OW_ROLES),
+    map: canonicalize(clean(input.map, 120), OW_MAP_NAMES),
     mode: clean(input.mode, 80),
-    heroes: Array.isArray(input.heroes) ? input.heroes.map(hero => clean(hero, 80)).filter(Boolean).slice(0, 8) : [],
+    heroes: Array.isArray(input.heroes)
+      ? input.heroes.map(hero => canonicalize(clean(hero, 80), OW_HERO_NAMES)).filter(Boolean).slice(0, 8)
+      : [],
     rankBefore: clean(input.rankBefore, 120),
     rankAfter: clean(input.rankAfter, 120),
     replayCode: clean(input.replayCode, 40),
@@ -232,6 +267,19 @@ function deleteKovaaksStats(client, ids) {
   touched.forEach(scenario => recomputeClientPr(client, scenario));
 }
 
+// Same base64 data-URL restriction HQ's own UI.safeAvatar enforces - never
+// store a bare remote URL (Discord CDN links expire/rotate) or anything
+// that isn't actually image bytes.
+const safeAvatar = value => /^data:image\/(?:png|jpeg|webp|gif);base64,[a-z0-9+/=]+$/i.test(String(value || "")) ? String(value) : "";
+
+function applyAvatar(client, input) {
+  const avatar = safeAvatar(input.avatarDataUrl);
+  if (!avatar) return;
+  client.avatar = avatar;
+  const id = discordIdFrom(input.discordId);
+  if (id) client.discordId = id;
+}
+
 function applyHomework(workspace, client, input) {
   const session = (workspace.sessions || []).find(item => item.clientId === client.id && item.id === input.sessionId);
   const homework = session && (session.homework || []).find(item => item.id === input.homeworkId);
@@ -321,6 +369,7 @@ export default async (request) => {
     (changes.goalCheckIns || []).slice(0, 50).forEach(item => applyGoal(client, item));
     (changes.vodWatched || []).slice(0, 25).forEach(item => applyVodWatched(workspace, client, item));
     (changes.vodReplies || []).slice(0, 50).forEach(item => applyVodReply(workspace, client, item));
+    if (changes.avatar) applyAvatar(client, changes.avatar);
     // Deletes run after adds so an edit (delete old id + add new) leaves the
     // recomputed PR reflecting the new value.
     deleteMatches(workspace, client, (changes.deleteMatches || []).slice(0, 50));

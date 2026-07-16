@@ -1,4 +1,4 @@
-const State = { code: '', data: null, view: 'today', busy: false, since: null, editMatch: null, editStat: null };
+const State = { code: '', data: null, view: 'today', busy: false, since: null, editMatch: null, editStat: null, avatarPanelOpen: false };
 const app = document.getElementById('app');
 const E = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -116,6 +116,15 @@ function vods() { return State.data && State.data.vods || []; }
 function isVodUnread(vod) { return vod && vod.clientStatus !== 'watched' && !vod.clientViewedAt; }
 function unreadVods() { return vods().filter(isVodUnread); }
 
+function initials(name) {
+  return (name || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
+}
+function avatarBadgeHtml(c) {
+  return c.avatar
+    ? `<img class="badge-avatar" src="${c.avatar}" alt="">`
+    : `<span class="badge-avatar badge-avatar-fallback">${E(initials(c.name))}</span>`;
+}
+
 function renderShell() {
   const c = client();
   const pending = loadQueue().length;
@@ -126,12 +135,46 @@ function renderShell() {
       <div class="tabs">${tabs.map(([id, label]) => `<button class="tab ${State.view === id ? 'on' : ''}" onclick="nav('${id}')">${label}</button>`).join('')}</div>
       <div class="spacer"></div>
       ${pending ? `<span class="pill pending-pill" title="Changes waiting to sync">${pending} pending</span>` : ''}
-      <div class="client-badge">${E(c.name || 'Client')} ${c.rank ? '- ' + E(c.rank) : ''}</div>
+      <button class="client-badge" onclick="toggleAvatarPanel()" title="Set your profile photo">
+        ${avatarBadgeHtml(c)}<span>${E(c.name || 'Client')} ${c.rank ? '- ' + E(c.rank) : ''}</span>
+      </button>
       <button class="btn btn-sm" onclick="syncPull()">Refresh</button>
       <button class="btn btn-sm" onclick="logout()">Lock</button>
     </div>
-    <main class="main">${bannerHtml()}${renderView()}</main>
+    <main class="main">${avatarPanelHtml()}${bannerHtml()}${renderView()}</main>
   </div>`;
+}
+
+function avatarPanelHtml() {
+  if (!State.avatarPanelOpen) return '';
+  const c = client();
+  return `<div class="card mb">
+    <div class="card-head"><h2>Profile photo</h2><button class="btn btn-sm" onclick="toggleAvatarPanel()">Close</button></div>
+    <div class="avatar-panel-preview">${avatarBadgeHtml(c)}</div>
+    <div class="row">
+      <input id="avatar-discord-id" value="${E(c.discordId || '')}" placeholder="Your Discord User ID (numeric)">
+      <button class="btn btn-primary" onclick="fetchDiscordAvatar()">Grab my Discord photo</button>
+    </div>
+    <p class="muted small mt">Right-click your name in Discord and "Copy User ID" (enable Developer Mode in Discord settings if you don't see that option). This only reads your public avatar - nothing else.</p>
+  </div>`;
+}
+
+function toggleAvatarPanel() {
+  State.avatarPanelOpen = !State.avatarPanelOpen;
+  renderShell();
+}
+
+async function fetchDiscordAvatar() {
+  const discordId = document.getElementById('avatar-discord-id').value.trim();
+  if (!/^\d{17,20}$/.test(discordId)) return toast('Enter a valid numeric Discord User ID.', 'bad');
+  try {
+    const result = await window.clientApi.discordAvatarLookup(State.code, discordId);
+    if (!result.success) return toast(result.msg || 'Could not find that Discord avatar.', 'bad');
+    State.avatarPanelOpen = false;
+    await syncChanges({ avatar: { avatarDataUrl: result.avatarDataUrl, discordId: result.userId } }, 'Profile photo updated.');
+  } catch (e) {
+    toast(e.message || 'Discord avatar lookup failed.', 'bad');
+  }
 }
 
 function bannerHtml() {

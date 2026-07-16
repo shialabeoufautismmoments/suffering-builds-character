@@ -14,7 +14,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 .topbar{display:flex;align-items:center;gap:.7rem;padding:.75rem 1rem;background:rgba(17,22,29,.92);border-bottom:1px solid var(--border)}
 .brand{font-weight:800;letter-spacing:.02em;margin-right:.6rem}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent);margin-right:.5rem}
 .tabs{display:flex;gap:.35rem;flex-wrap:wrap}.tab{border:1px solid transparent;background:transparent;color:var(--muted);border-radius:8px;padding:.45rem .75rem;cursor:pointer}.tab:hover,.tab.on{background:var(--accent-soft);color:var(--accent);border-color:rgba(232,131,58,.25)}
-.spacer{flex:1}.client-badge{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:.35rem .75rem;color:var(--muted);white-space:nowrap}
+.spacer{flex:1}.client-badge{display:flex;align-items:center;gap:.5rem;border:1px solid var(--border);background:var(--card);border-radius:999px;padding:.3rem .75rem .3rem .3rem;color:var(--muted);white-space:nowrap;cursor:pointer}.client-badge:hover{border-color:var(--accent)}
+.badge-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0}.badge-avatar-fallback{display:flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent);font-size:.72rem;font-weight:700}
+.avatar-panel-preview{margin-bottom:.8rem}.avatar-panel-preview .badge-avatar{width:64px;height:64px;font-size:1.3rem}
 .main{overflow:auto;padding:1.4rem 1.6rem}.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}.sub,.muted{color:var(--muted)}h1{font-size:1.55rem}h2{font-size:1rem}
 .grid{display:grid;gap:1rem}.cols-2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}.cols-3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .card{background:linear-gradient(180deg,rgba(255,255,255,.025),transparent),var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem}.card-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.8rem}

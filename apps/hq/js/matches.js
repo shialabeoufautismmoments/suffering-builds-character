@@ -40,15 +40,33 @@ Matches.record = function (matches) {
   return { w, l, d, total: matches.length, winrate: decisive ? Math.round((w / decisive) * 100) : 0 };
 };
 
-Matches.groupStats = function (matches, keyFn) {
+// Case-insensitive match against a canonical name list (hero/map/role names).
+// Returns the canonical spelling if found, otherwise the value as typed -
+// so an unrecognized value (typo, future hero, custom map) is preserved
+// rather than dropped.
+Matches.canonicalize = function (value, list) {
+  const v = (value || '').trim();
+  if (!v || !list) return v;
+  return list.find(x => x.toLowerCase() === v.toLowerCase()) || v;
+};
+
+// Groups by a case-insensitive key so "tracer" / "Tracer" / "TRACER" (the
+// client app's match form takes hero/map/role as free text, unlike HQ's own
+// pickers) count as the same hero/map/role instead of splitting the win-rate
+// stats across separate rows. Pass a canonicalList to also normalize the
+// displayed spelling to match HQ's own naming.
+Matches.groupStats = function (matches, keyFn, canonicalList) {
   const groups = {};
   matches.forEach(m => {
-    (keyFn(m) || []).forEach(k => {
+    (keyFn(m) || []).forEach(raw => {
+      const k = (raw || '').trim();
       if (!k) return;
-      (groups[k] ||= []).push(m);
+      const display = Matches.canonicalize(k, canonicalList);
+      const norm = display.toLowerCase();
+      (groups[norm] ||= { display, matches: [] }).matches.push(m);
     });
   });
-  return Object.entries(groups).map(([k, ms]) => ({ key: k, ...Matches.record(ms) }))
+  return Object.values(groups).map(g => ({ key: g.display, ...Matches.record(g.matches) }))
     .sort((a, b) => b.total - a.total || b.winrate - a.winrate);
 };
 
@@ -58,9 +76,9 @@ UI.renderers.matches = function (el) {
   const c = activeClient();
   const ms = clientMatches(c.id).slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.createdAt.localeCompare(a.createdAt));
   const rec = Matches.record(ms);
-  const byHero = Matches.groupStats(ms, m => m.heroes);
-  const byMap = Matches.groupStats(ms, m => [m.map]);
-  const byRole = Matches.groupStats(ms, m => [m.role]);
+  const byHero = Matches.groupStats(ms, m => m.heroes, typeof HEROES !== 'undefined' ? HEROES.map(h => h.name) : null);
+  const byMap = Matches.groupStats(ms, m => [m.map], OW_MAPS.map(x => x.name));
+  const byRole = Matches.groupStats(ms, m => [m.role], ['Tank', 'Damage', 'Support']);
 
   el.innerHTML = `
     <div class="page-head">
@@ -224,12 +242,15 @@ Matches.bulkImport = function () {
 Matches.parseBulkLine = function (line) {
   const cols = line.split('\t').map(x => x.trim());
   if (!cols.some(Boolean)) return null;
-  const [date, resultRaw, map, role, heroesRaw, rankBefore, rankAfter, notes] = cols;
+  const [date, resultRaw, mapRaw, roleRaw, heroesRaw, rankBefore, rankAfter, notes] = cols;
   const resultMap = { W: 'Win', L: 'Loss', D: 'Draw', WIN: 'Win', LOSS: 'Loss', DRAW: 'Draw' };
   const result = resultMap[(resultRaw || '').toUpperCase()] || 'Win';
-  const heroes = (heroesRaw || '').split(';').map(h => h.trim()).filter(Boolean);
+  const map = Matches.canonicalize(mapRaw, OW_MAPS.map(x => x.name));
+  const role = Matches.canonicalize(roleRaw, ['Tank', 'Damage', 'Support']);
+  const heroList = typeof HEROES !== 'undefined' ? HEROES.map(h => h.name) : null;
+  const heroes = (heroesRaw || '').split(';').map(h => Matches.canonicalize(h, heroList)).filter(Boolean);
   return {
-    date: date || UI.today(), type: 'Competitive', result, role: role || '', map: map || '',
+    date: date || UI.today(), type: 'Competitive', result, role, map,
     mode: MAP_MODE[map] || '', heroes, rankBefore: rankBefore || '', rankAfter: rankAfter || '',
     replayCode: '', notes: notes || '',
   };

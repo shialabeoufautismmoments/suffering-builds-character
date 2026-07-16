@@ -99,6 +99,13 @@
     kovaaksWebSync: () => unsupported("KovaaK's web sync is only available in the desktop app right now."),
     renderCard: () => unsupported('Image card rendering is only available in the desktop app.'),
     captureRegion: () => unsupported('Screen capture is only available in the desktop app.'),
+    discordAvatarLookup: async identity => {
+      try {
+        return await authedFetch(`/api/discord-avatar?id=${encodeURIComponent(identity)}`);
+      } catch (e) {
+        return { success: false, msg: e.message || 'Discord avatar lookup failed.' };
+      }
+    },
     copyImage: async dataUrl => {
       try {
         if (!navigator.clipboard || !window.ClipboardItem) return false;

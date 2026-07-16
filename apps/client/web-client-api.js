@@ -35,5 +35,13 @@
       cacheSet({ lastCode: String(code || '').trim().toUpperCase(), workspace: result.data });
       return result;
     },
+    discordAvatarLookup: async (code, discordId) => {
+      const response = await fetch(`/api/discord-avatar?id=${encodeURIComponent(discordId)}`, {
+        headers: { 'x-client-code': String(code || '') },
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || result.msg || 'Discord avatar lookup failed.');
+      return result;
+    },
   };
 })();
