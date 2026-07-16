@@ -34,6 +34,7 @@ const API = {
 const State = {
   workspace: null,
   clientId: '',
+  coachId: '',
   fileUrl: '',
   fileName: '',
   sourceUrl: '',
@@ -102,11 +103,33 @@ async function unlock(event) {
   }
 }
 
+// This tool has no login-per-coach step (just a single shared password), so
+// "who's publishing this review" is tracked locally per browser/device —
+// same pattern HQ uses for Access.currentCoachId, just persisted since there's
+// no unlock-time picker gate here. Without this, published VODs and their
+// auto-created homework sessions carry no coachId, which skews Coach
+// Analytics on any multi-coach team (this was the actual bug: the old code
+// read workspace.currentCoachId, a field nothing ever set).
+const COACH_ID_KEY = 'coachsbc-vod-review-coach-id';
+
 async function loadWorkspace() {
-  State.workspace = await API.workspaceGet() || { clients: [], vods: [], cloud: { revision: 0 } };
+  State.workspace = await API.workspaceGet() || { clients: [], vods: [], coaches: [], cloud: { revision: 0 } };
   State.workspace.clients ||= [];
   State.workspace.vods ||= [];
+  State.workspace.coaches ||= [];
   State.clientId ||= State.workspace.clients[0]?.id || '';
+
+  const coaches = State.workspace.coaches;
+  const saved = localStorage.getItem(COACH_ID_KEY) || '';
+  if (coaches.some(c => c.id === saved)) State.coachId = saved;
+  else if (coaches.some(c => c.id === State.coachId)) { /* keep current selection */ }
+  else State.coachId = coaches[0]?.id || '';
+}
+
+function setCoach(id) {
+  State.coachId = id;
+  if (id) localStorage.setItem(COACH_ID_KEY, id);
+  else localStorage.removeItem(COACH_ID_KEY);
 }
 
 function renderApp() {
@@ -115,6 +138,7 @@ function renderApp() {
     <div class="topbar">
       <div class="brand"><span class="dot"></span>CoachSBC VOD Review Studio</div>
       <select id="client-select" onchange="State.clientId=this.value; refreshSide()" style="max-width:240px">${clients.map(c => `<option value="${c.id}" ${c.id === State.clientId ? 'selected' : ''}>${E(c.name)}</option>`).join('')}</select>
+      ${State.workspace.coaches.length ? `<select id="coach-select" onchange="setCoach(this.value)" title="Attributed as this coach" style="max-width:170px">${State.workspace.coaches.map(c => `<option value="${c.id}" ${c.id === State.coachId ? 'selected' : ''}>${E(c.name)}</option>`).join('')}</select>` : ''}
       <input id="review-title" placeholder="Review title" value="VOD Review - ${today()}" style="max-width:280px">
       <div class="spacer"></div>
       <span class="status" id="save-status">Workspace rev ${E(State.workspace.cloud?.revision || 0)}</span>
@@ -598,6 +622,7 @@ async function publishReview() {
     const vod = {
       id: uid(),
       clientId,
+      coachId: State.coachId || '',
       title,
       reviewStatus: 'complete',
       clientStatus: 'unread',
@@ -640,7 +665,7 @@ async function publishReview() {
       workspace.sessions.push({
         id: uid(),
         clientId,
-        coachId: workspace.currentCoachId || '',
+        coachId: State.coachId || '',
         date: today(),
         durationMin: 0,
         prepMinutes: 0,

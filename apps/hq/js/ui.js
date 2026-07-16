@@ -185,6 +185,25 @@ UI.emptyState = (icon, title, sub) => `
     ${sub ? `<div style="margin-top:.4rem">${UI.escape(sub)}</div>` : ''}
   </div>`;
 
+// Scrollable checkbox list for bulk-apply actions (playlists, homework).
+// By default excludes the active client (for "also assign this to...").
+// Pass { includeActive: true, preCheckActive: true } for a standalone
+// "pick anyone on the roster" picker that pre-checks the current client.
+// Read the picks back with UI.checkedClientIds() after the coach confirms.
+UI.clientChecklistHtml = function ({ includeActive = false, preCheckActive = false } = {}) {
+  const activeId = DB.activeClientId;
+  const pool = includeActive ? DB.clients : DB.clients.filter(c => c.id !== activeId);
+  const rows = pool.slice().sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  if (!rows.length) return '<p class="muted" style="font-size:.82rem">No other clients yet.</p>';
+  return `<div class="client-checklist" style="max-height:220px;overflow-y:auto;border:1px solid var(--border-soft);border-radius:8px;padding:.5rem">
+    ${rows.map(c => `<label class="flex center gap-sm" style="cursor:pointer;padding:.25rem 0">
+      <input type="checkbox" class="bulk-client-check" value="${c.id}" style="width:auto" ${preCheckActive && c.id === activeId ? 'checked' : ''}>
+      <span>${UI.escape(c.name)}${c.game ? ` <span class="muted" style="font-size:.74rem">- ${UI.escape(c.game)}</span>` : ''}</span>
+    </label>`).join('')}
+  </div>`;
+};
+UI.checkedClientIds = () => [...document.querySelectorAll('.bulk-client-check:checked')].map(el => el.value);
+
 // Guard a view that requires an active client.
 UI.requireClient = (el, viewName) => {
   if (activeClient()) return false;

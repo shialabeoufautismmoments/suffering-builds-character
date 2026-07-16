@@ -191,6 +191,7 @@ Playlists.renderLibrary = function () {
         <button class="btn btn-xs btn-ghost" onclick="Cards.routine('${p.id}')" title="Copy routine card for Discord">🖼</button>
         <button class="btn btn-xs btn-ghost" onclick="Cards.routine('${p.id}', true)" title="Post routine card to Discord">📨</button>
         <button class="btn btn-xs btn-ghost" onclick="Playlists.duplicate('${p.id}')">Copy</button>
+        <button class="btn btn-xs btn-ghost" onclick="Playlists.assignToOthers('${p.id}')">Assign to...</button>
         <button class="btn btn-xs btn-danger" onclick="Playlists.remove('${p.id}')">Del</button>
       </div>
     </div>`).join('');
@@ -238,6 +239,35 @@ Playlists.duplicate = function (id) {
   if (!p) return;
   DB.playlists.push({ ...JSON.parse(JSON.stringify(p)), id: uid(), name: p.name + ' (Copy)', createdAt: new Date().toISOString() });
   saveDB();
+  Playlists.renderLibrary();
+};
+
+/* -- Bulk-assign to other clients -------------------------------------------- */
+Playlists.assignToOthers = function (id) {
+  const p = DB.playlists.find(x => x.id === id);
+  if (!p) return;
+  UI.modal(`
+    <div class="modal-head"><h2>Assign "${UI.escape(p.name)}" to other clients</h2><button class="close-x" onclick="UI.closeModal()">&times;</button></div>
+    <p class="muted" style="font-size:.82rem;margin-bottom:.6rem">Creates a copy of this playlist (same scenarios & reps) for each client you pick.</p>
+    <div class="field">${UI.clientChecklistHtml()}</div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="UI.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="Playlists.assignToOthersSave('${id}')">Assign</button>
+    </div>`, { wide: true });
+};
+
+Playlists.assignToOthersSave = function (id) {
+  const p = DB.playlists.find(x => x.id === id);
+  if (!p) return;
+  const clientIds = UI.checkedClientIds();
+  if (!clientIds.length) { UI.toast('Pick at least one client.', 'bad'); return; }
+  const now = new Date().toISOString();
+  clientIds.forEach(clientId => {
+    DB.playlists.push({ ...JSON.parse(JSON.stringify(p)), id: uid(), clientId, createdAt: now });
+  });
+  saveDB();
+  UI.closeModal();
+  UI.toast(`Assigned to ${clientIds.length} client${clientIds.length === 1 ? '' : 's'}.`, 'good');
   Playlists.renderLibrary();
 };
 

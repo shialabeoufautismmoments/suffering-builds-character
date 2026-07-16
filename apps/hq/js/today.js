@@ -64,21 +64,27 @@ Today.stalledGoals = function () {
 Today.snapshot = function () {
   const today = UI.today();
   const horizon = Today.addDays(today, Today.UPCOMING_DAYS);
-  const homework = Today.homework();
+  // Respects the "My clients only" toggle on the Clients tab, so a coach on
+  // a multi-coach team doesn't get paged about every other coach's roster.
+  const roster = Clients.visibleClients();
+  const visibleIds = new Set(roster.map(c => c.id));
+  const homework = Today.homework().filter(h => visibleIds.has(h.clientId));
   const overdueHomework = homework.filter(h => !h.done && h.dueDate && h.dueDate < today)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-  const upcomingSessions = (DB.scheduled || []).filter(s => !s.done && s.date >= today && s.date <= horizon)
+  const upcomingSessions = (DB.scheduled || []).filter(s => !s.done && s.date >= today && s.date <= horizon && visibleIds.has(s.clientId))
     .sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
-  const unreviewedVods = (DB.vods || []).filter(v => Today.vodStatus(v) !== 'complete')
+  const unreviewedVods = (DB.vods || []).filter(v => Today.vodStatus(v) !== 'complete' && visibleIds.has(v.clientId))
     .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-  const inactivePlayers = DB.clients.map(c => {
+  const inactivePlayers = roster.map(c => {
     const last = Today.lastActivity(c);
     return { client: c, clientId: c.id, last, days: Today.daysSince(last) };
   }).filter(x => x.days == null || x.days >= Today.INACTIVE_DAYS)
     .sort((a, b) => (b.days ?? 9999) - (a.days ?? 9999));
-  const reminders = (DB.reminders || []).filter(r => !r.done && r.dueDate <= horizon)
+  // A reminder with no clientId is a general/roster-wide follow-up, not tied
+  // to one player, so it isn't affected by the client filter.
+  const reminders = (DB.reminders || []).filter(r => !r.done && r.dueDate <= horizon && (!r.clientId || visibleIds.has(r.clientId)))
     .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
-  const stalledGoals = Today.stalledGoals();
+  const stalledGoals = Today.stalledGoals().filter(g => visibleIds.has(g.clientId));
   return { today, homework, overdueHomework, upcomingSessions, unreviewedVods, inactivePlayers, reminders, stalledGoals };
 };
 
@@ -119,7 +125,7 @@ Today.priorityFor = function (c, snap) {
   return { client: c, score, reasons };
 };
 
-Today.priorities = snap => DB.clients.map(c => Today.priorityFor(c, snap))
+Today.priorities = snap => Clients.visibleClients().map(c => Today.priorityFor(c, snap))
   .sort((a, b) => b.score - a.score || a.client.name.localeCompare(b.client.name));
 
 Today.activate = function (clientId) {
@@ -331,8 +337,11 @@ UI.renderers.today = function (el) {
 
   el.innerHTML = `
     <div class="page-head">
-      <div><div class="today-date">${UI.fmtDateLong(new Date())}</div><h1>Today</h1><div class="sub">Your whole roster, distilled into the next best coaching actions.</div></div>
-      <div class="flex gap-sm"><button class="btn" onclick="Business.scheduleEdit()">+ Session</button><button class="btn btn-primary" onclick="Today.reminderEdit()">+ Follow-up</button></div>
+      <div><div class="today-date">${UI.fmtDateLong(new Date())}</div><h1>Today</h1><div class="sub">${Clients.myClientsOnly && (DB.coaches || []).length > 1 ? 'Your assigned clients, ' : 'Your whole roster, '}distilled into the next best coaching actions.</div></div>
+      <div class="flex gap-sm center">
+        ${(DB.coaches || []).length > 1 ? `<label class="flex center gap-sm" style="font-size:.8rem;color:var(--text-muted)"><input type="checkbox" style="width:auto" ${Clients.myClientsOnly ? 'checked' : ''} onchange="Clients.setMyClientsOnly(this.checked)"> My clients only</label>` : ''}
+        <button class="btn" onclick="Business.scheduleEdit()">+ Session</button><button class="btn btn-primary" onclick="Today.reminderEdit()">+ Follow-up</button>
+      </div>
     </div>
     <div class="stat-tiles mb">
       <div class="stat-tile"><div class="label">Sessions Today</div><div class="value accent">${sessionsToday.length}</div></div>

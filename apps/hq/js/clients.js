@@ -5,6 +5,24 @@ const Clients = {};
 
 const ROSTER_GROUPS = [{ k: 'none', label: 'None' }, { k: 'team', label: 'Team' }, { k: 'package', label: 'Package' }];
 
+// Per-device "my clients only" toggle. On a multi-coach team, without this
+// every coach sees and can edit every other coach's clients on every view
+// except the Coaches tab. Persisted so the choice survives a reload.
+const MY_CLIENTS_KEY = 'coachsbc-hq-my-clients-only';
+Clients.myClientsOnly = localStorage.getItem(MY_CLIENTS_KEY) === '1';
+Clients.setMyClientsOnly = function (on) {
+  Clients.myClientsOnly = !!on;
+  localStorage.setItem(MY_CLIENTS_KEY, on ? '1' : '0');
+  UI.refresh();
+};
+// The roster every list/priority view should actually show. Falls back to
+// everyone if the filter is off, no coach is selected, or there's only one
+// coach on the team (the filter is meaningless in that case).
+Clients.visibleClients = function () {
+  if (!Clients.myClientsOnly || !Access.currentCoachId || (DB.coaches || []).length < 2) return DB.clients;
+  return DB.clients.filter(c => c.coachId === Access.currentCoachId);
+};
+
 Clients.sessionsHad = function (c) { return (c.packages || []).reduce((s, p) => s + (+p.used || 0), 0); };
 Clients.sessionsLeft = function (c) {
   return (typeof Business !== 'undefined') ? Business.clientRemaining(c)
@@ -63,16 +81,21 @@ Clients.cardHtml = function (c) {
 UI.renderers.clients = function (el) {
   const mode = Clients.boardMode || 'cards';
   const groupBy = Clients.groupBy || 'none';
+  const roster = Clients.visibleClients();
+  const filtered = Clients.myClientsOnly && roster.length !== DB.clients.length;
   const body = !DB.clients.length
     ? UI.emptyState('🎯', 'No clients yet', 'Create your first player profile to start coaching.')
+    : !roster.length
+    ? UI.emptyState('🎯', 'No clients assigned to you', 'Turn off "My clients only" to see the full roster, or assign yourself as coach on a client\'s profile.')
     : mode === 'board' ? Clients.leaderboardHtml()
-    : groupBy === 'none' ? `<div class="grid cols-3">${DB.clients.map(Clients.cardHtml).join('')}</div>`
+    : groupBy === 'none' ? `<div class="grid cols-3">${roster.map(Clients.cardHtml).join('')}</div>`
     : Clients.groupedCardsHtml(groupBy);
 
   el.innerHTML = `
     <div class="page-head">
-      <div><h1>Clients</h1><div class="sub">Players you coach. Selecting one scopes every other tab to them.</div></div>
+      <div><h1>Clients</h1><div class="sub">Players you coach. Selecting one scopes every other tab to them.${filtered ? ` Showing ${roster.length} of ${DB.clients.length}.` : ''}</div></div>
       <div class="flex gap-sm center">
+        ${(DB.coaches || []).length > 1 ? `<label class="flex center gap-sm" style="font-size:.8rem;color:var(--text-muted)"><input type="checkbox" style="width:auto" ${Clients.myClientsOnly ? 'checked' : ''} onchange="Clients.setMyClientsOnly(this.checked)"> My clients only</label>` : ''}
         ${DB.clients.length > 1 ? `<div class="seg">
           <button class="${mode === 'cards' ? 'on' : ''}" onclick="Clients.setMode('cards')">Cards</button>
           <button class="${mode === 'board' ? 'on' : ''}" onclick="Clients.setMode('board')">Leaderboard</button>
@@ -102,7 +125,7 @@ Clients.packageOf = function (c) {
 Clients.groupedCardsHtml = function (key) {
   const fn = key === 'team' ? Clients.teamOf : Clients.packageOf;
   const groups = {};
-  DB.clients.forEach(c => { const g = fn(c); (groups[g] ||= []).push(c); });
+  Clients.visibleClients().forEach(c => { const g = fn(c); (groups[g] ||= []).push(c); });
   const names = Object.keys(groups).sort((a, b) => {
     const ae = a.startsWith('No '), be = b.startsWith('No ');
     if (ae !== be) return ae ? 1 : -1;
@@ -144,7 +167,7 @@ Clients.sortBy = function (key) {
 const SCORE_METRICS = [['winrate', 'Win rate'], ['matches', 'Matches played'], ['had', 'Sessions done'], ['remaining', 'Sessions remaining'], ['openHw', 'Open homework'], ['priority', 'Priority']];
 
 Clients.scoredRows = function () {
-  const rows = DB.clients.map(c => ({ c, m: Clients.metrics(c) }));
+  const rows = Clients.visibleClients().map(c => ({ c, m: Clients.metrics(c) }));
   const W = Object.assign({}, ...SCORE_METRICS.map(([k]) => ({ [k]: 0 })), (DB.settings || {}).scoreWeights || {});
   const raw = ({ m }) => ({ winrate: m.rec.total ? m.rec.winrate : 0, matches: m.rec.total, had: m.had, remaining: m.remaining, openHw: m.openHw, priority: m.priority });
   const raws = rows.map(raw);

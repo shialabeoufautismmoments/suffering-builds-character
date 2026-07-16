@@ -19,7 +19,10 @@ UI.renderers.sessions = function (el) {
   el.innerHTML = `
     <div class="page-head">
       <div><h1>Sessions</h1><div class="sub">Coaching log & homework for <b>${UI.escape(c.name)}</b>.</div></div>
-      <button class="btn btn-primary" onclick="Sessions.edit()">+ Log Session</button>
+      <div class="flex gap-sm">
+        <button class="btn" onclick="Sessions.bulkAssignHomework()">Bulk Assign Homework</button>
+        <button class="btn btn-primary" onclick="Sessions.edit()">+ Log Session</button>
+      </div>
     </div>
 
     <div class="stat-tiles mb">
@@ -151,6 +154,45 @@ Sessions.toggleHw = function (sid, hid) {
   const s = DB.sessions.find(x => x.id === sid);
   const h = (s.homework || []).find(x => x.id === hid);
   if (h) { h.done = !h.done; saveDB(); UI.refresh(); }
+};
+
+/* -- Bulk-assign homework across the roster ---------------------------------- */
+Sessions.bulkAssignHomework = function () {
+  UI.modal(`
+    <div class="modal-head"><h2>Bulk Assign Homework</h2><button class="close-x" onclick="UI.closeModal()">&times;</button></div>
+    <p class="muted" style="font-size:.82rem;margin-bottom:.6rem">Creates a small homework-only session entry for each client you pick — useful for assigning the same drill to a whole team at once.</p>
+    <div class="row">
+      <label class="field"><span>Type</span><select id="bhw-type">${Object.entries(HW_TYPES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label>
+      <label class="field"><span>Due date</span><input id="bhw-due" type="date"></label>
+    </div>
+    <label class="field"><span>Assignment</span><input id="bhw-text" placeholder="e.g. Run Daily Warmup 3x this week"></label>
+    <label class="field"><span>Apply to</span>${UI.clientChecklistHtml({ includeActive: true, preCheckActive: true })}</label>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="UI.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="Sessions.bulkAssignSave()">Assign Homework</button>
+    </div>`, { wide: true });
+};
+
+Sessions.bulkAssignSave = function () {
+  const text = document.getElementById('bhw-text').value.trim();
+  if (!text) { UI.toast('Enter the assignment text.', 'bad'); return; }
+  const type = document.getElementById('bhw-type').value;
+  const dueDate = document.getElementById('bhw-due').value;
+  const clientIds = UI.checkedClientIds();
+  if (!clientIds.length) { UI.toast('Pick at least one client.', 'bad'); return; }
+  const now = new Date().toISOString();
+  clientIds.forEach(clientId => {
+    DB.sessions.push({
+      id: uid(), clientId, date: UI.today(), durationMin: 0, prepMinutes: 0,
+      topics: 'Bulk homework assignment', notes: '',
+      homework: [{ id: uid(), text, type, dueDate, done: false }],
+      createdAt: now,
+    });
+  });
+  saveDB();
+  UI.closeModal();
+  UI.toast(`Assigned to ${clientIds.length} client${clientIds.length === 1 ? '' : 's'}.`, 'good');
+  UI.refresh();
 };
 
 

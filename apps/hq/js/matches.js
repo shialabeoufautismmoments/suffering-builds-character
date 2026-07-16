@@ -67,6 +67,7 @@ UI.renderers.matches = function (el) {
       <div><h1>Matches</h1><div class="sub">Overwatch match & scrim log for <b>${UI.escape(c.name)}</b>.</div></div>
       <div class="flex gap-sm">
         <button class="btn" onclick="Matches.playbook()">Map Playbook</button>
+        <button class="btn" onclick="Matches.bulkImport()">Bulk Import</button>
         <button class="btn btn-primary" onclick="Matches.edit()">+ Log Match</button>
       </div>
     </div>
@@ -202,6 +203,55 @@ Matches.remove = function (id) {
     DB.matches = DB.matches.filter(x => x.id !== id);
     saveDB(); UI.toast('Match deleted.'); UI.refresh();
   });
+};
+
+/* -- Bulk import (paste from a spreadsheet) --------------------------------- */
+Matches.bulkImport = function () {
+  const c = activeClient();
+  UI.modal(`
+    <div class="modal-head"><h2>Bulk Import Matches</h2><button class="close-x" onclick="UI.closeModal()">&times;</button></div>
+    <p class="muted" style="font-size:.82rem;margin-bottom:.4rem">Paste rows copied from a spreadsheet (tab-separated) for <b>${UI.escape(c.name)}</b>. One match per line, columns in order:</p>
+    <p class="muted" style="font-size:.76rem;margin-bottom:.4rem"><code>Date&#9;Result&#9;Map&#9;Role&#9;Heroes&#9;Rank Before&#9;Rank After&#9;Notes</code></p>
+    <p class="muted" style="font-size:.76rem;margin-bottom:.8rem">Date is YYYY-MM-DD (defaults to today if blank). Result accepts Win/Loss/Draw or W/L/D. Heroes are semicolon-separated within their column. Trailing columns can be left off.</p>
+    <textarea id="m-bulk-text" style="min-height:220px;font-family:monospace;font-size:.82rem" oninput="Matches.bulkPreview()" placeholder="2026-07-10	Win	King's Row	Damage	Tracer; Genji	Diamond 3	Diamond 2	Held off-angle well"></textarea>
+    <div id="m-bulk-preview" class="muted" style="font-size:.78rem;margin-top:.5rem">&nbsp;</div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="UI.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="Matches.bulkSave()">Import Matches</button>
+    </div>`, { wide: true });
+};
+
+Matches.parseBulkLine = function (line) {
+  const cols = line.split('\t').map(x => x.trim());
+  if (!cols.some(Boolean)) return null;
+  const [date, resultRaw, map, role, heroesRaw, rankBefore, rankAfter, notes] = cols;
+  const resultMap = { W: 'Win', L: 'Loss', D: 'Draw', WIN: 'Win', LOSS: 'Loss', DRAW: 'Draw' };
+  const result = resultMap[(resultRaw || '').toUpperCase()] || 'Win';
+  const heroes = (heroesRaw || '').split(';').map(h => h.trim()).filter(Boolean);
+  return {
+    date: date || UI.today(), type: 'Competitive', result, role: role || '', map: map || '',
+    mode: MAP_MODE[map] || '', heroes, rankBefore: rankBefore || '', rankAfter: rankAfter || '',
+    replayCode: '', notes: notes || '',
+  };
+};
+
+Matches.bulkPreview = function () {
+  const lines = document.getElementById('m-bulk-text').value.split('\n').map(l => l.trim()).filter(Boolean);
+  const parsed = lines.map(Matches.parseBulkLine).filter(Boolean);
+  document.getElementById('m-bulk-preview').textContent = lines.length
+    ? `${parsed.length} match${parsed.length === 1 ? '' : 'es'} ready to import.` : ' ';
+};
+
+Matches.bulkSave = function () {
+  const lines = document.getElementById('m-bulk-text').value.split('\n').map(l => l.trim()).filter(Boolean);
+  const parsed = lines.map(Matches.parseBulkLine).filter(Boolean);
+  if (!parsed.length) { UI.toast('No valid rows to import.', 'bad'); return; }
+  const clientId = activeClient().id, now = new Date().toISOString();
+  parsed.forEach(data => DB.matches.push({ id: uid(), clientId, ...data, createdAt: now }));
+  saveDB();
+  UI.closeModal();
+  UI.toast(`Imported ${parsed.length} match${parsed.length === 1 ? '' : 'es'}.`, 'good');
+  UI.refresh();
 };
 
 /* -- Map Playbook (shared knowledge base) ----------------------------------- */
