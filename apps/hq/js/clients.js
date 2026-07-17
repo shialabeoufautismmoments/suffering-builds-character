@@ -528,6 +528,26 @@ UI.renderers.dashboard = function (el) {
       </div>
 
       <div class="card">
+        <div class="card-head"><h2>Session Requests</h2></div>
+        ${(c.sessionRequests || []).length ? (c.sessionRequests || []).slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).map(r => `
+          <div class="flex between center" style="padding:.4rem 0;border-bottom:1px solid var(--border-soft)">
+            <div><b>${r.status === 'open' ? 'Open' : r.status === 'scheduled' ? 'Scheduled' : 'Dismissed'}</b>
+              <span class="muted" style="font-size:.78rem">- ${UI.fmtDate(r.createdAt)}${r.preferredTimes ? ' - ' + UI.escape(r.preferredTimes) : ''}</span>
+              ${r.message ? `<div class="muted" style="font-size:.78rem">${UI.escape(r.message)}</div>` : ''}</div>
+            ${r.status === 'open' ? `<div class="flex gap-sm"><button class="btn btn-xs btn-primary" onclick="Today.sessionRequestSchedule('${c.id}','${r.id}')">Schedule</button><button class="btn btn-xs btn-ghost" onclick="Today.sessionRequestResolve('${c.id}','${r.id}','dismissed')">Dismiss</button></div>` : ''}
+          </div>`).join('') : '<div class="muted" style="font-size:.82rem">No session requests yet.</div>'}
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Client Notes</h2></div>
+        ${(c.clientNotes || []).length ? (c.clientNotes || []).slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).slice(0, 6).map(n => `
+          <div style="padding:.4rem 0;border-bottom:1px solid var(--border-soft)">
+            <div class="muted" style="font-size:.74rem">${UI.fmtDate(n.createdAt)}</div>
+            <div style="font-size:.85rem;white-space:pre-wrap">${UI.escape(n.text)}</div>
+          </div>`).join('') : '<div class="muted" style="font-size:.82rem">No notes from the client app yet.</div>'}
+      </div>
+
+      <div class="card">
         <div class="card-head"><h2>Assigned Playlists</h2>
           <button class="btn btn-sm btn-ghost" onclick="App.nav('playlists')">Manage</button></div>
         ${pls.length ? pls.map(p => `

@@ -37,6 +37,10 @@ Search.run = function (q) {
   (DB.sessions || []).flatMap(s => (s.homework || []).map(h => ({ ...h, session: s })))
     .filter(h => (h.text || '').toLowerCase().includes(q))
     .slice(0, 12).forEach(h => { const c = getClient(h.session.clientId); R.push({ t: 'Homework', l: h.text, s: c ? c.name : '', a: `Search.go('client','${h.session.clientId}','sessions')` }); });
+  DB.clients.forEach(c => (c.clientNotes || []).filter(n => (n.text || '').toLowerCase().includes(q))
+    .forEach(n => R.push({ t: 'Client Note', l: n.text, s: c.name, a: `Search.go('client','${c.id}','dashboard')` })));
+  DB.clients.forEach(c => (c.sessionRequests || []).filter(r => [r.message, r.preferredTimes].some(v => (v || '').toLowerCase().includes(q)))
+    .forEach(r => R.push({ t: 'Session Request', l: r.message || r.preferredTimes || 'Session request', s: c.name, a: `Search.go('client','${c.id}','dashboard')` })));
   DB.clients.forEach(c => (c.developmentPlans || []).forEach(p => {
     const planHit = [p.title, p.objective].some(v => (v || '').toLowerCase().includes(q));
     if (planHit) R.push({ t: 'Plan', l: p.title || 'Development plan', s: c.name, a: `Search.go('client','${c.id}','plans')` });

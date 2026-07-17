@@ -85,7 +85,12 @@ Today.snapshot = function () {
   const reminders = (DB.reminders || []).filter(r => !r.done && r.dueDate <= horizon && (!r.clientId || visibleIds.has(r.clientId)))
     .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
   const stalledGoals = Today.stalledGoals().filter(g => visibleIds.has(g.clientId));
-  return { today, homework, overdueHomework, upcomingSessions, unreviewedVods, inactivePlayers, reminders, stalledGoals };
+  const sessionRequests = DB.clients.flatMap(c => (c.sessionRequests || [])
+    .filter(r => r.status === 'open')
+    .map(r => ({ ...r, clientId: c.id, client: c })))
+    .filter(r => visibleIds.has(r.clientId))
+    .sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  return { today, homework, overdueHomework, upcomingSessions, unreviewedVods, inactivePlayers, reminders, stalledGoals, sessionRequests };
 };
 
 Today.priorityFor = function (c, snap) {
@@ -329,6 +334,8 @@ UI.renderers.today = function (el) {
 
   const goalRows = snap.stalledGoals.length ? snap.stalledGoals.map(g => `<div class="today-row"><div><b>${UI.escape(g.title)}</b><small>${UI.escape(g.client.name)} - no update for ${g.days} days${g.progress == null ? '' : ` - ${g.progress}% complete`}</small></div><button class="btn btn-xs btn-ghost" onclick="Today.go('${g.clientId}','${g.plan ? 'plans' : 'dashboard'}')">Open</button></div>`).join('') : Today.empty('No goals have stalled.');
 
+  const sessionRequestRows = snap.sessionRequests.length ? snap.sessionRequests.map(r => `<div class="today-row"><div><b>${UI.escape(r.client.name)}</b><small>${r.preferredTimes ? UI.escape(r.preferredTimes) : 'No preferred time given'}${r.message ? ' - ' + UI.escape(r.message) : ''} - ${UI.fmtDate(r.createdAt)}</small></div><div class="flex gap-sm"><button class="btn btn-xs btn-primary" onclick="Today.sessionRequestSchedule('${r.clientId}','${r.id}')">Schedule</button><button class="btn btn-xs btn-ghost" onclick="Today.sessionRequestResolve('${r.clientId}','${r.id}','dismissed')">Dismiss</button></div></div>`).join('') : Today.empty('No open session requests.');
+
   const reminderRows = snap.reminders.length ? snap.reminders.map(r => {
     const c = getClient(r.clientId);
     const overdue = r.dueDate < snap.today;
@@ -358,6 +365,7 @@ UI.renderers.today = function (el) {
     </div>
     <div class="grid cols-2 today-queues">
       ${Today.queueCard('Overdue homework', snap.overdueHomework.length, homeworkRows)}
+      ${Today.queueCard('Session requests', snap.sessionRequests.length, sessionRequestRows)}
       ${Today.queueCard('Follow-up reminders', snap.reminders.length, reminderRows, '<button class="btn btn-xs btn-primary" onclick="Today.reminderEdit()">+ Add</button>')}
       ${Today.queueCard('Players without recent activity', snap.inactivePlayers.length, inactiveRows)}
       ${Today.queueCard('Unreviewed VODs', snap.unreviewedVods.length, vodRows)}
@@ -399,6 +407,20 @@ Today.reminderToggle = function (id) {
 Today.reminderRemove = function (id) {
   DB.reminders = (DB.reminders || []).filter(x => x.id !== id);
   saveDB(); UI.closeModal(); UI.toast('Follow-up removed.'); UI.refresh();
+};
+
+Today.sessionRequestResolve = function (clientId, requestId, status) {
+  const c = getClient(clientId);
+  const r = c && (c.sessionRequests || []).find(x => x.id === requestId);
+  if (!r) return;
+  r.status = status || 'resolved';
+  r.resolvedAt = new Date().toISOString();
+  saveDB(); UI.refresh();
+};
+Today.sessionRequestSchedule = function (clientId, requestId) {
+  Today.activate(clientId);
+  Today.sessionRequestResolve(clientId, requestId, 'scheduled');
+  Business.scheduleEdit();
 };
 
 

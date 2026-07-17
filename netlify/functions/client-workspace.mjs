@@ -126,7 +126,9 @@ function clientView(workspace, client) {
       prHistory: client.prHistory || {},
       clientKovaaksStats: client.clientKovaaksStats || [],
       discordId: client.discordId || "",
-      avatar: client.avatar || ""
+      avatar: client.avatar || "",
+      sessionRequests: client.sessionRequests || [],
+      clientNotes: client.clientNotes || []
     },
     playlists: (workspace.playlists || []).filter(item => item.clientId === clientId),
     vods: publicVods,
@@ -280,6 +282,33 @@ function applyAvatar(client, input) {
   if (id) client.discordId = id;
 }
 
+function applySessionRequest(client, input) {
+  client.sessionRequests ||= [];
+  const message = clean(input.message, 2000).trim();
+  const preferredTimes = clean(input.preferredTimes, 300).trim();
+  if (!message && !preferredTimes) return;
+  client.sessionRequests.push({
+    id: clean(input.id, 80) || uid(),
+    message,
+    preferredTimes,
+    status: "open",
+    source: "client-app",
+    createdAt: new Date().toISOString()
+  });
+}
+
+function applyClientNote(client, input) {
+  client.clientNotes ||= [];
+  const text = clean(input.text, 4000).trim();
+  if (!text) return;
+  client.clientNotes.push({
+    id: clean(input.id, 80) || uid(),
+    text,
+    source: "client-app",
+    createdAt: new Date().toISOString()
+  });
+}
+
 function applyHomework(workspace, client, input) {
   const session = (workspace.sessions || []).find(item => item.clientId === client.id && item.id === input.sessionId);
   const homework = session && (session.homework || []).find(item => item.id === input.homeworkId);
@@ -369,6 +398,8 @@ export default async (request) => {
     (changes.goalCheckIns || []).slice(0, 50).forEach(item => applyGoal(client, item));
     (changes.vodWatched || []).slice(0, 25).forEach(item => applyVodWatched(workspace, client, item));
     (changes.vodReplies || []).slice(0, 50).forEach(item => applyVodReply(workspace, client, item));
+    (changes.sessionRequests || []).slice(0, 10).forEach(item => applySessionRequest(client, item));
+    (changes.clientNotes || []).slice(0, 10).forEach(item => applyClientNote(client, item));
     if (changes.avatar) applyAvatar(client, changes.avatar);
     // Deletes run after adds so an edit (delete old id + add new) leaves the
     // recomputed PR reflecting the new value.

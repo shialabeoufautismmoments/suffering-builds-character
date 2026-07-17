@@ -113,6 +113,8 @@ function sessions() { return State.data && State.data.sessions || []; }
 function plans() { return State.data && State.data.developmentPlans || []; }
 function playlists() { return State.data && State.data.playlists || []; }
 function vods() { return State.data && State.data.vods || []; }
+function sessionRequests() { return client().sessionRequests || []; }
+function clientNotes() { return client().clientNotes || []; }
 function isVodUnread(vod) { return vod && vod.clientStatus !== 'watched' && !vod.clientViewedAt; }
 function unreadVods() { return vods().filter(isVodUnread); }
 
@@ -128,7 +130,7 @@ function avatarBadgeHtml(c) {
 function renderShell() {
   const c = client();
   const pending = loadQueue().length;
-  const tabs = [['today', 'Today'], ['dashboard', 'Overview'], ['matches', 'Matches'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['sessions', 'Sessions'], ['plans', 'Plan'], ['playlists', 'Playlists'], ['vods', `Reviews${unreadVods().length ? ` (${unreadVods().length})` : ''}`]];
+  const tabs = [['today', 'Today'], ['dashboard', 'Overview'], ['matches', 'Matches'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['sessions', 'Sessions'], ['notes', 'My Notes'], ['plans', 'Plan'], ['playlists', 'Playlists'], ['vods', `Reviews${unreadVods().length ? ` (${unreadVods().length})` : ''}`]];
   app.innerHTML = `<div class="shell">
     <div class="topbar">
       <div class="brand"><span class="dot"></span>CoachSBC Client</div>
@@ -194,6 +196,7 @@ function renderView() {
   if (State.view === 'kovaaks') return renderKovaaks();
   if (State.view === 'homework') return renderHomework();
   if (State.view === 'sessions') return renderSessions();
+  if (State.view === 'notes') return renderNotes();
   if (State.view === 'plans') return renderPlans();
   if (State.view === 'playlists') return renderPlaylists();
   if (State.view === 'vods') return renderVods();
@@ -218,6 +221,7 @@ function activityDates() {
     if (v.clientViewedAt) dates.add(v.clientViewedAt.slice(0, 10));
     (v.notes || []).forEach(n => (n.clientReplies || []).forEach(r => r.at && dates.add(r.at.slice(0, 10))));
   });
+  clientNotes().forEach(n => n.createdAt && dates.add(n.createdAt.slice(0, 10)));
   return dates;
 }
 
@@ -430,12 +434,54 @@ function homeworkRowHtml(session, homework) {
 
 function renderSessions() {
   const rows = sessions().slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  return `<div class="page-head"><div><h1>Session Notes</h1><div class="sub">Recaps your coach wrote up after each session.</div></div></div>
+  const requests = sessionRequests().slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  const statusLabel = { open: 'Waiting on coach', scheduled: 'Scheduled', dismissed: 'Handled' };
+  const statusStyle = { open: 'color:var(--warn);border-color:var(--warn)', scheduled: 'color:var(--good);border-color:var(--good)', dismissed: '' };
+  return `<div class="page-head"><div><h1>Sessions</h1><div class="sub">Request your next session and review recaps your coach wrote up.</div></div></div>
+    <div class="card mb"><div class="card-head"><h2>Request your next session</h2></div>
+      <form onsubmit="submitSessionRequest(event)">
+        <div class="row"><input id="sr-times" placeholder="Preferred day/time (e.g. Tue evenings, Sat after 2pm)"></div>
+        <label class="field"><span>Message (optional)</span><textarea id="sr-message" placeholder="Anything your coach should know..."></textarea></label>
+        <button class="btn btn-primary">Send request</button>
+      </form>
+      ${requests.length ? requests.map(r => `<div class="list-row-block">
+        <div class="split">
+          <div>${r.preferredTimes ? `<b>${E(r.preferredTimes)}</b>` : '<b>No preferred time given</b>'}${r.message ? `<div class="muted small">${E(r.message)}</div>` : ''}</div>
+          <span class="pill" style="${statusStyle[r.status] || ''}">${statusLabel[r.status] || r.status}</span>
+        </div>
+        <div class="muted small mt">Sent ${fmt(r.createdAt)}</div>
+      </div>`).join('') : ''}
+    </div>
     ${rows.length ? rows.map(s => `<div class="card mb">
       <div class="card-head"><h2>${s.topics ? E(s.topics) : 'Session'}</h2><span class="pill">${fmt(s.date)}</span></div>
       ${s.notes ? `<p class="mb" style="white-space:pre-wrap">${E(s.notes)}</p>` : '<p class="muted mb">No written recap for this session.</p>'}
       ${(s.homework || []).length ? `<h2 class="mb">Homework from this session</h2>${s.homework.map(h => `<div class="list-row"><div><b style="${h.done ? 'text-decoration:line-through;color:var(--dim)' : ''}">${E(h.text)}</b><div class="muted">${E(h.type)}${h.dueDate ? ' - due ' + fmt(h.dueDate) : ''}</div></div><span class="pill" style="${h.done ? '' : 'color:var(--warn);border-color:var(--warn)'}">${h.done ? 'Done' : 'Open'}</span></div>`).join('')}` : ''}
     </div>`).join('') : '<div class="empty">No session notes yet.</div>'}`;
+}
+
+function submitSessionRequest(event) {
+  event.preventDefault();
+  const preferredTimes = document.getElementById('sr-times').value.trim();
+  const message = document.getElementById('sr-message').value.trim();
+  if (!preferredTimes && !message) return toast('Add a preferred time or message.', 'bad');
+  return syncChanges({ sessionRequests: [{ id: uid(), preferredTimes, message }] }, 'Session request sent to your coach.');
+}
+
+function renderNotes() {
+  const rows = clientNotes().slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  return `<div class="page-head"><div><h1>My Notes</h1><div class="sub">Jot down thoughts between sessions - your coach can see these too.</div></div></div>
+    <div class="card mb"><form onsubmit="submitClientNote(event)">
+      <label class="field"><span>New note</span><textarea id="note-text" placeholder="Thoughts, reflections, questions for your coach..."></textarea></label>
+      <button class="btn btn-primary">Save note</button>
+    </form></div>
+    <div class="card">${rows.length ? rows.map(n => `<div class="list-row-block"><div class="muted small">${fmt(n.createdAt)}</div><p class="mt" style="white-space:pre-wrap">${E(n.text)}</p></div>`).join('') : '<div class="empty">No notes yet.</div>'}</div>`;
+}
+
+function submitClientNote(event) {
+  event.preventDefault();
+  const text = document.getElementById('note-text').value.trim();
+  if (!text) return toast('Write something first.', 'bad');
+  return syncChanges({ clientNotes: [{ id: uid(), text }] }, 'Note saved.');
 }
 
 function renderPlans() {
