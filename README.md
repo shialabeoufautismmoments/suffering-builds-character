@@ -16,7 +16,7 @@ password-protected owner panel for editing player profiles.
 - `vod-reviews.html` — public VOD review write-ups, each card links out to a Google Doc
 - `threads.html` / `thread.html` — Twitter/X thread index and unrolled-thread view (`?slug=<slug>`)
 - `roadmap.html` — planned/in-progress/completed milestones
-- `coaching.html` — bookable coaches (linking to their Cal.com page) and coaching testimonials
+- `coaching.html` — bookable coaches (linking to their Cal.com page), individual coaching packages, and coaching testimonials
 - `player-spotlights.html` / `player-spotlight.html` — public case-study index and individual player spotlight view (`?slug=<slug>`)
 - `team-coaching.html` — pricing packages for teams/orgs, separate from individual coaching
 - `reading.html` / `notes.html` — book list (cover, region-aware Amazon link, summary) and per-book notes view (`?slug=<slug>`)
@@ -30,7 +30,7 @@ password-protected owner panel for editing player profiles.
 - `data/vod-reviews.json` — VOD reviews as `{ "reviews": [...] }`
 - `data/threads.json` — Twitter/X threads as `{ "threads": [...] }`
 - `data/roadmap.json` — roadmap milestones as `{ "items": [...] }`
-- `data/testimonials.json` — bookable coaches + testimonials as `{ "coaches": [...], "testimonials": [...] }`
+- `data/testimonials.json` — bookable coaches, individual coaching packages, and testimonials as `{ "coaches": [...], "packages": [...], "testimonials": [...] }`
 - `data/spotlights.json` — player spotlights as `{ "spotlights": [...] }`
 - `data/team-coaching.json` — team coaching pricing packages as `{ "tagline", "contactLabel", "contactUrl", "packages": [...] }`
 - `data/books.json` — reading list as `{ "books": [...] }`
@@ -214,6 +214,20 @@ Add/reorder/delete controls all work.
 Both are plain list-of-objects (siblings in the same file, not nested inside
 each other), same safe pattern as Roadmap and Site Settings' Navigation Menu
 + Social Links, so Add/reorder work normally.
+
+There's also an **Individual Coaching Packages** section on the same page,
+between Book a Coach and Testimonials — pricing tiers for one player's own
+1-on-1 coaching (e.g. a 5-session pack or a monthly plan), distinct from the
+per-coach **Pricing** field above (which is a quick per-session rate on a
+specific coach's card) and from the **Team Coaching** page's org-wide
+packages. It has an optional **Packages Intro** blurb, a fallback
+**Packages Contact Label/URL** for packages without their own link, and a
+**Packages** list where each entry is Name, Price, an optional one-line
+Tagline, **Features** (one per line, shown as a checklist), a **Featured?**
+toggle, and its own optional CTA Label/URL (falls back to the page-level
+Contact Label/URL when left blank, same pattern as Team Coaching). If there
+are no enabled packages, the whole section is hidden rather than showing an
+empty grid.
 
 **Player Spotlights** (`player-spotlights.html` / `player-spotlight.html`) is
 a public case-study page per player — nested under the Coaching dropdown in
@@ -543,8 +557,8 @@ display order:
 `status` is one of `"Planned"`, `"In Progress"`, or `"Completed"`. `target`
 and `description` are both optional.
 
-`data/testimonials.json` has two top-level arrays, `coaches` and
-`testimonials`:
+`data/testimonials.json` has top-level arrays `coaches`, `packages`, and
+`testimonials`, plus `packagesIntro`/`packagesContactLabel`/`packagesContactUrl`:
 
 ```json
 {
@@ -554,6 +568,21 @@ and `description` are both optional.
       "description": "Focuses on hitscan fundamentals and VOD review.",
       "pricing": "$30 / 30 min\n$50 / 60 min",
       "calLink": "https://cal.com/psev/coaching-session",
+      "enabled": true
+    }
+  ],
+  "packagesIntro": "Pick the plan that fits your grind.",
+  "packagesContactLabel": "Contact us for a custom quote",
+  "packagesContactUrl": "",
+  "packages": [
+    {
+      "name": "5-Session Pack",
+      "price": "$135",
+      "tagline": "Save over booking one-off sessions.",
+      "features": "5 sessions with any coach\nShared VOD review notes\nDiscord Q&A access",
+      "featured": true,
+      "ctaLabel": "",
+      "ctaUrl": "",
       "enabled": true
     }
   ],

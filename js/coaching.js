@@ -75,6 +75,41 @@ function renderCoaches(coachesGrid, coaches, players) {
   `).join("");
 }
 
+function pricingFeaturesHtml(features) {
+  const lines = (features || "").split("\n").map(f => f.trim()).filter(Boolean);
+  if (!lines.length) return "";
+  return `<ul class="pricing-features">${lines.map(f => `<li>${f}</li>`).join("")}</ul>`;
+}
+
+function packageCardHtml(pkg, page) {
+  const ctaLabel = pkg.ctaLabel || page.packagesContactLabel || "Contact us";
+  const ctaUrl = pkg.ctaUrl || page.packagesContactUrl || "";
+  const featured = !!pkg.featured;
+  return `
+    <div class="pricing-card${featured ? " pricing-featured" : ""}">
+      ${featured ? `<div class="pricing-badge">Recommended</div>` : ""}
+      <h3>${pkg.name}</h3>
+      <div class="pricing-price">${pkg.price || ""}</div>
+      ${pkg.tagline ? `<p class="pricing-tagline">${pkg.tagline}</p>` : ""}
+      ${pricingFeaturesHtml(pkg.features)}
+      ${ctaUrl
+        ? `<a class="hero-button${featured ? "" : " hero-button-secondary"}" href="${ctaUrl}" target="_blank" rel="noopener">${ctaLabel}</a>`
+        : `<span class="hero-button hero-button-secondary pricing-cta-disabled">${ctaLabel}</span>`}
+    </div>
+  `;
+}
+
+function renderPackages(section, introEl, grid, testimonialsData) {
+  const packages = (testimonialsData.packages || []).filter(p => p.enabled !== false);
+  if (!packages.length) {
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+  introEl.textContent = testimonialsData.packagesIntro || "";
+  grid.innerHTML = packages.map(pkg => packageCardHtml(pkg, testimonialsData)).join("");
+}
+
 function renderTestimonials(testimonialGrid, testimonials) {
   const items = testimonials.filter(t => t.enabled !== false);
 
@@ -96,11 +131,15 @@ function renderTestimonials(testimonialGrid, testimonials) {
 async function renderCoachingPage() {
   const coachesGrid = document.getElementById("coaches-grid");
   const testimonialGrid = document.getElementById("testimonial-grid");
+  const packagesSection = document.getElementById("packages-section");
+  const packagesIntro = document.getElementById("packages-intro");
+  const packagesGrid = document.getElementById("packages-grid");
 
   const { site } = await window.__siteDataPromise;
   if (isPageDisabled(site, "coaching")) {
     renderPageUnavailable(coachesGrid);
     testimonialGrid.innerHTML = "";
+    packagesSection.hidden = true;
     return;
   }
 
@@ -113,10 +152,12 @@ async function renderCoachingPage() {
     const playersData = await playersRes.json();
 
     renderCoaches(coachesGrid, testimonialsData.coaches || [], playersData.players);
+    renderPackages(packagesSection, packagesIntro, packagesGrid, testimonialsData);
     renderTestimonials(testimonialGrid, testimonialsData.testimonials || []);
   } catch (err) {
     coachesGrid.innerHTML = "<p>Couldn't load coaches right now.</p>";
     testimonialGrid.innerHTML = "<p>Couldn't load testimonials right now.</p>";
+    packagesSection.hidden = true;
     console.error(err);
   }
 }

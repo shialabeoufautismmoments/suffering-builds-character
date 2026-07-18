@@ -202,6 +202,23 @@ collections:
               - { label: "Pricing", name: "pricing", widget: "text", required: false, hint: "One price per line, e.g. \"$30 / 30 min\" then \"$50 / 60 min\" on the next line. Shown under the description. Leave blank to hide pricing on this card." }
               - { label: "Cal.com Booking URL", name: "calLink", widget: "string", hint: "e.g. https://cal.com/psev/coaching-session" }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this coach listing without deleting it." }
+          - { label: "Packages Intro", name: "packagesIntro", widget: "text", required: false, hint: "Optional short blurb shown above the Individual Coaching Packages grid." }
+          - { label: "Packages Contact Label", name: "packagesContactLabel", widget: "string", required: false, default: "Contact us for a custom quote", hint: "Fallback button text for any package without its own CTA link below." }
+          - { label: "Packages Contact URL", name: "packagesContactUrl", widget: "string", required: false, hint: "Fallback link (Discord, mailto:, a form) for any package without its own CTA link below." }
+          - label: "Individual Coaching Packages"
+            name: "packages"
+            widget: "list"
+            summary: "{{fields.name}}"
+            hint: "Pricing tiers for one player's own 1-on-1 coaching (e.g. a 5-session pack or a monthly plan) — separate from the per-coach Pricing field above and from the Team Coaching page's org packages."
+            fields:
+              - { label: "Name", name: "name", widget: "string", hint: "e.g. Single Session, 5-Session Pack, Monthly Unlimited" }
+              - { label: "Price", name: "price", widget: "string", hint: "e.g. $30, $135 (5 sessions), $400/mo" }
+              - { label: "Tagline", name: "tagline", widget: "string", required: false, hint: "Optional one-line pitch shown under the price." }
+              - { label: "Features", name: "features", widget: "text", required: false, hint: "One per line — shown as a checklist, e.g. \"1 VOD review\" then \"Discord Q&A access\" on the next line." }
+              - { label: "Featured?", name: "featured", widget: "boolean", default: false, hint: "Highlights this tier as the recommended option." }
+              - { label: "CTA Label", name: "ctaLabel", widget: "string", required: false, hint: "Leave blank to use the Packages Contact Label above." }
+              - { label: "CTA URL", name: "ctaUrl", widget: "string", required: false, hint: "Leave blank to use the Packages Contact URL above — e.g. link straight to a coach's Cal.com page for this specific package." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this package without deleting it." }
           - label: "Testimonials"
             name: "testimonials"
             widget: "list"
