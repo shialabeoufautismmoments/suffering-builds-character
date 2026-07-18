@@ -1,7 +1,7 @@
 // Precaches the app shell so the client app opens and runs offline; the
 // offline change-queue in app.js then holds any edits until the connection
 // returns. Bump CACHE to force clients onto a new shell after a deploy.
-const CACHE = 'coachsbc-client-v1';
+const CACHE = 'coachsbc-client-v2';
 const SHELL = [
   './',
   './index.html',
@@ -21,6 +21,17 @@ self.addEventListener('activate', event => {
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      const existing = list.find(c => 'focus' in c);
+      if (existing) return existing.focus();
+      return self.clients.openWindow('./');
+    })
   );
 });
 

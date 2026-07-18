@@ -44,6 +44,64 @@ function markSeen() {
   });
 }
 
+// Local (no push-server) reminders: only fire while this app is open in a
+// tab, since there's no backend to wake a closed app. NOTIFY_KEY is the
+// user's app-level opt-in (separate from the browser's own permission
+// prompt); NOTIFIED_KEY dedupes so the same reminder doesn't repeat all day.
+const NOTIFY_KEY = 'coachsbc-client-notify';
+const NOTIFIED_KEY = 'coachsbc-client-notified';
+function notifyPrefOn() { return lsGet(NOTIFY_KEY, false); }
+function notifyEnabled() { return typeof Notification !== 'undefined' && Notification.permission === 'granted' && notifyPrefOn(); }
+
+async function toggleNotifications() {
+  if (notifyPrefOn()) {
+    lsSet(NOTIFY_KEY, false);
+    toast('Reminders turned off.');
+    renderShell();
+    return;
+  }
+  if (typeof Notification === 'undefined') return toast('Notifications are not supported in this browser.', 'bad');
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') return toast("Notifications were blocked. Enable them in your browser's site settings to turn this on.", 'bad');
+  lsSet(NOTIFY_KEY, true);
+  toast('Reminders turned on. These only fire while this app is open in a tab.', 'good');
+  renderShell();
+}
+
+function showReminder(tag, title, body) {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.ready.then(reg => reg.showNotification(title, { body, tag, icon: 'icon.svg' })).catch(() => {});
+}
+
+// Checked on every render — cheap (a few array scans + one localStorage
+// read) — and self-throttled via NOTIFIED_KEY so it only actually shows a
+// notification once per day per reminder type (or once per session, for the
+// day-ahead session reminder).
+function checkReminders() {
+  if (!notifyEnabled() || !State.data) return;
+  const notified = lsGet(NOTIFIED_KEY, {});
+  let changed = false;
+  const mark = key => { if (notified[key]) return false; notified[key] = true; changed = true; return true; };
+
+  const { streak, activeToday } = computeStreak();
+  if (streak > 0 && !activeToday && new Date().getHours() >= 18 && mark(`streak-${today()}`)) {
+    showReminder('streak', 'Keep your streak alive', `You have a ${streak}-day streak - log a match, stat, or note before midnight.`);
+  }
+
+  const dueToday = sessions().flatMap(s => s.homework || []).filter(h => !h.done && h.dueDate && h.dueDate <= today()).length;
+  if (dueToday && mark(`homework-${today()}`)) {
+    showReminder('homework', 'Homework due today', `${dueToday} homework item${dueToday === 1 ? '' : 's'} due today.`);
+  }
+
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+  const next = nextSession();
+  if (next && next.date === tomorrow && mark(`session-${next.id}`)) {
+    showReminder(`session-${next.id}`, 'Session tomorrow', `You have a session tomorrow${next.time ? ' at ' + next.time : ''}.`);
+  }
+
+  if (changed) lsSet(NOTIFIED_KEY, notified);
+}
+
 // New-since-last-open counts, from diffing current IDs against the set saved
 // on the previous visit. Null on a first visit or when nothing is new.
 function computeSinceLastVisit() {
@@ -115,6 +173,12 @@ function playlists() { return State.data && State.data.playlists || []; }
 function vods() { return State.data && State.data.vods || []; }
 function sessionRequests() { return client().sessionRequests || []; }
 function clientNotes() { return client().clientNotes || []; }
+function scheduled() { return (State.data && State.data.scheduled) || []; }
+function packages() { return client().packages || []; }
+function nextSession() {
+  return scheduled().slice().filter(s => s.date >= today())
+    .sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')))[0] || null;
+}
 function isVodUnread(vod) { return vod && vod.clientStatus !== 'watched' && !vod.clientViewedAt; }
 function unreadVods() { return vods().filter(isVodUnread); }
 
@@ -137,7 +201,7 @@ function renderShell() {
       <div class="tabs">${tabs.map(([id, label]) => `<button class="tab ${State.view === id ? 'on' : ''}" onclick="nav('${id}')">${label}</button>`).join('')}</div>
       <div class="spacer"></div>
       ${pending ? `<span class="pill pending-pill" title="Changes waiting to sync">${pending} pending</span>` : ''}
-      <button class="client-badge" onclick="toggleAvatarPanel()" title="Set your profile photo">
+      <button class="client-badge" onclick="toggleAvatarPanel()" title="Profile & reminders">
         ${avatarBadgeHtml(c)}<span>${E(c.name || 'Client')} ${c.rank ? '- ' + E(c.rank) : ''}</span>
       </button>
       <button class="btn btn-sm" onclick="syncPull()">Refresh</button>
@@ -145,6 +209,7 @@ function renderShell() {
     </div>
     <main class="main">${avatarPanelHtml()}${bannerHtml()}${renderView()}</main>
   </div>`;
+  checkReminders();
 }
 
 function avatarPanelHtml() {
@@ -158,6 +223,11 @@ function avatarPanelHtml() {
       <button class="btn btn-primary" onclick="fetchDiscordAvatar()">Grab my Discord photo</button>
     </div>
     <p class="muted small mt">Right-click your name in Discord and "Copy User ID" (enable Developer Mode in Discord settings if you don't see that option). This only reads your public avatar - nothing else.</p>
+    <div class="row mt" style="align-items:center">
+      <div><b>Reminders</b><div class="muted small">${notifyEnabled() ? 'On - streaks, homework due, and sessions tomorrow.' : 'Get a nudge for streaks, homework due, and sessions tomorrow.'}</div></div>
+      <button class="btn btn-sm" onclick="toggleNotifications()">${notifyEnabled() ? 'Turn off' : 'Enable reminders'}</button>
+    </div>
+    <p class="muted small mt">Reminders only fire while this app is open in a browser tab - they won't wake your phone if the app is fully closed.</p>
   </div>`;
 }
 
@@ -325,6 +395,8 @@ function renderToday() {
     const doneToday = (a.completions || []).some(c => c.date === today());
     return { action: a, weekCount, doneToday, onPace: weekCount >= (a.targetPerWeek || 1) };
   }) : [];
+  const next = nextSession();
+  const pkgs = packages();
 
   return `<div class="page-head"><div><h1>Today</h1><div class="sub">${fmt(today())}</div></div></div>
     <div class="grid cols-3 mb">
@@ -336,6 +408,8 @@ function renderToday() {
       </div>
       <div class="stat"><div class="label">Due today</div><div class="value ${dueOrOverdue.length ? 'warn' : 'good'}">${dueOrOverdue.length}</div><div class="muted">homework item${dueOrOverdue.length === 1 ? '' : 's'}</div></div>
       <div class="stat"><div class="label">Prescriptions on pace</div><div class="value">${prescriptions.filter(p => p.onPace).length}/${prescriptions.length}</div><div class="muted">this week</div></div>
+      <div class="stat"><div class="label">Next session</div><div class="value" style="font-size:1.1rem">${next ? fmt(next.date) : 'Not scheduled'}</div><div class="muted">${next && next.time ? next.time : next ? '' : 'Ask your coach to book one'}</div></div>
+      ${pkgs.length ? `<div class="stat"><div class="label">Sessions remaining</div><div class="value ${client().sessionsRemaining ? 'accent' : 'warn'}">${client().sessionsRemaining}</div><div class="muted">across ${pkgs.length} package${pkgs.length === 1 ? '' : 's'}</div></div>` : ''}
     </div>
     ${activePlan ? `<div class="card mb">
       <div class="card-head"><h2>Today's prescriptions</h2><span class="pill">${E(activePlan.title)}</span></div>
@@ -435,9 +509,13 @@ function homeworkRowHtml(session, homework) {
 function renderSessions() {
   const rows = sessions().slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   const requests = sessionRequests().slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  const upcoming = scheduled().slice().sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
   const statusLabel = { open: 'Waiting on coach', scheduled: 'Scheduled', dismissed: 'Handled' };
   const statusStyle = { open: 'color:var(--warn);border-color:var(--warn)', scheduled: 'color:var(--good);border-color:var(--good)', dismissed: '' };
   return `<div class="page-head"><div><h1>Sessions</h1><div class="sub">Request your next session and review recaps your coach wrote up.</div></div></div>
+    <div class="card mb"><div class="card-head"><h2>Upcoming Sessions</h2></div>
+      ${upcoming.length ? upcoming.map(s => `<div class="list-row"><div><b>${fmt(s.date)}${s.time ? ' - ' + E(s.time) : ''}</b>${s.notes ? `<div class="muted">${E(s.notes)}</div>` : ''}</div></div>`).join('') : '<div class="empty">No upcoming sessions scheduled yet.</div>'}
+    </div>
     <div class="card mb"><div class="card-head"><h2>Request your next session</h2></div>
       <form onsubmit="submitSessionRequest(event)">
         <div class="row"><input id="sr-times" placeholder="Preferred day/time (e.g. Tue evenings, Sat after 2pm)"></div>

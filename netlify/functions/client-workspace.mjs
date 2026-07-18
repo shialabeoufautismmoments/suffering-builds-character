@@ -81,6 +81,15 @@ function publicPlan(plan) {
 function clientView(workspace, client) {
   const clientId = client.id;
   const sessions = (workspace.sessions || []).filter(session => session.clientId === clientId);
+  const scheduled = (workspace.scheduled || []).filter(item => item.clientId === clientId && !item.done)
+    .map(item => ({ id: item.id, date: item.date || "", time: item.time || "", notes: item.notes || "" }));
+  const packages = (client.packages || []).map(p => ({
+    name: p.name || "Package",
+    total: num(p.total),
+    used: num(p.used),
+    remaining: Math.max(0, num(p.total) - num(p.used))
+  }));
+  const sessionsRemaining = packages.reduce((sum, p) => sum + p.remaining, 0);
   const publicVods = (workspace.vods || []).filter(item => item.clientId === clientId).map(vod => ({
     id: vod.id,
     title: vod.title || "",
@@ -128,11 +137,14 @@ function clientView(workspace, client) {
       discordId: client.discordId || "",
       avatar: client.avatar || "",
       sessionRequests: client.sessionRequests || [],
-      clientNotes: client.clientNotes || []
+      clientNotes: client.clientNotes || [],
+      packages,
+      sessionsRemaining
     },
     playlists: (workspace.playlists || []).filter(item => item.clientId === clientId),
     vods: publicVods,
     matches: (workspace.matches || []).filter(item => item.clientId === clientId),
+    scheduled,
     sessions: sessions.map(session => ({
       id: session.id,
       date: session.date || "",
