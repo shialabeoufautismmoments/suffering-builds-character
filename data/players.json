@@ -39,24 +39,6 @@
     },
     {
       "socials": {
-        "pyvno": "https://pyvno.xyz/beleo",
-        "twitter": "https://x.com/beleofps",
-        "twitch": "https://twitch.tv/beleo66"
-      },
-      "bio": "Formerly a Soldier: 76 one trick, Beleo is the prime example of why aim trainers alone do not make you a good player. Beleo spent hours grinding aim trainers wondering why, while his scores went up, his rank did not. This is a common trap for people new to the mechanics scene.",
-      "joined": "2026-07-03",
-      "accent": "#000000",
-      "name": "beleo",
-      "rank": "GM1",
-      "photo": "https://cdn.discordapp.com/avatars/1200154824772157553/ee3a6303b077212f8c9ce8727a232d44.png?size=4096",
-      "game": "Overwatch",
-      "role": "Hitscan",
-      "country": "UA",
-      "isStaff": false,
-      "id": "beleo"
-    },
-    {
-      "socials": {
         "twitch": "https://www.twitch.tv/frozenF22",
         "twitter": "https://x.com/frozenVIII",
         "pyvno": "https://pyvno.xyz/frozen"
@@ -75,24 +57,6 @@
     },
     {
       "socials": {
-        "twitch": "https://www.twitch.tv/hud7on",
-        "twitter": "https://x.com/hud7on",
-        "pyvno": "https://pyvno.xyz/hud7on"
-      },
-      "bio": "Hudson is another prime example of how training mechanics properly will help you improve in game the fastest.",
-      "joined": "2026-07-03",
-      "accent": "#36005a",
-      "name": "hudson",
-      "rank": "GM1",
-      "photo": "https://cdn.discordapp.com/avatars/849548375916806185/64ec8dc5d54a0eab33c308b546c9522b.png?size=4096",
-      "game": "Overwatch",
-      "role": "Hitscan",
-      "country": "US",
-      "isStaff": false,
-      "id": "hud7on"
-    },
-    {
-      "socials": {
         "pyvno": "https://pyvno.xyz/cannonlol"
       },
       "bio": "Co-Owner and Co-Founder of Hone.",
@@ -106,23 +70,6 @@
       "country": "US",
       "isStaff": true,
       "id": "cannon"
-    },
-    {
-      "socials": {
-        "pyvno": "https://pyvno.xyz/nuance",
-        "twitter": "https://x.com/owNuance"
-      },
-      "bio": "Widowmaker and Hitscan player from TF2",
-      "joined": "2026-07-04",
-      "accent": "#b7b7b7",
-      "name": "owNuance",
-      "rank": "GM3",
-      "photo": "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png",
-      "game": "Overwatch",
-      "role": "Hitscan",
-      "country": "US",
-      "isStaff": false,
-      "id": "nuance"
     },
     {
       "socials": {
