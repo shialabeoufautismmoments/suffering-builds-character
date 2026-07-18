@@ -156,6 +156,40 @@ Sessions.toggleHw = function (sid, hid) {
   if (h) { h.done = !h.done; saveDB(); UI.refresh(); }
 };
 
+/* -- Quick single-client homework assignment (no full session log needed) --- */
+Sessions.quickAssign = function (clientId) {
+  const c = getClient(clientId);
+  if (!c) return;
+  UI.modal(`
+    <div class="modal-head"><h2>Assign Homework - ${UI.escape(c.name)}</h2><button class="close-x" onclick="UI.closeModal()">&times;</button></div>
+    <div class="row">
+      <label class="field"><span>Type</span><select id="qhw-type">${Object.entries(HW_TYPES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label>
+      <label class="field"><span>Due date</span><input id="qhw-due" type="date"></label>
+    </div>
+    <label class="field"><span>Assignment</span><input id="qhw-text" placeholder="e.g. Run Daily Warmup 3x this week" onkeydown="if(event.key==='Enter'){event.preventDefault();Sessions.quickAssignSave('${clientId}')}"></label>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="UI.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="Sessions.quickAssignSave('${clientId}')">Assign</button>
+    </div>`);
+};
+
+Sessions.quickAssignSave = function (clientId) {
+  const text = document.getElementById('qhw-text').value.trim();
+  if (!text) { UI.toast('Enter the assignment text.', 'bad'); return; }
+  const type = document.getElementById('qhw-type').value;
+  const dueDate = document.getElementById('qhw-due').value;
+  DB.sessions.push({
+    id: uid(), clientId, date: UI.today(), durationMin: 0, prepMinutes: 0,
+    topics: 'Homework assignment', notes: '',
+    homework: [{ id: uid(), text, type, dueDate, done: false }],
+    createdAt: new Date().toISOString(),
+  });
+  saveDB();
+  UI.closeModal();
+  UI.toast('Homework assigned.', 'good');
+  UI.refresh();
+};
+
 /* -- Bulk-assign homework across the roster ---------------------------------- */
 Sessions.bulkAssignHomework = function () {
   UI.modal(`

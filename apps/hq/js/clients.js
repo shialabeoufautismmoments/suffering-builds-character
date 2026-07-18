@@ -72,6 +72,7 @@ Clients.cardHtml = function (c) {
       <div class="muted" style="font-size:.78rem">${pls} playlist${pls !== 1 ? 's' : ''} - ${vds} VOD${vds !== 1 ? 's' : ''}${clientStats ? ` - ${clientStats} client stat log${clientStats !== 1 ? 's' : ''}` : ''}</div>
       ${hasPkg ? `<div class="muted" style="font-size:.78rem">🎟 ${had} session${had !== 1 ? 's' : ''} had - <b style="color:${left ? 'var(--accent)' : 'var(--text-dim)'}">${left} left</b></div>` : ''}
       <div class="flex gap-sm mt-sm" onclick="event.stopPropagation()">
+        <button class="btn btn-sm btn-ghost" onclick="Sessions.quickAssign('${c.id}')">+ HW</button>
         <button class="btn btn-sm btn-ghost" onclick="Clients.edit('${c.id}')">Edit</button>
         <button class="btn btn-sm btn-danger" onclick="Clients.remove('${c.id}')">Delete</button>
       </div>
@@ -475,6 +476,7 @@ UI.renderers.dashboard = function (el) {
       </div>
       <div class="flex gap-sm">
         ${(typeof Cal !== 'undefined' && Cal.configured()) ? `<button class="btn" onclick="Cal.embedModal('${c.id}')" title="Open this client's Cal.com booking page">📅 Booking</button>` : ''}
+        <button class="btn" onclick="Sessions.quickAssign('${c.id}')">+ Assign Homework</button>
         <button class="btn" onclick="Clients.edit('${c.id}')">Edit Profile</button>
       </div>
     </div>
