@@ -18,6 +18,15 @@
       "author": "Daniel Coyle",
       "amazonUrl": "https://www.amazon.ca/Talent-Code-Greatness-Born-Grown/dp/055380684X",
       "summary": "The Talent Code is about physically growing your ultimate advantage - your own talent."
+    },
+    {
+      "enabled": true,
+      "cover": "https://m.media-amazon.com/images/I/81q-IFrSl4L.jpg",
+      "slug": "legacy",
+      "title": "Legacy",
+      "author": "James Kerr",
+      "amazonUrl": "https://www.amazon.ca/Legacy-James-Kerr/dp/147210353X",
+      "summary": "Legacy is about forging your most enduring competitive advantage - your character."
     }
   ]
 }
