@@ -18,7 +18,15 @@
   "packagesIntro": "",
   "packagesContactLabel": "Contact us for a custom quote",
   "packagesContactUrl": "",
-  "packages": [],
+  "packages": [
+    {
+      "featured": true,
+      "enabled": true,
+      "name": "psev - 1 Month Plan",
+      "price": "$120 USD",
+      "features": "4 Vod reviews\nConstant Feedback (send replays in between sessions for additional notes)\nCheaper rebooking"
+    }
+  ],
   "testimonials": [
     {
       "rating": "5",
