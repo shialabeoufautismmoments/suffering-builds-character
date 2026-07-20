@@ -37,6 +37,10 @@
       "heading": "Partners",
       "intro": ""
     },
+    "how-it-works": {
+      "heading": "How It Works",
+      "intro": ""
+    },
     "wiki": {
       "heading": "Wiki",
       "intro": ""
@@ -118,6 +122,13 @@
       "path": "coaching.html",
       "enabled": true,
       "parents": ""
+    },
+    {
+      "id": "how-it-works",
+      "label": "How It Works",
+      "path": "how-it-works.html",
+      "enabled": true,
+      "parents": "coaching"
     },
     {
       "id": "spotlights",

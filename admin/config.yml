@@ -83,6 +83,26 @@ collections:
               - { label: "Description", name: "description", widget: "text", required: false, hint: "Optional short blurb about the partnership." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this partner without deleting it." }
 
+  - name: "how_it_works"
+    label: "How It Works"
+    files:
+      - file: "data/how-it-works.json"
+        label: "How It Works"
+        name: "how_it_works"
+        fields:
+          - label: "Steps"
+            name: "steps"
+            widget: "list"
+            summary: "{{fields.title}}"
+            hint: "Shown as a numbered walkthrough of your coaching process, in the order listed here. Drag to reorder."
+            fields:
+              - { label: "Title", name: "title", widget: "string", hint: "e.g. Book a session, Get matched with a coach, Get your first VOD review" }
+              - { label: "Description", name: "description", widget: "text", hint: "A sentence or two explaining this step." }
+              - { label: "Icon", name: "icon", widget: "string", required: false, hint: "Optional — paste a single emoji to show above the title, e.g. 📅 or 🎥." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this step without deleting it." }
+          - { label: "Closing Button Label", name: "closingLabel", widget: "string", required: false, default: "Get started", hint: "Shown as a button below the steps. Leave the URL below blank to hide this button entirely." }
+          - { label: "Closing Button URL", name: "closingUrl", widget: "string", required: false, hint: "Where the closing button goes — e.g. coaching.html to send people to book a coach, or a Discord/Cal.com link." }
+
   - name: "roadmap"
     label: "Roadmap"
     files:
@@ -322,11 +342,11 @@ collections:
             name: "navigation"
             widget: "list"
             summary: "{{fields.label}}"
-            hint: "Controls the nav bar: order, labels, visibility, AND grouping into hover dropdowns (see Parent Group(s) below). The 15 built-in entries (home/roster/news/staff/about/partners/wiki/vod-reviews/threads/roadmap/coaching/spotlights/team-coaching/reading/information) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            hint: "Controls the nav bar: order, labels, visibility, AND grouping into hover dropdowns (see Parent Group(s) below). The 16 built-in entries (home/roster/news/staff/about/partners/how-it-works/wiki/vod-reviews/threads/roadmap/coaching/spotlights/team-coaching/reading/information) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / staff / about / partners / wiki / vod-reviews / threads / roadmap / coaching / spotlights / team-coaching / reading / information. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / staff / about / partners / how-it-works / wiki / vod-reviews / threads / roadmap / coaching / spotlights / team-coaching / reading / information. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / staff.html / about.html / partners.html / wiki.html / vod-reviews.html / threads.html / roadmap.html / coaching.html / player-spotlights.html / team-coaching.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
+              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / staff.html / about.html / partners.html / how-it-works.html / wiki.html / vod-reviews.html / threads.html / roadmap.html / coaching.html / player-spotlights.html / team-coaching.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
               - { label: "Parent Group(s)", name: "parents", widget: "string", required: false, hint: "Leave blank to show this item as its own top-level nav button. To nest it as a hover-dropdown item instead, put the ID(s) of the top-level item(s) it should appear under, comma-separated if more than one (e.g. \"home\" or \"home,about\"). An item with children automatically gets a hover dropdown; hovering an item with no children does nothing." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
@@ -373,6 +393,12 @@ collections:
                   - { label: "Intro text", name: "intro", widget: "text", required: false }
               - label: "Partners Page"
                 name: "partners"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "How It Works Page"
+                name: "how-it-works"
                 widget: "object"
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }

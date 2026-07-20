@@ -1368,3 +1368,58 @@ a.partner-card:hover .partner-logo {
   box-shadow: none;
 }
 
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  max-width: 720px;
+}
+
+.step-card {
+  display: flex;
+  gap: 24px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.step-card:last-child {
+  border-bottom: none;
+}
+
+.step-number {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent-bright);
+  color: var(--accent-bright);
+  font-family: 'Oswald', 'Segoe UI', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.step-icon {
+  font-size: 1.4rem;
+  margin-bottom: 6px;
+}
+
+.step-body h3 {
+  margin: 0 0 8px;
+  font-family: 'Oswald', 'Segoe UI', sans-serif;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.step-body p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.steps-cta {
+  margin-top: 32px;
+}
+

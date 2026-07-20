@@ -12,6 +12,7 @@ password-protected owner panel for editing player profiles.
 - `staff.html` — leadership/staff members (players flagged **Staff Member?** in Roster)
 - `about.html` — clan story and founding date
 - `partners.html` — partner/sponsor logo grid, each card optionally links out to the partner's site
+- `how-it-works.html` — numbered walkthrough of the coaching process, with an optional closing call-to-action button
 - `wiki.html` / `wiki-entry.html` — wiki index and individual entry view (`?slug=<slug>`)
 - `vod-reviews.html` — public VOD review write-ups, each card links out to a Google Doc
 - `threads.html` / `thread.html` — Twitter/X thread index and unrolled-thread view (`?slug=<slug>`)
@@ -26,6 +27,7 @@ password-protected owner panel for editing player profiles.
 - `data/news.json` — announcements as `{ "news": [...] }`
 - `data/about.json` — about-page content as `{ "founded", "story" }`
 - `data/partners.json` — partners/sponsors as `{ "partners": [...] }`
+- `data/how-it-works.json` — coaching-process steps as `{ "steps": [...], "closingLabel", "closingUrl" }`
 - `data/wiki.json` — wiki entries as `{ "entries": [...] }`
 - `data/vod-reviews.json` — VOD reviews as `{ "reviews": [...] }`
 - `data/threads.json` — Twitter/X threads as `{ "threads": [...] }`
@@ -36,13 +38,13 @@ password-protected owner panel for editing player profiles.
 - `data/books.json` — reading list as `{ "books": [...] }`
 - `data/pages.json` — owner-created custom pages as `{ "pages": [...] }`
 - `data/site.json` — site-wide branding/theme, nav menu, and per-page headings, applied at runtime by `js/site.js`
-- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/staff.js` / `js/about.js` / `js/partners.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/player-spotlights.js` / `js/player-spotlight.js` / `js/team-coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
+- `js/home.js` / `js/roster.js` / `js/player.js` / `js/news.js` / `js/staff.js` / `js/about.js` / `js/partners.js` / `js/how-it-works.js` / `js/wiki.js` / `js/wiki-entry.js` / `js/vod-reviews.js` / `js/threads.js` / `js/thread.js` / `js/roadmap.js` / `js/coaching.js` / `js/player-spotlights.js` / `js/player-spotlight.js` / `js/team-coaching.js` / `js/reading.js` / `js/notes.js` / `js/page.js` — fetch the matching JSON file and render it, shouldn't need to touch these for content updates
 - `js/site.js` — reads `data/site.json` and `data/pages.json` on every page and applies site name, tagline, logo, accent colors, page heading/intro, footer extras, builds the nav menu, and wires up the header search
 - `js/auth.js` — wires up the "Owner Login" link and Netlify Identity
 - `css/style.css` — theme (dark, blood-red accents, matches the mascot logo)
 - `assets/logo.svg` — the mascot logo, recreated as SVG so it stays crisp at any size
 - `admin/` — the owner panel (Decap CMS). This is what makes editing possible without touching code.
-- `sitemap.xml` / `robots.txt` — lists the 15 top-level section pages for search engines. Static, hand-maintained — see "Search & discoverability" below.
+- `sitemap.xml` / `robots.txt` — lists the 16 top-level section pages for search engines. Static, hand-maintained — see "Search & discoverability" below.
 
 ## How the owner login works
 
@@ -260,6 +262,19 @@ while the rest funnel into "contact us for a quote." Packages without an
 enabled CTA (no package URL and no page-level Contact URL) render as a
 disabled-looking button rather than a dead link.
 
+**How It Works** (`how-it-works.html`) is a numbered walkthrough of your
+coaching process — nested under the same Coaching dropdown as Player
+Spotlights and Team Coaching. It's its own top-level CMS collection, edited
+at **How It Works** in the admin sidebar. Add as many **Steps** as you want
+(e.g. "Book a session," "Get matched with a coach," "Get your first VOD
+review") — each has a Title, a Description, an optional Icon (paste a single
+emoji), and an Enabled toggle; drag to reorder, since the page numbers them
+1, 2, 3... in the order you list them here. At the bottom, an optional
+**Closing Button Label/URL** shows a call-to-action button (e.g. pointing at
+`coaching.html` to book, or a Discord link) — leave the URL blank to hide
+the button entirely. If there are no enabled steps yet, the page just says
+so instead of showing an empty list.
+
 **Reading** (`reading.html`) is a book list — each entry has a Slug, Title,
 optional Author, optional Cover Image, optional Amazon Link, optional
 Summary, and optional Notes. A few things worth knowing:
@@ -326,8 +341,8 @@ field in Site Settings → Navigation Menu:
   viewing the Roster page, since Roster is nested under both).
 
 Default grouping out of the box: **Home** → Roster, News · **About**
-→ Roster, Staff, Partners · **Coaching** → Player Spotlights, Team Coaching ·
-**Information** → Wiki, VOD Reviews, Threads, Roadmap, Reading.
+→ Roster, Staff, Partners · **Coaching** → How It Works, Player Spotlights,
+Team Coaching · **Information** → Wiki, VOD Reviews, Threads, Roadmap, Reading.
 
 On screens narrower than 720px, the nav bar collapses into a hamburger button
 (☰) that toggles a full-width dropdown menu — this is automatic and not
@@ -342,8 +357,9 @@ Deleting that list entry removes the nav link and the page immediately (visiting
 the old URL shows "that page doesn't exist"). This is genuinely full add/delete
 for custom pages.
 
-**Built-in pages** (Home, Roster, News, Staff, About, Partners, Wiki,
-VOD Reviews, Threads, Roadmap, Coaching, Player Spotlights, Team Coaching, Reading) work a bit differently, because they're backed by real code (`roster.js`,
+**Built-in pages** (Home, Roster, News, Staff, About, Partners, How It Works,
+Wiki, VOD Reviews, Threads, Roadmap, Coaching, Player Spotlights, Team
+Coaching, Reading) work a bit differently, because they're backed by real code (`roster.js`,
 `news.js`, etc.), not just content — so they can't be *deleted* outright
 without a developer removing files. What you *can* do from `/admin` → Site
 Settings → **Navigation Menu**:
@@ -354,8 +370,8 @@ Settings → **Navigation Menu**:
   now" instead of its normal content. This is as close to "deleting" a
   built-in page as a code-backed page can get.
 
-Don't change the **ID** or **Path** fields on the 12 built-in nav entries
-(the 11 real pages plus the label-only "Information" entry) — those
+Don't change the **ID** or **Path** fields on the 16 built-in nav entries
+(the 15 real pages plus the label-only "Information" entry) — those
 are how the site matches a nav entry to the actual page/content; changing them
 breaks the enable/disable toggle for that section. You *can* add extra
 brand-new entries here too, for external links (e.g. a Discord invite) — give
@@ -506,6 +522,34 @@ optional.
 `packages[].features` is the same one-per-line plain-text pattern as Roster's
 Achievements field. A package's `ctaUrl` (if set) takes priority over the
 page-level `contactUrl` for that package's button.
+
+`data/how-it-works.json` — also a single object, not a list of entries:
+
+```json
+{
+  "steps": [
+    {
+      "title": "Book a session",
+      "description": "Pick a coach on the Coaching page and grab a slot on their Cal.com calendar.",
+      "icon": "📅",
+      "enabled": true
+    },
+    {
+      "title": "Get your first VOD review",
+      "description": "Send a replay code or VOD link — your coach breaks down key moments with timestamped notes.",
+      "icon": "🎥",
+      "enabled": true
+    }
+  ],
+  "closingLabel": "Book a coach",
+  "closingUrl": "coaching.html"
+}
+```
+
+Steps are numbered on the page in the order listed here (drag to reorder in
+`/admin`). `closingUrl` can point anywhere — an internal page like
+`coaching.html`, or an external Discord/Cal.com link — and leaving it blank
+hides the closing button entirely.
 
 `data/vod-reviews.json` — one object per entry in the `reviews` array:
 
@@ -705,10 +749,10 @@ dynamic `og:image` when one's uploaded, falling back to the logo otherwise.
 
 ## Search & discoverability
 
-**`sitemap.xml` / `robots.txt`** list the 14 top-level section pages (Home,
-Roster, News, Staff, About, Partners, Wiki, VOD Reviews, Threads,
-Roadmap, Coaching, Player Spotlights, Reading) so search engines discover and index them
-directly instead of relying on crawling nav links. They're static,
+**`sitemap.xml` / `robots.txt`** list the 16 top-level section pages (Home,
+Roster, News, Staff, About, Partners, How It Works, Wiki, VOD Reviews, Threads,
+Roadmap, Coaching, Player Spotlights, Team Coaching, Reading) so search engines
+discover and index them directly instead of relying on crawling nav links. They're static,
 hand-maintained files — **individual entries (a specific wiki article,
 thread, player profile, book, or custom page) are intentionally NOT listed**,
 since those are data-driven with no build step to enumerate what currently
@@ -727,9 +771,10 @@ flattens them into one in-memory list, and filters it client-side as you type
 link straight to the matching page — VOD Reviews open the Google Doc directly
 since they don't have an on-site page of their own. It only fetches those
 files the first time someone actually opens the search panel, so pages that
-never use it don't pay for the extra requests. Roster/Staff/Coaching/Partners/Reading
-aren't included in the search index (players, coaches, partners, and books
-aren't stored with enough of a free-text body to search meaningfully) — if
+never use it don't pay for the extra requests. Roster/Staff/Coaching/Partners/Reading/
+How It Works/Team Coaching aren't included in the search index (players,
+coaches, partners, books, and these short structured pages aren't stored with
+enough of a free-text body to search meaningfully) — if
 that's wanted later, it's a small addition to `buildSearchIndex()` in
 `js/site.js`.
 
