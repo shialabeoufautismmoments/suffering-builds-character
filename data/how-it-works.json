@@ -1,5 +1,26 @@
 {
-  "steps": [],
+  "steps": [
+    {
+      "enabled": true,
+      "title": "Initial Review + Diagnosis",
+      "description": "Once a team selects the players they want coached, they submit vods of custom KovaaK's scenarios and in game gameplay. The coaches at HONE take the time to review and diagnose problems."
+    },
+    {
+      "enabled": true,
+      "title": "Get Matched With a Coach",
+      "description": "A coach will be selected for the players who will work with them through the month or however long you've booked for."
+    },
+    {
+      "enabled": true,
+      "title": "2 Vod Reviews a Week (1 Month+)",
+      "description": "Each player gets 2 vod reviews a week with the assigned coach to ensure that practice is going smoothly and adjustments can be made swiftly."
+    },
+    {
+      "enabled": true,
+      "title": "Maintenance (1 Month+)",
+      "description": "1 vod every 2 weeks to ensure that players are still improving and practising correctly."
+    }
+  ],
   "closingLabel": "",
   "closingUrl": ""
 }
