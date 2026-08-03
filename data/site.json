@@ -9,16 +9,12 @@
       "heading": "Coaching",
       "intro": ""
     },
-    "spotlights": {
-      "heading": "Player Spotlights",
-      "intro": ""
-    },
-    "team-coaching": {
-      "heading": "Team Coaching",
-      "intro": ""
-    },
     "threads": {
       "heading": "Threads",
+      "intro": ""
+    },
+    "partners": {
+      "heading": "Partners",
       "intro": ""
     },
     "roster": {
@@ -33,33 +29,37 @@
       "heading": "About",
       "intro": ""
     },
-    "partners": {
-      "heading": "Partners",
-      "intro": ""
-    },
-    "how-it-works": {
-      "heading": "How It Works",
-      "intro": ""
-    },
     "wiki": {
       "heading": "Wiki",
-      "intro": ""
-    },
-    "vod-reviews": {
-      "heading": "VOD Reviews",
       "intro": ""
     },
     "news": {
       "heading": "News",
       "intro": ""
     },
+    "team-coaching": {
+      "heading": "Team Coaching",
+      "intro": ""
+    },
+    "vod-reviews": {
+      "heading": "VOD Reviews",
+      "intro": ""
+    },
     "roadmap": {
       "heading": "Roadmap",
+      "intro": ""
+    },
+    "how-it-works": {
+      "heading": "How It Works",
       "intro": ""
     },
     "home": {
       "heading": "Welcome to Suffering Builds Character/Hone",
       "intro": "A group built on improvement and bridging the gap between trainers and the game."
+    },
+    "spotlights": {
+      "heading": "Player Spotlights",
+      "intro": ""
     }
   },
   "socials": [
@@ -70,7 +70,7 @@
   ],
   "footerText": "",
   "discordServerId": "1522649714150080772",
-  "logo": "",
+  "logo": "/assets/uploads/hone_icon_org-3x.png",
   "tagline": "Hone Your Skills",
   "siteName": "Hone",
   "navigation": [
