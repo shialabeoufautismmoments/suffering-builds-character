@@ -44,13 +44,92 @@
         <h2 class="hero-heading" data-page-heading>Welcome to Hone</h2>
         <p class="hero-intro page-intro" data-page-intro></p>
         <div class="hero-actions">
-          <a class="hero-button" href="roster.html">Meet the Roster</a>
-          <a class="hero-button hero-button-secondary" href="coaching.html">Get Coached</a>
+          <a class="hero-button" href="#coaching-intake">Find My Coaching Fit</a>
+          <a class="hero-button hero-button-secondary" href="coaching.html">Explore Coaching</a>
         </div>
       </div>
       <div class="hero-visual">
         <img src="assets/logo.svg" alt="Hone logo" class="hero-logo" data-site-logo />
       </div>
+    </section>
+
+    <section class="home-section" id="home-proof-section" hidden>
+      <h2 class="section-title">Proven Development</h2>
+      <div class="home-proof-grid" id="home-proof-grid"></div>
+    </section>
+
+    <section class="home-section" id="home-featured-duo-section" hidden>
+      <h2 class="section-title">Featured Coaching Duo</h2>
+      <div id="home-featured-duo"></div>
+    </section>
+
+    <section class="home-section coaching-intake-section" id="coaching-intake">
+      <div class="coaching-intake-heading">
+        <div>
+          <div class="coaching-intake-kicker">START HERE</div>
+          <h2>Find your coaching fit</h2>
+          <p>Tell us where you are, what is holding you back, and how you want to improve. Your application goes directly to the HONE coaching team on Discord.</p>
+        </div>
+        <div class="coaching-intake-step">01 <span>Apply</span></div>
+      </div>
+      <form class="coaching-intake-form" id="coaching-intake-form">
+        <div class="coaching-intake-grid">
+          <label>
+            <span>Name</span>
+            <input type="text" name="name" maxlength="80" autocomplete="name" required />
+          </label>
+          <label>
+            <span>Discord username</span>
+            <input type="text" name="discord" maxlength="80" autocomplete="off" placeholder="username or @username" required />
+          </label>
+          <label>
+            <span>Game</span>
+            <select name="game" required>
+              <option value="">Select a game</option>
+              <option value="Overwatch">Overwatch</option>
+              <option value="Aim training">Aim training</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label>
+            <span>Current rank</span>
+            <input type="text" name="rank" maxlength="80" placeholder="e.g. Masters 3" required />
+          </label>
+          <label>
+            <span>Role / heroes</span>
+            <input type="text" name="role" maxlength="120" placeholder="e.g. Hitscan — Soldier, Cassidy" required />
+          </label>
+          <label>
+            <span>Preferred coaching</span>
+            <select name="service" id="coaching-intake-service" required>
+              <option value="Not sure">Help me choose</option>
+              <option value="Individual coaching">Individual coaching</option>
+              <option value="Coaching duo">Coaching duo</option>
+              <option value="Monthly development plan">Monthly development plan</option>
+              <option value="Team coaching">Team coaching</option>
+            </select>
+          </label>
+          <label class="coaching-intake-wide">
+            <span>Availability and time zone</span>
+            <input type="text" name="availability" maxlength="200" placeholder="e.g. Weeknights after 7 PM CST" required />
+          </label>
+          <label class="coaching-intake-wide">
+            <span>VOD or replay link <small>optional</small></span>
+            <input type="url" name="vodUrl" maxlength="500" placeholder="https://..." />
+          </label>
+          <label class="coaching-intake-wide">
+            <span>What do you want to improve?</span>
+            <textarea name="goals" maxlength="1800" rows="6" placeholder="Describe your biggest struggle, what you have already tried, and what success would look like." required></textarea>
+          </label>
+        </div>
+        <div class="coaching-intake-trap" aria-hidden="true">
+          <label>Website<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+        </div>
+        <div class="coaching-intake-submit">
+          <button class="hero-button" id="coaching-intake-submit" type="submit">Send to the Coaching Team</button>
+          <p class="coaching-intake-status" id="coaching-intake-status" aria-live="polite"></p>
+        </div>
+      </form>
     </section>
 
     <section class="home-section">

@@ -60,7 +60,7 @@ function validCoachingDuos(duos, resolvedCoaches) {
   const coachesById = new Map(resolvedCoaches.map(c => [c.playerId, c]));
   const pairedCoachIds = new Set();
 
-  return (duos || []).map(duo => {
+  return (duos || []).filter(duo => duo.enabled !== false).map(duo => {
     const first = coachesById.get(duo.firstCoachId);
     const second = coachesById.get(duo.secondCoachId);
     if (!first || !second || first.playerId === second.playerId) {
@@ -73,7 +73,7 @@ function validCoachingDuos(duos, resolvedCoaches) {
     }
     pairedCoachIds.add(first.playerId);
     pairedCoachIds.add(second.playerId);
-    return { first, second };
+    return { ...duo, first, second };
   }).filter(Boolean);
 }
 
@@ -130,20 +130,30 @@ function renderCoachingDuos(section, grid, duos) {
   }
 
   section.hidden = false;
-  grid.innerHTML = duos.map(({ first, second }) => `
+  grid.innerHTML = duos.map(duo => {
+    const { first, second } = duo;
+    const packageName = duo.name || `${first.player.name} + ${second.player.name}`;
+    const ctaUrl = duo.ctaUrl || "index.html?service=duo#coaching-intake";
+    const ctaLabel = duo.ctaLabel || "Apply for Duo Coaching";
+    return `
     <article class="coaching-duo-card">
       <div class="coaching-duo-kicker">COACHING DUO</div>
+      <h3 class="coaching-duo-title">${packageName}</h3>
+      ${duo.tagline ? `<p class="coaching-duo-tagline">${duo.tagline}</p>` : ""}
       <div class="coaching-duo-members">
         ${coachDuoMemberHtml(first)}
         <span class="coaching-duo-plus" aria-hidden="true">+</span>
         ${coachDuoMemberHtml(second)}
       </div>
+      ${duo.price ? `<div class="coaching-duo-price">${duo.price}</div>` : ""}
+      ${duo.description ? `<p class="coaching-duo-description">${duo.description}</p>` : ""}
+      ${pricingFeaturesHtml(duo.features)}
       <div class="coaching-duo-actions">
-        <a class="hero-button hero-button-secondary" href="${first.calLink}" target="_blank" rel="noopener">Book ${first.player.name}</a>
-        <a class="hero-button hero-button-secondary" href="${second.calLink}" target="_blank" rel="noopener">Book ${second.player.name}</a>
+        <a class="hero-button" href="${ctaUrl}">${ctaLabel}</a>
       </div>
     </article>
-  `).join("");
+  `;
+  }).join("");
 }
 
 function pricingFeaturesHtml(features) {

@@ -44,8 +44,8 @@ collections:
             widget: "list"
             required: false
             default: []
-            summary: "{{fields.firstCoachId}} + {{fields.secondCoachId}}"
-            hint: "Pair two members who are both enabled under Coaching / Testimonials → Coaches. Each member can appear in only one duo; invalid or duplicate pairings are ignored on the public Coaching page."
+            summary: "{{fields.name}} — {{fields.firstCoachId}} + {{fields.secondCoachId}}"
+            hint: "Pair two members who are both enabled under Coaching / Testimonials → Coaches, then configure the package visitors can book. Each member can appear in only one duo."
             fields:
               - label: "First Coach"
                 name: "firstCoachId"
@@ -65,6 +65,15 @@ collections:
                 display_fields: ["players.*.name"]
                 value_field: "players.*.id"
                 hint: "Search for and select a different coach."
+              - { label: "Package Name", name: "name", widget: "string", hint: "e.g. Mechanics + Macro Duo" }
+              - { label: "Tagline", name: "tagline", widget: "string", required: false, hint: "One-line explanation of why these coaches work well together." }
+              - { label: "Description", name: "description", widget: "text", required: false, hint: "What clients receive from this combined coaching approach." }
+              - { label: "Price", name: "price", widget: "string", required: false, hint: "e.g. $180/mo or Custom plan. Leave blank if pricing is discussed after applying." }
+              - { label: "Features", name: "features", widget: "text", required: false, hint: "One benefit per line, such as mechanics review, macro review, and coordinated feedback." }
+              - { label: "CTA Label", name: "ctaLabel", widget: "string", required: false, default: "Apply for Duo Coaching", hint: "Text on the single package button." }
+              - { label: "CTA URL", name: "ctaUrl", widget: "string", required: false, hint: "Use a Cal.com collective-event URL, or leave blank to send visitors to the coaching-match form." }
+              - { label: "Feature on Homepage?", name: "featured", widget: "boolean", default: false, hint: "Shows this duo in the homepage proof and conversion section." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this duo package without deleting it." }
 
   - name: "news"
     label: "News"

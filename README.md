@@ -426,14 +426,25 @@ bookable coaches by member ID:
 ```json
 {
   "firstCoachId": "psev",
-  "secondCoachId": "eoo"
+  "secondCoachId": "eoo",
+  "name": "Mechanics + Macro Duo",
+  "tagline": "Two coaching perspectives, one development plan.",
+  "description": "What clients receive from the combined approach.",
+  "price": "Custom plan",
+  "features": "Mechanics review\nMacro review\nCoordinated feedback",
+  "ctaLabel": "Apply for Duo Coaching",
+  "ctaUrl": "index.html?service=duo#coaching-intake",
+  "featured": true,
+  "enabled": true
 }
 ```
 
 The owner panel exposes these as searchable member selectors under
 **Members → Coaching Duos**. Both IDs must also be enabled in **Coaching /
 Testimonials → Coaches**. A coach can belong to only one duo; invalid or
-duplicate pairings are ignored on the public Coaching page.
+duplicate pairings are ignored on the public pages. The remaining fields turn
+the pairing into a bookable package. `ctaUrl` can be a Cal.com collective-event
+URL; if it is blank, the site sends visitors to the homepage coaching-match form.
 Valid pairings also appear below the member cards on `roster.html`, and each
 paired member card names that coach's duo partner.
 
@@ -808,3 +819,20 @@ public roster pages — you'd just go back to editing `data/players.json` by han
 
 `netlify.toml` is already configured with `publish = "."` so Netlify won't need
 any extra build settings.
+
+### Discord coaching applications
+
+The homepage coaching-match form submits to
+`netlify/functions/coaching-intake.mjs`; the browser never receives a Discord
+webhook or bot token. Configure one of these delivery methods in **Netlify →
+Project configuration → Environment variables**, with access for Functions:
+
+- Recommended: `DISCORD_INTAKE_WEBHOOK_URL` — create a webhook for the private
+  coaching-intake channel in Discord and paste its full URL here.
+- Bot alternative: `DISCORD_BOT_TOKEN` plus `DISCORD_INTAKE_CHANNEL_ID` — the
+  bot must be in the server and allowed to send messages and embeds in that
+  channel.
+
+Redeploy after adding the variables. The endpoint validates and length-limits
+every field, disables Discord mentions, includes a honeypot, accepts only HTTP(S)
+VOD links, and rate-limits each IP/domain to five submissions per minute.

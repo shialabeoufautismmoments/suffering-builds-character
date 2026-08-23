@@ -30,7 +30,7 @@ function validMemberCoachingDuos(duos, players, enabledCoachIds) {
   const playersById = new Map(players.map(player => [player.id, player]));
   const pairedCoachIds = new Set();
 
-  return (duos || []).map(duo => {
+  return (duos || []).filter(duo => duo.enabled !== false).map(duo => {
     const first = playersById.get(duo.firstCoachId);
     const second = playersById.get(duo.secondCoachId);
     if (!first || !second || first.id === second.id ||
@@ -40,7 +40,7 @@ function validMemberCoachingDuos(duos, players, enabledCoachIds) {
     if (pairedCoachIds.has(first.id) || pairedCoachIds.has(second.id)) return null;
     pairedCoachIds.add(first.id);
     pairedCoachIds.add(second.id);
-    return { first, second };
+    return { ...duo, first, second };
   }).filter(Boolean);
 }
 
@@ -73,9 +73,13 @@ function renderMemberCoachingDuos(section, grid, duos) {
   }
 
   section.hidden = false;
-  grid.innerHTML = duos.map(({ first, second }) => `
+  grid.innerHTML = duos.map(duo => {
+    const { first, second } = duo;
+    return `
     <article class="coaching-duo-card">
       <div class="coaching-duo-kicker">COACHING DUO</div>
+      <h3 class="coaching-duo-title">${duo.name || `${first.name} + ${second.name}`}</h3>
+      ${duo.tagline ? `<p class="coaching-duo-tagline">${duo.tagline}</p>` : ""}
       <div class="coaching-duo-members">
         ${memberDuoProfileHtml(first)}
         <span class="coaching-duo-plus" aria-hidden="true">+</span>
@@ -86,7 +90,8 @@ function renderMemberCoachingDuos(section, grid, duos) {
         <a class="hero-button hero-button-secondary" href="player.html?id=${encodeURIComponent(second.id)}">View ${second.name}</a>
       </div>
     </article>
-  `).join("");
+  `;
+  }).join("");
 }
 
 async function renderRoster() {

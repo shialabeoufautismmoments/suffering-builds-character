@@ -687,6 +687,23 @@ footer {
   letter-spacing: 0.16em;
 }
 
+.coaching-duo-title {
+  margin: 0;
+  text-align: center;
+  font-family: "Oswald", "Segoe UI", sans-serif;
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.coaching-duo-tagline {
+  max-width: 620px;
+  margin: 8px auto 22px;
+  text-align: center;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
 .coaching-duo-members {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -709,6 +726,29 @@ footer {
 .coaching-duo-member h3 { margin: 0 0 4px; }
 .coaching-duo-member .role { color: var(--text-dim); font-size: 0.78rem; }
 .coaching-duo-plus { color: var(--accent-bright); font-family: "Oswald", sans-serif; font-size: 2rem; }
+
+.coaching-duo-price {
+  margin-top: 20px;
+  text-align: center;
+  color: var(--accent-bright);
+  font-family: "Oswald", "Segoe UI", sans-serif;
+  font-size: 1.45rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.coaching-duo-description {
+  max-width: 720px;
+  margin: 12px auto 0;
+  text-align: center;
+  color: #c9c4c4;
+  line-height: 1.6;
+}
+
+.coaching-duo-card > .pricing-features {
+  max-width: 680px;
+  margin: 18px auto 0;
+}
 
 .coaching-duo-actions {
   display: flex;
@@ -1195,6 +1235,205 @@ footer {
 }
 
 .home-section { margin-bottom: 40px; }
+
+.home-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.home-result-card,
+.home-testimonial-card {
+  min-height: 210px;
+  margin: 0;
+  padding: 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.home-result-card { transition: border-color 0.15s ease, transform 0.15s ease; }
+.home-result-card:hover { border-color: var(--accent-bright); transform: translateY(-2px); }
+
+.home-proof-kicker,
+.coaching-intake-kicker {
+  margin-bottom: 18px;
+  color: var(--accent-bright);
+  font-family: "Oswald", "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+}
+
+.home-result-content {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.home-result-content img {
+  width: 88px;
+  height: 88px;
+  flex: 0 0 88px;
+  object-fit: cover;
+  border: 1px solid var(--accent-bright);
+}
+
+.home-result-content strong {
+  display: block;
+  font-family: "Oswald", "Segoe UI", sans-serif;
+  font-size: 1.35rem;
+  line-height: 1.3;
+}
+
+.home-result-content span {
+  display: block;
+  margin-top: 10px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.home-testimonial-card blockquote {
+  margin: 0 0 18px;
+  font-family: "Oswald", "Segoe UI", sans-serif;
+  font-size: 1.08rem;
+  line-height: 1.5;
+}
+
+.home-testimonial-card > p { margin: 0; font-weight: 600; }
+.home-testimonial-card > p span { color: var(--text-dim); font-weight: 400; }
+.home-featured-duo { max-width: 980px; margin: 0 auto; }
+
+.coaching-intake-section {
+  position: relative;
+  overflow: hidden;
+  scroll-margin-top: 120px;
+  padding: clamp(24px, 5vw, 46px);
+  background: linear-gradient(145deg, rgba(143, 0, 255, 0.12), var(--card) 46%);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent-bright);
+}
+
+.coaching-intake-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 28px;
+  margin-bottom: 30px;
+}
+
+.coaching-intake-heading h2 {
+  margin: 0 0 10px;
+  font-family: "Oswald", "Segoe UI", sans-serif;
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  text-transform: uppercase;
+}
+
+.coaching-intake-heading p {
+  max-width: 700px;
+  margin: 0;
+  color: var(--text-dim);
+  line-height: 1.65;
+}
+
+.coaching-intake-step {
+  flex: 0 0 auto;
+  color: var(--accent-bright);
+  font-family: "Oswald", "Segoe UI", sans-serif;
+  font-size: 2.4rem;
+  line-height: 0.8;
+}
+
+.coaching-intake-step span {
+  display: block;
+  margin-top: 8px;
+  color: var(--text-dim);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.coaching-intake-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.coaching-intake-form label { display: block; }
+
+.coaching-intake-form label > span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.coaching-intake-form label small {
+  color: #5d5759;
+  font-size: 0.68rem;
+}
+
+.coaching-intake-form input,
+.coaching-intake-form select,
+.coaching-intake-form textarea {
+  width: 100%;
+  padding: 12px 13px;
+  color: var(--text);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  font: inherit;
+}
+
+.coaching-intake-form textarea { min-height: 140px; resize: vertical; }
+
+.coaching-intake-form input:focus,
+.coaching-intake-form select:focus,
+.coaching-intake-form textarea:focus {
+  outline: 2px solid transparent;
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 0 2px rgba(143, 0, 255, 0.18);
+}
+
+.coaching-intake-wide { grid-column: 1 / -1; }
+.coaching-intake-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+.coaching-intake-submit {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.coaching-intake-submit .hero-button { cursor: pointer; }
+.coaching-intake-submit .hero-button:disabled { cursor: wait; opacity: 0.6; }
+
+.coaching-intake-status {
+  flex: 1;
+  min-width: 220px;
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.coaching-intake-status.success { color: #72d99f; }
+.coaching-intake-status.error { color: #ff7b72; }
+
+@media (max-width: 720px) {
+  .home-proof-grid,
+  .coaching-intake-grid { grid-template-columns: 1fr; }
+  .coaching-intake-wide { grid-column: auto; }
+  .coaching-intake-heading { flex-direction: column; }
+  .coaching-intake-step { display: none; }
+}
+
+@media (max-width: 480px) {
+  .home-result-content { align-items: flex-start; }
+  .home-result-content img { width: 68px; height: 68px; flex-basis: 68px; }
+}
 
 .home-links-grid {
   display: grid;
