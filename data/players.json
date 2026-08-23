@@ -83,5 +83,10 @@
       "id": "quam"
     }
   ],
-  "coachingDuos": []
+  "coachingDuos": [
+    {
+      "firstCoachId": "psev",
+      "secondCoachId": "eoo"
+    }
+  ]
 }
