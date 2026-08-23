@@ -6,6 +6,13 @@
       "description": "Bookable with EOO",
       "pricing": "60 USD / hr (psev + EOO)",
       "calLink": "Google.ca"
+    },
+    {
+      "enabled": true,
+      "playerId": "eoo",
+      "description": "Bookable with psev",
+      "pricing": "60 USD / hr",
+      "calLink": "Google.ca"
     }
   ],
   "packagesIntro": "",
