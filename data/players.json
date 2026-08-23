@@ -81,6 +81,20 @@
       "country": "KY",
       "isStaff": true,
       "id": "quam"
+    },
+    {
+      "achievements": "Math Olympiad winner",
+      "bio": "He wins.",
+      "joined": "2026-08-23",
+      "accent": "#1ca21c",
+      "name": "Jubby (Barry)",
+      "rank": "N/A",
+      "photo": "/assets/uploads/img_6168.jpg",
+      "game": "Overwatch",
+      "role": "Co-Owner",
+      "country": "US",
+      "isStaff": true,
+      "id": "jubby"
     }
   ],
   "coachingDuos": [
