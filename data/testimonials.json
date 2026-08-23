@@ -1,5 +1,13 @@
 {
-  "coaches": [],
+  "coaches": [
+    {
+      "enabled": true,
+      "playerId": "psev",
+      "description": "Bookable with EOO",
+      "pricing": "60 USD / hr (psev + EOO)",
+      "calLink": "Google.ca"
+    }
+  ],
   "packagesIntro": "",
   "packagesContactLabel": "Contact us for a custom quote",
   "packagesContactUrl": "",
