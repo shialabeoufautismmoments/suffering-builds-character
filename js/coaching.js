@@ -43,8 +43,8 @@ function pricingHtml(pricing) {
   return `<ul class="coach-pricing">${lines.map(p => `<li>${p}</li>`).join("")}</ul>`;
 }
 
-function renderCoaches(coachesGrid, coaches, players) {
-  const resolved = coaches
+function resolveCoaches(coaches, players) {
+  return coaches
     .filter(c => c.enabled !== false)
     .map(c => ({ ...c, player: players.find(p => p.id === c.playerId) }))
     .filter(c => {
@@ -54,6 +54,40 @@ function renderCoaches(coachesGrid, coaches, players) {
       }
       return true;
     });
+}
+
+function validCoachingDuos(duos, resolvedCoaches) {
+  const coachesById = new Map(resolvedCoaches.map(c => [c.playerId, c]));
+  const pairedCoachIds = new Set();
+
+  return (duos || []).map(duo => {
+    const first = coachesById.get(duo.firstCoachId);
+    const second = coachesById.get(duo.secondCoachId);
+    if (!first || !second || first.playerId === second.playerId) {
+      console.error(`Invalid coaching duo: "${duo.firstCoachId || ""}" + "${duo.secondCoachId || ""}"`);
+      return null;
+    }
+    if (pairedCoachIds.has(first.playerId) || pairedCoachIds.has(second.playerId)) {
+      console.error(`A coach can only appear in one coaching duo: "${first.playerId}" + "${second.playerId}"`);
+      return null;
+    }
+    pairedCoachIds.add(first.playerId);
+    pairedCoachIds.add(second.playerId);
+    return { first, second };
+  }).filter(Boolean);
+}
+
+function duoPartnersByCoach(duos) {
+  const partners = new Map();
+  duos.forEach(({ first, second }) => {
+    partners.set(first.playerId, second.player);
+    partners.set(second.playerId, first.player);
+  });
+  return partners;
+}
+
+function renderCoaches(coachesGrid, resolved, duos) {
+  const partners = duoPartnersByCoach(duos);
 
   if (!resolved.length) {
     coachesGrid.innerHTML = "<p>No coaches listed yet.</p>";
@@ -70,8 +104,45 @@ function renderCoaches(coachesGrid, coaches, players) {
         </div>
       </div>
       <p class="staff-bio">${c.description}</p>
+      ${partners.has(c.playerId) ? `<p class="coach-duo-label">Coaching duo with ${nameWithFlag(partners.get(c.playerId))}</p>` : ""}
       ${pricingHtml(c.pricing)}
     </a>
+  `).join("");
+}
+
+function coachDuoMemberHtml(coach) {
+  return `
+    <div class="coaching-duo-member" style="--card-accent:${coach.player.accent}">
+      ${avatarMarkup(coach.player)}
+      <div>
+        <h3>${nameWithFlag(coach.player)}</h3>
+        <p class="role">${coach.player.role} &middot; ${coach.player.game}</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderCoachingDuos(section, grid, duos) {
+  if (!duos.length) {
+    section.hidden = true;
+    grid.innerHTML = "";
+    return;
+  }
+
+  section.hidden = false;
+  grid.innerHTML = duos.map(({ first, second }) => `
+    <article class="coaching-duo-card">
+      <div class="coaching-duo-kicker">COACHING DUO</div>
+      <div class="coaching-duo-members">
+        ${coachDuoMemberHtml(first)}
+        <span class="coaching-duo-plus" aria-hidden="true">+</span>
+        ${coachDuoMemberHtml(second)}
+      </div>
+      <div class="coaching-duo-actions">
+        <a class="hero-button hero-button-secondary" href="${first.calLink}" target="_blank" rel="noopener">Book ${first.player.name}</a>
+        <a class="hero-button hero-button-secondary" href="${second.calLink}" target="_blank" rel="noopener">Book ${second.player.name}</a>
+      </div>
+    </article>
   `).join("");
 }
 
@@ -130,6 +201,8 @@ function renderTestimonials(testimonialGrid, testimonials) {
 
 async function renderCoachingPage() {
   const coachesGrid = document.getElementById("coaches-grid");
+  const coachingDuosSection = document.getElementById("coaching-duos-section");
+  const coachingDuosGrid = document.getElementById("coaching-duos-grid");
   const testimonialGrid = document.getElementById("testimonial-grid");
   const packagesSection = document.getElementById("packages-section");
   const packagesIntro = document.getElementById("packages-intro");
@@ -138,6 +211,7 @@ async function renderCoachingPage() {
   const { site } = await window.__siteDataPromise;
   if (isPageDisabled(site, "coaching")) {
     renderPageUnavailable(coachesGrid);
+    coachingDuosSection.hidden = true;
     testimonialGrid.innerHTML = "";
     packagesSection.hidden = true;
     return;
@@ -151,11 +225,15 @@ async function renderCoachingPage() {
     const testimonialsData = await testimonialsRes.json();
     const playersData = await playersRes.json();
 
-    renderCoaches(coachesGrid, testimonialsData.coaches || [], playersData.players);
+    const resolvedCoaches = resolveCoaches(testimonialsData.coaches || [], playersData.players || []);
+    const duos = validCoachingDuos(playersData.coachingDuos || [], resolvedCoaches);
+    renderCoaches(coachesGrid, resolvedCoaches, duos);
+    renderCoachingDuos(coachingDuosSection, coachingDuosGrid, duos);
     renderPackages(packagesSection, packagesIntro, packagesGrid, testimonialsData);
     renderTestimonials(testimonialGrid, testimonialsData.testimonials || []);
   } catch (err) {
     coachesGrid.innerHTML = "<p>Couldn't load coaches right now.</p>";
+    coachingDuosSection.hidden = true;
     testimonialGrid.innerHTML = "<p>Couldn't load testimonials right now.</p>";
     packagesSection.hidden = true;
     console.error(err);

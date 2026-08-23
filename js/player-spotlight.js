@@ -44,7 +44,6 @@ async function renderSpotlight() {
 
   setMetaTags({
     title: `${spotlight.playerName} — Suffering Builds Character`,
-    description: spotlight.summary || plainTextExcerpt(spotlight.notes, 160),
     image: spotlight.photo || undefined
   });
 

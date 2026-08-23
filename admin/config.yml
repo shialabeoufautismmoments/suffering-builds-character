@@ -7,13 +7,13 @@ public_folder: "/assets/uploads"
 
 collections:
   - name: "roster"
-    label: "Roster"
+    label: "Members"
     files:
       - file: "data/players.json"
-        label: "Players"
+        label: "Members"
         name: "players"
         fields:
-          - label: "Players"
+          - label: "Members"
             name: "players"
             widget: "list"
             summary: "{{fields.name}} — {{fields.rank}}"
@@ -38,6 +38,33 @@ collections:
                   - { label: "Twitch URL", name: "twitch", widget: "string", required: false }
                   - { label: "Twitter URL", name: "twitter", widget: "string", required: false }
                   - { label: "Pyvno URL", name: "pyvno", widget: "string", required: false, hint: "e.g. https://pyvno.xyz/username" }
+          - label: "Coaching Duos"
+            label_singular: "Coaching Duo"
+            name: "coachingDuos"
+            widget: "list"
+            required: false
+            default: []
+            summary: "{{fields.firstCoachId}} + {{fields.secondCoachId}}"
+            hint: "Pair two members who are both enabled under Coaching / Testimonials → Coaches. Each member can appear in only one duo; invalid or duplicate pairings are ignored on the public Coaching page."
+            fields:
+              - label: "First Coach"
+                name: "firstCoachId"
+                widget: "relation"
+                collection: "roster"
+                file: "players"
+                search_fields: ["players.*.name"]
+                display_fields: ["players.*.name"]
+                value_field: "players.*.id"
+                hint: "Search for and select the first coach."
+              - label: "Second Coach"
+                name: "secondCoachId"
+                widget: "relation"
+                collection: "roster"
+                file: "players"
+                search_fields: ["players.*.name"]
+                display_fields: ["players.*.name"]
+                value_field: "players.*.id"
+                hint: "Search for and select a different coach."
 
   - name: "news"
     label: "News"

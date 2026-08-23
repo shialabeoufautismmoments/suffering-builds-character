@@ -127,14 +127,15 @@ function renderPageUnavailable(container) {
   container.innerHTML = `<p>This section isn't available right now.</p>`;
 }
 
-// Overrides document.title and the static og:/twitter: meta tags on a
-// per-entry page (wiki entry, thread, player, etc.) with real content
-// instead of the generic site-wide description baked into the HTML.
+// Overrides document.title and image tags on per-entry pages while preserving
+// the shared site-wide embed description baked into every HTML page.
 // Note: this only affects what browsers see. Discord/Twitter/etc. link
 // unfurlers don't run JS, so they'll only pick this up if Netlify
 // Prerendering is enabled for the site (Site configuration → Build &
 // deploy → Post processing → Prerendering).
-function setMetaTags({ title, description, image }) {
+const SITE_EMBED_DESCRIPTION = "HONE your skills. Suffering Builds Character.";
+
+function setMetaTags({ title, image }) {
   if (title) {
     document.title = title;
     const ogTitle = document.querySelector('meta[property="og:title"]');
@@ -142,31 +143,18 @@ function setMetaTags({ title, description, image }) {
     const twTitle = document.querySelector('meta[name="twitter:title"]');
     if (twTitle) twTitle.setAttribute("content", title);
   }
-  if (description) {
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute("content", description);
-    const ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.setAttribute("content", description);
-    const twDesc = document.querySelector('meta[name="twitter:description"]');
-    if (twDesc) twDesc.setAttribute("content", description);
-  }
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.setAttribute("content", SITE_EMBED_DESCRIPTION);
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  if (ogDesc) ogDesc.setAttribute("content", SITE_EMBED_DESCRIPTION);
+  const twDesc = document.querySelector('meta[name="twitter:description"]');
+  if (twDesc) twDesc.setAttribute("content", SITE_EMBED_DESCRIPTION);
   if (image) {
     const ogImage = document.querySelector('meta[property="og:image"]');
     if (ogImage) ogImage.setAttribute("content", image);
     const twImage = document.querySelector('meta[name="twitter:image"]');
     if (twImage) twImage.setAttribute("content", image);
   }
-}
-
-// Strips basic markdown/whitespace and truncates, for building a link-preview
-// description out of a markdown or plain-text body when no summary exists.
-function plainTextExcerpt(text, maxLen) {
-  const stripped = (text || "")
-    .replace(/[#*_>`~]/g, "")
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/\s+/g, " ")
-    .trim();
-  return stripped.length > maxLen ? stripped.slice(0, maxLen - 1).trim() + "…" : stripped;
 }
 
 // Fetches Wiki/Threads/Roadmap/VOD Reviews/News/Custom Pages/Player Spotlights

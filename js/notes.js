@@ -33,8 +33,7 @@ async function renderNotes() {
   }
 
   setMetaTags({
-    title: `Notes: ${book.title} — Suffering Builds Character`,
-    description: book.summary || `Reading notes for "${book.title}."`
+    title: `Notes: ${book.title} — Suffering Builds Character`
   });
 
   const notesHtml = book.notes

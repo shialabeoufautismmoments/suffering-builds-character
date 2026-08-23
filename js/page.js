@@ -44,8 +44,7 @@ async function renderCustomPage() {
   }
 
   setMetaTags({
-    title: `${page.heading} — Suffering Builds Character`,
-    description: plainTextExcerpt(page.body, 160)
+    title: `${page.heading} — Suffering Builds Character`
   });
 
   const headingEl = document.querySelector("[data-page-heading]");

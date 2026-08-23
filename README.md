@@ -420,6 +420,21 @@ admin form shows it as a plain text box for that reason (see note below).
 `id` is used in the URL (`player.html?id=unique-slug`) — keep it lowercase with
 no spaces. `photo` is optional — omit it to keep the initials avatar.
 
+The same file also has a top-level `coachingDuos` array. Each item pairs two
+bookable coaches by member ID:
+
+```json
+{
+  "firstCoachId": "psev",
+  "secondCoachId": "eoo"
+}
+```
+
+The owner panel exposes these as searchable member selectors under
+**Members → Coaching Duos**. Both IDs must also be enabled in **Coaching /
+Testimonials → Coaches**. A coach can belong to only one duo; invalid or
+duplicate pairings are ignored on the public Coaching page.
+
 `data/news.json` — one object per announcement in the `news` array:
 
 ```json
@@ -712,29 +727,23 @@ should keep showing the old name even though the on-site brand changed.
 `og:site_name` is **not** wired up to Site Settings — it's static text in
 each HTML file's `<head>`.
 
-**`og:title` / `twitter:title` / `og:description` / `twitter:description` /
-`<meta name="description">`, on the other hand, are dynamic on the five
-per-entry pages** — `wiki-entry.html`, `thread.html`, `notes.html`,
-`page.html`, and `player.html`. Each one's render script (`js/wiki-entry.js`
-etc.) calls a shared `setMetaTags({ title, description, image })` helper in
-`js/site.js` once its content loads, overwriting the generic placeholder tags
-baked into the HTML with that specific entry's real title/summary (falling
-back to a plain-text excerpt of the body if no summary field exists). Every
-other page (Home, Roster, News, Wiki index, VOD Reviews index, etc.) still
-shows the static generic copy from its own `<head>` — only individual-entry
-pages get this treatment.
+**`og:description` / `twitter:description` / `<meta name="description">` use
+the same text on every page:** "HONE your skills. Suffering Builds
+Character." Per-entry pages still update their `og:title`, `twitter:title`,
+browser title, and optional preview image through the shared `setMetaTags`
+helper in `js/site.js`, but they preserve that common description.
 
 **Important limitation:** `setMetaTags` runs in JavaScript after a fetch
 resolves, so it only changes what a browser sees — it does **not** by itself
 fix what Discord/Twitter/Facebook/Slack show in a link preview, because those
 crawlers fetch the raw HTML and don't execute JS. To make link previews
-actually reflect the dynamic per-entry tags, turn on **Prerendering** in the
+actually reflect dynamic per-entry titles and images, turn on **Prerendering** in the
 Netlify dashboard (Site configuration → Build & deploy → Post processing →
 Prerendering) — a one-click toggle, no code changes needed. Netlify detects
 known bot user-agents and serves them a post-JS-execution snapshot instead of
 the raw HTML. Without it, link previews for wiki entries/threads/etc. will
-still show the generic placeholder copy even though the browser tab title is
-correct.
+still show the shared embed description and generic title/image even though
+the browser tab title is correct.
 
 The image points at `assets/logo.svg` — that renders fine in some places
 (Discord) but **not reliably everywhere** (Twitter/X doesn't support SVG

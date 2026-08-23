@@ -40,8 +40,7 @@ async function renderThread() {
   }
 
   setMetaTags({
-    title: `${thread.title} — Suffering Builds Character`,
-    description: `"${thread.title}" — an unrolled Twitter/X thread from Suffering Builds Character.`
+    title: `${thread.title} — Suffering Builds Character`
   });
   if (titleEl) titleEl.textContent = thread.title;
 

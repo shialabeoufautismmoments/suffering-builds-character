@@ -43,8 +43,7 @@ async function renderWikiEntry() {
   }
 
   setMetaTags({
-    title: `${entry.title} — Suffering Builds Character`,
-    description: entry.summary || plainTextExcerpt(entry.body, 160)
+    title: `${entry.title} — Suffering Builds Character`
   });
 
   const bodyHtml = typeof marked !== "undefined"

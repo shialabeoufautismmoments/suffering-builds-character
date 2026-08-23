@@ -108,7 +108,6 @@ async function renderPlayer() {
 
   setMetaTags({
     title: `${player.name} — Suffering Builds Character`,
-    description: `${player.role} · ${player.game}. ${plainTextExcerpt(player.bio, 120)}`,
     image: player.photo || undefined
   });
 
