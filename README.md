@@ -434,6 +434,8 @@ The owner panel exposes these as searchable member selectors under
 **Members → Coaching Duos**. Both IDs must also be enabled in **Coaching /
 Testimonials → Coaches**. A coach can belong to only one duo; invalid or
 duplicate pairings are ignored on the public Coaching page.
+Valid pairings also appear below the member cards on `roster.html`, and each
+paired member card names that coach's duo partner.
 
 `data/news.json` — one object per announcement in the `news` array:
 
