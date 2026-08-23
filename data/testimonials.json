@@ -5,14 +5,14 @@
       "playerId": "psev",
       "description": "Bookable with EOO",
       "pricing": "60 USD / hr (psev + EOO)",
-      "calLink": "Google.ca"
+      "calLink": "https://sufferingbuildscharacter.com/index.html?service=duo#coaching-intake"
     },
     {
       "enabled": true,
       "playerId": "eoo",
       "description": "Bookable with psev",
-      "pricing": "60 USD / hr",
-      "calLink": "Google.ca"
+      "pricing": "60 USD / hr (psev + EOO)",
+      "calLink": "https://sufferingbuildscharacter.com/index.html?service=duo#coaching-intake"
     }
   ],
   "packagesIntro": "",
