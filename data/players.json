@@ -11,10 +11,10 @@
       "joined": "2026-07-03",
       "accent": "#00ceff",
       "name": "psev",
-      "rank": "Champion 5",
+      "rank": "Champion 4",
       "photo": "/assets/uploads/hkbir2awkaeb_ve.jpg",
       "game": "Overwatch",
-      "role": "Hitscan",
+      "role": "Micro Coach",
       "country": "CA",
       "isStaff": true,
       "id": "psev"
@@ -29,64 +29,26 @@
       "joined": "2026-07-03",
       "accent": "#ffb900",
       "name": "EOO",
-      "rank": "Champion 5",
+      "rank": "Champion 4",
       "photo": "https://cdn.discordapp.com/avatars/629642053411799067/0847eaff35074e2827bbe9fdd2743f9a.png?size=4096",
       "game": "Overwatch",
-      "role": "Hitscan and Support",
+      "role": "Macro Coach",
       "country": "GB",
       "isStaff": true,
       "id": "eoo"
     },
     {
-      "socials": {
-        "twitch": "https://www.twitch.tv/frozenF22",
-        "twitter": "https://x.com/frozenVIII",
-        "pyvno": "https://pyvno.xyz/frozen"
-      },
-      "bio": "A top tier hitscan player, Frozen is the prime example of weaving raw mechanical training into in-game situations with scrims and ranked.",
-      "joined": "2026-07-03",
-      "accent": "#105100",
-      "name": "FroZen",
-      "rank": "Champ 3",
-      "photo": "https://cdn.discordapp.com/avatars/345660519975485440/0b78c98f59d0d0e26ea3e4b85692b2ce.png?size=4096",
+      "bio": "Santana is known for playing on Team Mexico in the Overwatch World Cup 2026, and being an extremely well rounded tank player.",
+      "joined": "2026-08-23",
+      "accent": "#7fffd4",
+      "name": "Santana",
+      "rank": "Champion 3",
+      "photo": "https://pbs.twimg.com/profile_images/2088982621397127168/ApVCuWmJ_400x400.jpg",
       "game": "Overwatch",
-      "role": "Hitscan",
-      "country": "US",
+      "role": "Tank Coach",
+      "country": "CU",
       "isStaff": false,
-      "id": "frozen"
-    },
-    {
-      "socials": {
-        "pyvno": "https://pyvno.xyz/cannonlol"
-      },
-      "bio": "Co-Owner and Co-Founder of Hone.",
-      "joined": "2026-07-03",
-      "accent": "#6a00ff",
-      "name": "Cannon",
-      "rank": "N/A",
-      "photo": "https://preview.redd.it/roadhog-fanart-by-me-v0-jlwv5bsxtcv91.png?auto=webp&s=54ca0645b9d29e681ab4154d54866d1e21b11be1",
-      "game": "Overwatch",
-      "role": "Owner",
-      "country": "US",
-      "isStaff": true,
-      "id": "cannon"
-    },
-    {
-      "socials": {
-        "pyvno": "https://pyvno.xyz/mattburger",
-        "twitter": "https://x.com/doodlebobslayer"
-      },
-      "bio": "A top tier tank, who shows mechanics transcend roles.",
-      "joined": "2026-07-04",
-      "accent": "#7e0000",
-      "name": "Mattburger",
-      "rank": "Champ 4",
-      "photo": "https://cdn.discordapp.com/avatars/223199393346486272/99cda1547092c77703d9df2dd95eb3d6.png?size=4096",
-      "game": "Overwatch",
-      "role": "Tank",
-      "country": "US",
-      "isStaff": false,
-      "id": "matt"
+      "id": "santana"
     },
     {
       "socials": {
@@ -99,7 +61,7 @@
       "rank": "GM",
       "photo": "https://cdn.discordapp.com/avatars/490108507681718283/8f91f180fe05674f021b2ae104d9c70d.png?size=4096",
       "game": "Aimbeast",
-      "role": "Coach",
+      "role": "Micro Coach",
       "country": "DE",
       "isStaff": true,
       "id": "gweria"
@@ -109,33 +71,16 @@
         "twitter": "https://x.com/toyota96615893"
       },
       "bio": "Quam is a top tier tank player and respected business owner in the Cayman Islands. Quam has invested into this project in hopes it helps players evolve to the next level.",
-      "joined": "2026-07-12",
-      "accent": "#218e00",
+      "joined": "2026-08-23",
+      "accent": "#9f1616",
       "name": "Quam",
       "rank": "N/A",
       "photo": "https://cdn.discordapp.com/avatars/377267005629267968/059e7c564862ad727e970b815cc5bbdb.png?size=4096",
       "game": "Overwatch",
-      "role": "Co-Owner",
+      "role": "Owner",
       "country": "KY",
       "isStaff": true,
       "id": "quam"
-    },
-    {
-      "socials": {
-        "twitter": "https://x.com/Osiren_",
-        "pyvno": "https://pyvno.xyz/osiren"
-      },
-      "bio": "Osiren is joining us to help us with graphics and GFX.",
-      "joined": "2026-07-15",
-      "accent": "#722e2e",
-      "name": "Osiren",
-      "rank": "N/A",
-      "photo": "https://cdn.discordapp.com/avatars/227239594033152001/fdec6c7a9da6e08661355169b1eeae97.png?size=4096",
-      "game": "Overwatch",
-      "role": "Artist and GFX",
-      "country": "US",
-      "isStaff": true,
-      "id": "osiren"
     }
   ]
 }
