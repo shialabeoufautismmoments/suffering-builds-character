@@ -68,67 +68,92 @@
         <div>
           <div class="coaching-intake-kicker">START HERE</div>
           <h2>Find your coaching fit</h2>
-          <p>Tell us where you are, what is holding you back, and how you want to improve. Your application goes directly to the HONE coaching team on Discord.</p>
+          <p>Tell us where you are, what is holding you back, and how you want to improve. We save every application and usually reply on Discord <span data-response-time>within 2 business days</span>.</p>
         </div>
-        <div class="coaching-intake-step">01 <span>Apply</span></div>
+        <div class="coaching-intake-step"><span id="coaching-step-number">1 / 2</span><small id="coaching-step-label">Player details</small></div>
       </div>
-      <form class="coaching-intake-form" id="coaching-intake-form">
-        <div class="coaching-intake-grid">
-          <label>
-            <span>Name</span>
-            <input type="text" name="name" maxlength="80" autocomplete="name" required />
-          </label>
-          <label>
-            <span>Discord username</span>
-            <input type="text" name="discord" maxlength="80" autocomplete="off" placeholder="username or @username" required />
-          </label>
-          <label>
-            <span>Game</span>
-            <select name="game" required>
-              <option value="">Select a game</option>
-              <option value="Overwatch">Overwatch</option>
-              <option value="Aim training">Aim training</option>
-              <option value="Other">Other</option>
-            </select>
-          </label>
-          <label>
-            <span>Current rank</span>
-            <input type="text" name="rank" maxlength="80" placeholder="e.g. Masters 3" required />
-          </label>
-          <label>
-            <span>Role / heroes</span>
-            <input type="text" name="role" maxlength="120" placeholder="e.g. Hitscan — Soldier, Cassidy" required />
-          </label>
-          <label>
-            <span>Preferred coaching</span>
-            <select name="service" id="coaching-intake-service" required>
-              <option value="Not sure">Help me choose</option>
-              <option value="Individual coaching">Individual coaching</option>
-              <option value="Coaching duo">Coaching duo</option>
-              <option value="Monthly development plan">Monthly development plan</option>
-              <option value="Team coaching">Team coaching</option>
-            </select>
-          </label>
-          <label class="coaching-intake-wide">
-            <span>Availability and time zone</span>
-            <input type="text" name="availability" maxlength="200" placeholder="e.g. Weeknights after 7 PM CST" required />
-          </label>
-          <label class="coaching-intake-wide">
-            <span>VOD or replay link <small>optional</small></span>
-            <input type="url" name="vodUrl" maxlength="500" placeholder="https://..." />
-          </label>
-          <label class="coaching-intake-wide">
-            <span>What do you want to improve?</span>
-            <textarea name="goals" maxlength="1800" rows="6" placeholder="Describe your biggest struggle, what you have already tried, and what success would look like." required></textarea>
-          </label>
-        </div>
+      <form class="coaching-intake-form" id="coaching-intake-form" novalidate>
+        <div class="coaching-intake-progress" aria-hidden="true"><span id="coaching-intake-progress-bar"></span></div>
+        <fieldset class="coaching-intake-panel" data-coaching-step="0">
+          <legend>Player details</legend>
+          <div class="coaching-intake-grid">
+            <label>
+              <span>Name</span>
+              <input id="coaching-name" type="text" name="name" maxlength="80" autocomplete="name" aria-describedby="error-name" required />
+              <small class="field-error" id="error-name"></small>
+            </label>
+            <label>
+              <span>Discord username</span>
+              <input id="coaching-discord" type="text" name="discord" maxlength="80" autocomplete="off" placeholder="username or @username" aria-describedby="error-discord" required />
+              <small class="field-error" id="error-discord"></small>
+            </label>
+            <label>
+              <span>Game</span>
+              <select id="coaching-game" name="game" aria-describedby="error-game" required>
+                <option value="">Select a game</option>
+                <option value="Overwatch">Overwatch</option>
+                <option value="Aim training">Aim training</option>
+                <option value="Other">Other</option>
+              </select>
+              <small class="field-error" id="error-game"></small>
+            </label>
+            <label>
+              <span>Current rank</span>
+              <input id="coaching-rank" type="text" name="rank" maxlength="80" placeholder="e.g. Masters 3" aria-describedby="error-rank" required />
+              <small class="field-error" id="error-rank"></small>
+            </label>
+            <label>
+              <span>Role / heroes</span>
+              <input id="coaching-role" type="text" name="role" maxlength="120" placeholder="e.g. Hitscan — Soldier, Cassidy" aria-describedby="error-role" required />
+              <small class="field-error" id="error-role"></small>
+            </label>
+            <label>
+              <span>Preferred coaching</span>
+              <select name="service" id="coaching-intake-service" aria-describedby="error-service" required>
+                <option value="Not sure">Help me choose</option>
+                <option value="Individual coaching">Individual coaching</option>
+                <option value="Coaching duo">Coaching duo</option>
+                <option value="Monthly development plan">Monthly development plan</option>
+                <option value="Team coaching">Team coaching</option>
+              </select>
+              <small class="field-error" id="error-service"></small>
+            </label>
+          </div>
+          <div class="coaching-intake-submit coaching-intake-submit-end"><button class="hero-button" id="coaching-intake-next" type="button">Continue</button></div>
+        </fieldset>
+        <fieldset class="coaching-intake-panel" data-coaching-step="1">
+          <legend>Goals and availability</legend>
+          <div class="coaching-intake-grid">
+            <label class="coaching-intake-wide">
+              <span>Availability and time zone</span>
+              <input id="coaching-availability" type="text" name="availability" maxlength="200" placeholder="e.g. Weeknights after 7 PM CST" aria-describedby="error-availability" required />
+              <small class="field-error" id="error-availability"></small>
+            </label>
+            <label class="coaching-intake-wide">
+              <span>VOD or replay link <small>optional</small></span>
+              <input id="coaching-vodUrl" type="url" name="vodUrl" maxlength="500" placeholder="https://..." aria-describedby="error-vodUrl" />
+              <small class="field-error" id="error-vodUrl"></small>
+            </label>
+            <label class="coaching-intake-wide">
+              <span>What do you want to improve?</span>
+              <textarea id="coaching-goals" name="goals" maxlength="1800" rows="6" placeholder="Describe your biggest struggle, what you have already tried, and what success would look like." aria-describedby="error-goals" required></textarea>
+              <small class="field-error" id="error-goals"></small>
+            </label>
+            <label class="coaching-consent coaching-intake-wide">
+              <input id="coaching-consent" type="checkbox" name="consent" aria-describedby="error-consent" required />
+              <span>I agree to the <a href="privacy.html" target="_blank">Privacy Policy</a> and <a href="terms.html" target="_blank">Terms</a>, and I have read the <a href="refund-policy.html" target="_blank">Cancellation &amp; Refund Policy</a>.</span>
+              <small class="field-error" id="error-consent"></small>
+            </label>
+          </div>
+          <div class="coaching-intake-submit">
+            <button class="hero-button hero-button-secondary" id="coaching-intake-back" type="button">Back</button>
+            <button class="hero-button" id="coaching-intake-submit" type="submit">Send Application</button>
+          </div>
+        </fieldset>
         <div class="coaching-intake-trap" aria-hidden="true">
           <label>Website<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
         </div>
-        <div class="coaching-intake-submit">
-          <button class="hero-button" id="coaching-intake-submit" type="submit">Send to the Coaching Team</button>
-          <p class="coaching-intake-status" id="coaching-intake-status" aria-live="polite"></p>
-        </div>
+        <p class="coaching-intake-status" id="coaching-intake-status" tabindex="-1" aria-live="polite"></p>
       </form>
     </section>
 

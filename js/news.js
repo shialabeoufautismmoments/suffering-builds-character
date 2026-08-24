@@ -24,8 +24,8 @@ async function renderNews() {
     list.innerHTML = items.map(n => `
       <article class="news-item">
         <div class="news-date">${formatDate(n.date)}</div>
-        <h3>${n.title}</h3>
-        <p>${n.body}</p>
+        <h3>${escapeSiteHtml(n.title)}</h3>
+        <p>${linkifyPlainText(n.body)}</p>
       </article>
     `).join("");
   } catch (err) {

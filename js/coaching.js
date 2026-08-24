@@ -77,24 +77,18 @@ function validCoachingDuos(duos, resolvedCoaches) {
   }).filter(Boolean);
 }
 
-function duoPartnersByCoach(duos) {
-  const partners = new Map();
-  duos.forEach(({ first, second }) => {
-    partners.set(first.playerId, second.player);
-    partners.set(second.playerId, first.player);
-  });
-  return partners;
-}
+function renderCoaches(section, coachesGrid, resolved, duos) {
+  const pairedIds = new Set(duos.flatMap(duo => [duo.first.playerId, duo.second.playerId]));
+  const individualCoaches = resolved.filter(coach => !pairedIds.has(coach.playerId));
 
-function renderCoaches(coachesGrid, resolved, duos) {
-  const partners = duoPartnersByCoach(duos);
-
-  if (!resolved.length) {
-    coachesGrid.innerHTML = "<p>No coaches listed yet.</p>";
+  if (!individualCoaches.length) {
+    section.hidden = true;
+    coachesGrid.innerHTML = "";
     return;
   }
 
-  coachesGrid.innerHTML = resolved.map(c => `
+  section.hidden = false;
+  coachesGrid.innerHTML = individualCoaches.map(c => `
     <a class="staff-card" style="--card-accent:${c.player.accent}" href="${c.calLink}" target="_blank" rel="noopener">
       <div class="staff-card-header">
         ${avatarMarkup(c.player)}
@@ -104,7 +98,6 @@ function renderCoaches(coachesGrid, resolved, duos) {
         </div>
       </div>
       <p class="staff-bio">${c.description}</p>
-      ${partners.has(c.playerId) ? `<p class="coach-duo-label">Coaching duo with ${nameWithFlag(partners.get(c.playerId))}</p>` : ""}
       ${pricingHtml(c.pricing)}
     </a>
   `).join("");
@@ -210,6 +203,7 @@ function renderTestimonials(testimonialGrid, testimonials) {
 }
 
 async function renderCoachingPage() {
+  const coachesSection = document.getElementById("coaches-section");
   const coachesGrid = document.getElementById("coaches-grid");
   const coachingDuosSection = document.getElementById("coaching-duos-section");
   const coachingDuosGrid = document.getElementById("coaching-duos-grid");
@@ -237,7 +231,7 @@ async function renderCoachingPage() {
 
     const resolvedCoaches = resolveCoaches(testimonialsData.coaches || [], playersData.players || []);
     const duos = validCoachingDuos(playersData.coachingDuos || [], resolvedCoaches);
-    renderCoaches(coachesGrid, resolvedCoaches, duos);
+    renderCoaches(coachesSection, coachesGrid, resolvedCoaches, duos);
     renderCoachingDuos(coachingDuosSection, coachingDuosGrid, duos);
     renderPackages(packagesSection, packagesIntro, packagesGrid, testimonialsData);
     renderTestimonials(testimonialGrid, testimonialsData.testimonials || []);

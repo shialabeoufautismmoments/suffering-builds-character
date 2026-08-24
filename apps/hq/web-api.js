@@ -66,6 +66,17 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload || {}),
     }),
+    coachLeadsGet: () => authedFetch('/api/coach-leads'),
+    coachLeadsPost: payload => authedFetch('/api/coach-leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload || {}),
+    }),
+    coachLeadsPut: payload => authedFetch('/api/coach-leads', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload || {}),
+    }),
     exportBackup: async (filename, data) => download(filename, data, 'application/json'),
     exportJson: async (filename, data) => download(filename, data, 'application/json'),
     exportHtml: async (filename, html) => download(filename, html, 'text/html'),

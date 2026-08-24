@@ -4,33 +4,17 @@
    ============================================================================= */
 const Matches = {};
 
-const OW_MAPS = [
-  // Control
-  { name: 'Antarctic Peninsula', mode: 'Control' }, { name: 'Busan', mode: 'Control' },
-  { name: 'Ilios', mode: 'Control' }, { name: 'Lijiang Tower', mode: 'Control' },
-  { name: 'Nepal', mode: 'Control' }, { name: 'Oasis', mode: 'Control' }, { name: 'Samoa', mode: 'Control' },
-  // Escort
-  { name: 'Circuit Royal', mode: 'Escort' }, { name: 'Dorado', mode: 'Escort' },
-  { name: 'Havana', mode: 'Escort' }, { name: 'Junkertown', mode: 'Escort' },
-  { name: 'Rialto', mode: 'Escort' }, { name: 'Route 66', mode: 'Escort' },
-  { name: 'Shambali Monastery', mode: 'Escort' }, { name: 'Watchpoint: Gibraltar', mode: 'Escort' },
-  // Hybrid
-  { name: 'Blizzard World', mode: 'Hybrid' }, { name: 'Eichenwalde', mode: 'Hybrid' },
-  { name: 'Hollywood', mode: 'Hybrid' }, { name: "King's Row", mode: 'Hybrid' },
-  { name: 'Midtown', mode: 'Hybrid' }, { name: 'Neon Junction', mode: 'Hybrid' },
-  { name: 'Numbani', mode: 'Hybrid' }, { name: 'Paraiso', mode: 'Hybrid' },
-  // Push
-  { name: 'Colosseo', mode: 'Push' }, { name: 'Esperanca', mode: 'Push' },
-  { name: 'New Queen Street', mode: 'Push' }, { name: 'Runasapi', mode: 'Push' },
-  // Flashpoint
-  { name: 'New Junk City', mode: 'Flashpoint' }, { name: 'Suravasa', mode: 'Flashpoint' },
-  // Clash
-  { name: 'Hanaoka', mode: 'Clash' }, { name: 'Throne of Anubis', mode: 'Clash' },
-];
-const MAP_MODE = Object.fromEntries(OW_MAPS.map(m => [m.name, m.mode]));
+const OW_MAPS = [];
+const MAP_MODE = {};
 const RESULT_COLOR = { Win: 'var(--good)', Loss: 'var(--bad)', Draw: 'var(--text-muted)' };
 
 Matches._formHeroes = [];
+
+Matches.loadCatalog = function (catalog) {
+  OW_MAPS.splice(0, OW_MAPS.length, ...(catalog?.maps || []).map(map => ({ ...map })));
+  Object.keys(MAP_MODE).forEach(name => delete MAP_MODE[name]);
+  Object.assign(MAP_MODE, Object.fromEntries(OW_MAPS.map(map => [map.name, map.mode])));
+};
 
 /* -- Analytics -------------------------------------------------------------- */
 Matches.record = function (matches) {

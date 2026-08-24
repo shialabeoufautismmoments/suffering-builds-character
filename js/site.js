@@ -20,6 +20,23 @@ function currentFile() {
   return window.location.pathname.split("/").pop() || "index.html";
 }
 
+function escapeSiteHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
+
+function linkifyPlainText(value) {
+  const urlPattern = /(https?:\/\/[^\s<]+[^\s<.,;:!?"')\]])/gi;
+  return String(value ?? "").split(urlPattern).map((part, index) => {
+    if (index % 2 === 1) {
+      const safe = escapeSiteHtml(part);
+      return `<a href="${safe}" target="_blank" rel="noopener noreferrer">${safe}</a>`;
+    }
+    return escapeSiteHtml(part).replace(/\n/g, "<br>");
+  }).join("");
+}
+
 function buildNavHtml(site, pages) {
   const file = currentFile();
   const slug = new URLSearchParams(window.location.search).get("slug");
@@ -104,6 +121,8 @@ function applySiteSettings(site) {
     if (Array.isArray(site.socials) && site.socials.length) {
       parts.push(site.socials.map(s => `<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`).join(" &middot; "));
     }
+    parts.push('<a href="apps/client/">Client Login</a>');
+    parts.push('<a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <a href="refund-policy.html">Cancellation &amp; Refunds</a>');
     if (parts.length) {
       extra.innerHTML = `<p class="footer-extra-line">${parts.join(" &middot; ")}</p>`;
     }

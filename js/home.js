@@ -14,15 +14,22 @@ const HOME_TILE_DESCRIPTIONS = {
   "vod-reviews": "Public VOD breakdowns",
   threads: "Unrolled Twitter/X threads",
   roadmap: "What's coming next",
-  coaching: "Get personalized feedback"
+  coaching: "Get personalized feedback",
+  spotlights: "See real player development",
+  "how-it-works": "Understand the coaching process",
+  "team-coaching": "Build a stronger roster",
+  "client-login": "Open your coaching workspace"
 };
 
 function quickLinksHtml(site) {
-  return (site?.navigation || [])
-    .filter(item => item.enabled !== false && item.id !== "home")
+  const priority = ["coaching", "spotlights", "how-it-works", "team-coaching", "roster", "client-login"];
+  const navigation = new Map((site?.navigation || []).map(item => [item.id, item]));
+  return priority
+    .map(id => navigation.get(id))
+    .filter(item => item && item.enabled !== false && item.path)
     .map(item => `
       <a class="card-list-item" href="${item.path}">
-        <h3>${item.label}</h3>
+      <h3>${escapeSiteHtml(item.label)}</h3>
         ${HOME_TILE_DESCRIPTIONS[item.id] ? `<p>${HOME_TILE_DESCRIPTIONS[item.id]}</p>` : ""}
       </a>
     `).join("");
@@ -134,8 +141,8 @@ async function renderHomeContent() {
   newsTeaser.innerHTML = items.length ? items.map(n => `
     <article class="news-item">
       <div class="news-date">${formatDate(n.date)}</div>
-      <h3>${n.title}</h3>
-      <p>${n.body}</p>
+      <h3>${escapeSiteHtml(n.title)}</h3>
+      <p>${linkifyPlainText(n.body)}</p>
     </article>
   `).join("") : "<p>No announcements yet.</p>";
 
@@ -143,26 +150,96 @@ async function renderHomeContent() {
   renderHomeDuo(resolveFeaturedDuo(playersData, testimonialsData));
 }
 
-function setupCoachingIntake() {
+function setupCoachingIntake(site) {
   const form = document.getElementById("coaching-intake-form");
   const status = document.getElementById("coaching-intake-status");
   const button = document.getElementById("coaching-intake-submit");
+  const next = document.getElementById("coaching-intake-next");
+  const back = document.getElementById("coaching-intake-back");
   const service = document.getElementById("coaching-intake-service");
   if (!form) return;
+
+  const panels = [...form.querySelectorAll("[data-coaching-step]")];
+  const stepNumber = document.getElementById("coaching-step-number");
+  const stepLabel = document.getElementById("coaching-step-label");
+  const progress = document.getElementById("coaching-intake-progress-bar");
+  const responseTime = site?.coachingResponseTime || "within 2 business days";
+  document.querySelectorAll("[data-response-time]").forEach(element => { element.textContent = responseTime; });
+  const labels = {
+    name: "Your name", discord: "Your Discord username", game: "A game", rank: "Your current rank",
+    role: "Your role or heroes", service: "A coaching preference", availability: "Your availability and time zone",
+    vodUrl: "A complete VOD or replay URL", goals: "Your coaching goals", consent: "Your agreement to the policies",
+  };
+  let currentStep = 0;
+  form.classList.add("is-enhanced");
+
+  function showStep(index, moveFocus = true) {
+    currentStep = Math.max(0, Math.min(index, panels.length - 1));
+    panels.forEach((panel, panelIndex) => { panel.hidden = panelIndex !== currentStep; });
+    if (stepNumber) stepNumber.textContent = `${currentStep + 1} / ${panels.length}`;
+    if (stepLabel) stepLabel.textContent = currentStep ? "Goals" : "Player details";
+    if (progress) progress.style.width = `${((currentStep + 1) / panels.length) * 100}%`;
+    if (moveFocus) panels[currentStep]?.querySelector("input, select, textarea")?.focus({ preventScroll: true });
+  }
+
+  function validateField(field) {
+    const error = document.getElementById(`error-${field.name}`);
+    let message = "";
+    if (field.validity.valueMissing) message = `${labels[field.name] || "This field"} is required.`;
+    else if (field.validity.typeMismatch) message = "Enter a complete link beginning with http:// or https://.";
+    else if (!field.validity.valid) message = "Check this field and try again.";
+    field.setAttribute("aria-invalid", String(!!message));
+    field.classList.toggle("invalid", !!message);
+    if (error) error.textContent = message;
+    return !message;
+  }
+
+  function validatePanel(index, focus = true) {
+    const fields = [...panels[index].querySelectorAll("input, select, textarea")];
+    const invalid = fields.filter(field => !validateField(field));
+    if (focus) invalid[0]?.focus();
+    return !invalid.length;
+  }
+
+  form.querySelectorAll("input, select, textarea").forEach(field => {
+    field.addEventListener("blur", () => validateField(field));
+    field.addEventListener("input", () => { if (field.validity.valid) validateField(field); });
+    field.addEventListener("change", () => validateField(field));
+  });
+
+  next?.addEventListener("click", () => {
+    if (validatePanel(0)) showStep(1);
+  });
+  back?.addEventListener("click", () => showStep(0));
 
   if (new URLSearchParams(window.location.search).get("service") === "duo") {
     service.value = "Coaching duo";
   }
 
+  showStep(0, false);
+
   form.addEventListener("submit", async event => {
     event.preventDefault();
+    const invalidStep = panels.findIndex((_, index) => !validatePanel(index, false));
+    if (invalidStep !== -1) {
+      showStep(invalidStep);
+      validatePanel(invalidStep);
+      status.className = "coaching-intake-status error";
+      status.setAttribute("role", "alert");
+      status.textContent = "Check the highlighted fields before sending.";
+      return;
+    }
+
     button.disabled = true;
     button.textContent = "Sending…";
     status.className = "coaching-intake-status";
-    status.textContent = "Sending your application to the coaching team…";
+    status.setAttribute("role", "status");
+    status.textContent = "Saving your application…";
 
     try {
-      const payload = Object.fromEntries(new FormData(form).entries());
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+      payload.consent = formData.get("consent") === "on";
       const response = await fetch("/api/coaching-intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -171,14 +248,19 @@ function setupCoachingIntake() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Your application could not be sent right now.");
       form.reset();
+      showStep(0, false);
       status.className = "coaching-intake-status success";
-      status.textContent = "Application sent. The HONE coaching team will contact you on Discord.";
+      status.setAttribute("role", "status");
+      status.textContent = `Application received. The HONE team will usually contact you on Discord ${responseTime}.`;
+      status.focus();
     } catch (error) {
       status.className = "coaching-intake-status error";
+      status.setAttribute("role", "alert");
       status.textContent = error.message || "Your application could not be sent right now.";
+      status.focus();
     } finally {
       button.disabled = false;
-      button.textContent = "Send to the Coaching Team";
+      button.textContent = "Send Application";
     }
   });
 }
@@ -193,7 +275,7 @@ async function renderHome() {
 
   const linksEl = document.getElementById("home-links");
   if (linksEl) linksEl.innerHTML = quickLinksHtml(site);
-  setupCoachingIntake();
+  setupCoachingIntake(site);
   await renderHomeContent();
 
   // The proof and featured-duo sections expand after their data loads. Restore

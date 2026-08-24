@@ -6,32 +6,16 @@ const today = () => new Date().toISOString().slice(0, 10);
 const fmt = iso => iso ? new Date(iso + (iso.length <= 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
 // Match-entry suggestions stay as datalists so clients can still enter custom
-// workshop maps or future heroes. The API canonicalizes these same names.
-const MATCH_HERO_NAMES = [
-  'Ashe', 'Bastion', 'Cassidy', 'Echo', 'Emre', 'Freja', 'Genji', 'Hanzo', 'Junkrat', 'Mei', 'Pharah',
-  'Reaper', 'Shion', 'Sojourn', 'Soldier: 76', 'Sombra', 'Symmetra', 'Torbjorn', 'Tracer', 'Venture', 'Widowmaker',
-  'D.Va', 'Doomfist', 'Hazard', 'Junker Queen', 'Mauga', 'Orisa', 'Ramattra', 'Reinhardt', 'Roadhog',
-  'Sigma', 'Winston', 'Wrecking Ball', 'Zarya',
-  'Ana', 'Baptiste', 'Brigitte', 'Illari', 'Juno', 'Kiriko', 'Lifeweaver', 'Lucio', 'Mercy', 'Moira', 'Zenyatta'
-];
-const MATCH_MAPS = [
-  { name: 'Antarctic Peninsula', mode: 'Control' }, { name: 'Busan', mode: 'Control' },
-  { name: 'Ilios', mode: 'Control' }, { name: 'Lijiang Tower', mode: 'Control' },
-  { name: 'Nepal', mode: 'Control' }, { name: 'Oasis', mode: 'Control' }, { name: 'Samoa', mode: 'Control' },
-  { name: 'Circuit Royal', mode: 'Escort' }, { name: 'Dorado', mode: 'Escort' },
-  { name: 'Havana', mode: 'Escort' }, { name: 'Junkertown', mode: 'Escort' },
-  { name: 'Rialto', mode: 'Escort' }, { name: 'Route 66', mode: 'Escort' },
-  { name: 'Shambali Monastery', mode: 'Escort' }, { name: 'Watchpoint: Gibraltar', mode: 'Escort' },
-  { name: 'Blizzard World', mode: 'Hybrid' }, { name: 'Eichenwalde', mode: 'Hybrid' },
-  { name: 'Hollywood', mode: 'Hybrid' }, { name: "King's Row", mode: 'Hybrid' },
-  { name: 'Midtown', mode: 'Hybrid' }, { name: 'Neon Junction', mode: 'Hybrid' },
-  { name: 'Numbani', mode: 'Hybrid' }, { name: 'Paraiso', mode: 'Hybrid' },
-  { name: 'Colosseo', mode: 'Push' }, { name: 'Esperanca', mode: 'Push' },
-  { name: 'New Queen Street', mode: 'Push' }, { name: 'Runasapi', mode: 'Push' },
-  { name: 'New Junk City', mode: 'Flashpoint' }, { name: 'Suravasa', mode: 'Flashpoint' },
-  { name: 'Hanaoka', mode: 'Clash' }, { name: 'Throne of Anubis', mode: 'Clash' }
-];
-const MATCH_MAP_MODE = Object.fromEntries(MATCH_MAPS.map(map => [map.name, map.mode]));
+// workshop maps or future heroes. The shared catalog is loaded during boot.
+let MATCH_HERO_NAMES = [];
+let MATCH_MAPS = [];
+let MATCH_MAP_MODE = {};
+
+function loadMatchCatalog(catalog) {
+  MATCH_HERO_NAMES = (catalog?.heroes || []).map(hero => hero.name);
+  MATCH_MAPS = (catalog?.maps || []).map(map => ({ ...map }));
+  MATCH_MAP_MODE = Object.fromEntries(MATCH_MAPS.map(map => [map.name, map.mode]));
+}
 
 function toast(message, type = '') {
   const el = document.createElement('div');
@@ -144,6 +128,12 @@ function computeSinceLastVisit() {
 }
 
 async function boot() {
+  try {
+    const { OVERWATCH_CATALOG } = await import('/apps/shared/overwatch-catalog.mjs');
+    loadMatchCatalog(OVERWATCH_CATALOG);
+  } catch (error) {
+    console.error('Could not load the Overwatch catalog.', error);
+  }
   const cache = await window.clientApi.cacheGet();
   State.code = cache.lastCode || '';
   State.data = cache.workspace || null;

@@ -1,3 +1,5 @@
+import { createCoachingLead } from "../lib/coaching-leads.mjs";
+
 const json = (body, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
@@ -54,6 +56,26 @@ export default async (request) => {
   if (input.vodUrl && !application.vodUrl) {
     return json({ error: "The VOD link must be a valid http or https URL." }, 400);
   }
+  if (input.consent !== true) {
+    return json({ error: "Agree to the privacy, terms, and cancellation policies before sending." }, 400);
+  }
+
+  let lead;
+  try {
+    lead = await createCoachingLead({
+      ...application,
+      source: "website",
+      acceptedPolicies: {
+        privacy: "2026-08-24",
+        terms: "2026-08-24",
+        cancellation: "2026-08-24",
+        acceptedAt: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error("Could not save coaching application:", error);
+    return json({ error: "We could not safely save the application. Please try again shortly." }, 503);
+  }
 
   const webhook = process.env.DISCORD_INTAKE_WEBHOOK_URL || "";
   const botToken = oneLine(process.env.DISCORD_BOT_TOKEN, 200);
@@ -62,8 +84,11 @@ export default async (request) => {
   const useBot = !!botToken && /^\d{17,20}$/.test(channelId);
   if (!useWebhook && !useBot) {
     console.error("Configure DISCORD_INTAKE_WEBHOOK_URL or DISCORD_BOT_TOKEN with DISCORD_INTAKE_CHANNEL_ID.");
-    return json({ error: "The coaching application inbox is not configured yet." }, 503);
+    return json({ ok: true, delivered: false, leadId: lead.id });
   }
+
+  const siteUrl = String(process.env.URL || "https://sufferingbuildscharacter.com").replace(/\/$/, "");
+  const hqUrl = `${siteUrl}/apps/hq/?view=waitlist&lead=${encodeURIComponent(lead.id)}`;
 
   const fields = [
     { name: "Discord", value: application.discord, inline: true },
@@ -82,9 +107,10 @@ export default async (request) => {
       embeds: [{
         title: `New coaching application — ${application.name}`,
         description: `**What they want to improve**\n${application.goals}`,
+        url: hqUrl,
         color: 0x8f00ff,
-        fields,
-        footer: { text: "sufferingbuildscharacter.com coaching match form" },
+        fields: [...fields, { name: "Pipeline", value: `[Open saved lead in Coach HQ](${hqUrl})`, inline: false }],
+        footer: { text: `Saved lead ${lead.id} • sufferingbuildscharacter.com` },
         timestamp: new Date().toISOString(),
       }],
     };
@@ -102,10 +128,10 @@ export default async (request) => {
         : { allowed_mentions: discordPayload.allowed_mentions, embeds: discordPayload.embeds }),
     });
     if (!response.ok) throw new Error(`Discord webhook returned ${response.status}.`);
-    return json({ ok: true });
+    return json({ ok: true, delivered: true, leadId: lead.id });
   } catch (error) {
     console.error("Could not deliver coaching application:", error);
-    return json({ error: "Discord could not receive the application right now. Please try again shortly." }, 502);
+    return json({ ok: true, delivered: false, leadId: lead.id });
   }
 };
 

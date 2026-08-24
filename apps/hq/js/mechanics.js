@@ -12,56 +12,11 @@ const Mechanics = {};
 
 const ROLE_COLOR = { Tank: '#5aa9e6', Damage: '#e8833a', Support: '#71c177' };
 
-const HEROES = [
-  // -- Damage ----------------------------------------------------------------
-  { name: 'Ashe',         role: 'Damage', c: 3, t: 0, s: 1, mvt: false, aim: 'Scoped flicks & static precision' },
-  { name: 'Bastion',      role: 'Damage', c: 0, t: 3, s: 1, mvt: false, aim: 'Recon-mode sustained tracking' },
-  { name: 'Cassidy',      role: 'Damage', c: 2, t: 1, s: 2, mvt: false, aim: 'Hitscan flicks + target switching' },
-  { name: 'Echo',         role: 'Damage', c: 1, t: 2, s: 1, mvt: true,  aim: 'Tracking from the air' },
-  { name: 'Emre',         role: 'Damage', c: 2, t: 1, s: 1, mvt: false, aim: 'Burst hitscan precision + target switching' },
-  { name: 'Freja',        role: 'Damage', c: 2, t: 1, s: 1, mvt: true,  aim: 'Projectile flicks on the move' },
-  { name: 'Genji',        role: 'Damage', c: 1, t: 1, s: 1, mvt: true,  aim: 'Projectile + movement aim' },
-  { name: 'Hanzo',        role: 'Damage', c: 3, t: 0, s: 1, mvt: false, aim: 'Projectile flick precision' },
-  { name: 'Junkrat',      role: 'Damage', c: 0, t: 0, s: 0, mvt: true,  aim: 'Splash/prediction, low raw aim' },
-  { name: 'Mei',          role: 'Damage', c: 1, t: 2, s: 0, mvt: false, aim: 'Beam tracking + icicle flicks' },
-  { name: 'Pharah',       role: 'Damage', c: 0, t: 2, s: 0, mvt: true,  aim: 'Air-to-ground tracking' },
-  { name: 'Reaper',       role: 'Damage', c: 0, t: 2, s: 1, mvt: true,  aim: 'Close-range tracking' },
-  { name: 'Shion',        role: 'Damage', c: 1, t: 2, s: 2, mvt: true,  aim: 'Rapid-fire tracking + mobile target switching' },
-  { name: 'Sojourn',      role: 'Damage', c: 2, t: 2, s: 1, mvt: false, aim: 'Rail charge tracking + flick' },
-  { name: 'Soldier: 76',  role: 'Damage', c: 0, t: 3, s: 1, mvt: false, aim: 'Hitscan tracking' },
-  { name: 'Sombra',       role: 'Damage', c: 0, t: 2, s: 1, mvt: true,  aim: 'Close tracking + repositioning' },
-  { name: 'Symmetra',     role: 'Damage', c: 0, t: 2, s: 0, mvt: false, aim: 'Beam tracking' },
-  { name: 'Torbjorn',     role: 'Damage', c: 1, t: 1, s: 1, mvt: false, aim: 'Mixed mid-range' },
-  { name: 'Tracer',       role: 'Damage', c: 0, t: 3, s: 1, mvt: true,  aim: 'Reactive close tracking + strafe aim' },
-  { name: 'Venture',      role: 'Damage', c: 1, t: 1, s: 1, mvt: true,  aim: 'Projectile + burrow movement' },
-  { name: 'Widowmaker',   role: 'Damage', c: 3, t: 0, s: 1, mvt: false, aim: 'Static flick precision' },
-  // -- Tank ------------------------------------------------------------------
-  { name: 'D.Va',         role: 'Tank',   c: 0, t: 2, s: 0, mvt: true,  aim: 'Spread tracking, flight' },
-  { name: 'Doomfist',     role: 'Tank',   c: 0, t: 0, s: 0, mvt: true,  aim: 'Ability-based, minimal aim' },
-  { name: 'Hazard',       role: 'Tank',   c: 0, t: 1, s: 0, mvt: true,  aim: 'Spike burst + mobility' },
-  { name: 'Junker Queen', role: 'Tank',   c: 1, t: 1, s: 1, mvt: false, aim: 'Shotgun + knife mixed' },
-  { name: 'Mauga',        role: 'Tank',   c: 0, t: 2, s: 0, mvt: false, aim: 'Dual-minigun tracking' },
-  { name: 'Orisa',        role: 'Tank',   c: 0, t: 2, s: 0, mvt: false, aim: 'Sustained tracking' },
-  { name: 'Ramattra',     role: 'Tank',   c: 0, t: 1, s: 0, mvt: false, aim: 'Staff tracking' },
-  { name: 'Reinhardt',    role: 'Tank',   c: 0, t: 0, s: 0, mvt: false, aim: 'Melee, no aim' },
-  { name: 'Roadhog',      role: 'Tank',   c: 2, t: 1, s: 0, mvt: false, aim: 'Hook + burst flick' },
-  { name: 'Sigma',        role: 'Tank',   c: 1, t: 1, s: 0, mvt: false, aim: 'Projectile lobs' },
-  { name: 'Winston',      role: 'Tank',   c: 0, t: 0, s: 0, mvt: true,  aim: 'Auto-aim, movement only' },
-  { name: 'Wrecking Ball',role: 'Tank',   c: 0, t: 0, s: 0, mvt: true,  aim: 'Movement, minimal aim' },
-  { name: 'Zarya',        role: 'Tank',   c: 0, t: 3, s: 0, mvt: false, aim: 'Beam tracking' },
-  // -- Support ---------------------------------------------------------------
-  { name: 'Ana',          role: 'Support', c: 3, t: 0, s: 1, mvt: false, aim: 'Scoped precision + flicks' },
-  { name: 'Baptiste',     role: 'Support', c: 2, t: 1, s: 1, mvt: false, aim: '3-round burst placement' },
-  { name: 'Brigitte',     role: 'Support', c: 0, t: 0, s: 0, mvt: false, aim: 'Melee, no aim' },
-  { name: 'Illari',       role: 'Support', c: 2, t: 1, s: 1, mvt: false, aim: 'Charged rifle precision' },
-  { name: 'Juno',         role: 'Support', c: 0, t: 2, s: 0, mvt: true,  aim: 'Gun tracking + flight' },
-  { name: 'Kiriko',       role: 'Support', c: 3, t: 0, s: 1, mvt: true,  aim: 'Kunai precision + wall-climb' },
-  { name: 'Lifeweaver',   role: 'Support', c: 1, t: 1, s: 0, mvt: false, aim: 'Charged thorn aim' },
-  { name: 'Lucio',        role: 'Support', c: 0, t: 1, s: 0, mvt: true,  aim: 'Movement, low aim' },
-  { name: 'Mercy',        role: 'Support', c: 1, t: 0, s: 0, mvt: true,  aim: 'Situational pistol' },
-  { name: 'Moira',        role: 'Support', c: 0, t: 1, s: 0, mvt: true,  aim: 'Soft-lock, low raw aim' },
-  { name: 'Zenyatta',     role: 'Support', c: 2, t: 1, s: 1, mvt: false, aim: 'Orb volley precision' },
-];
+const HEROES = [];
+
+Mechanics.loadCatalog = function (catalog) {
+  HEROES.splice(0, HEROES.length, ...(catalog?.heroes || []).map(hero => ({ ...hero })));
+};
 
 // Starter scenario catalog used to seed the library and fill gaps when the
 // coach's own tagged library lacks coverage for a category.

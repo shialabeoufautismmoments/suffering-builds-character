@@ -16,6 +16,13 @@ App.boot = async function () {
   if (!Access.unlocked) await Access.bootstrap();
   if (App._booted) return;
   App._booted = true;
+  try {
+    const { OVERWATCH_CATALOG } = await import('/apps/shared/overwatch-catalog.mjs');
+    Mechanics.loadCatalog(OVERWATCH_CATALOG);
+    Matches.loadCatalog(OVERWATCH_CATALOG);
+  } catch (error) {
+    console.error('Could not load the Overwatch catalog.', error);
+  }
   await loadDB();
   await Sync.bootstrap();
   await Access.ensureCoach();
@@ -91,7 +98,10 @@ App.boot = async function () {
   // Quietly pull the latest Cal.com bookings into the schedule on launch.
   if (typeof Cal !== 'undefined' && Cal.hasKey && Cal.hasKey()) Cal.sync(true);
 
-  App.nav('dashboard');
+  const launchParams = new URLSearchParams(window.location.search);
+  const launchView = launchParams.get('view');
+  if (launchView === 'waitlist') Waitlist.focusId = launchParams.get('lead') || '';
+  App.nav(UI.renderers[launchView] ? launchView : 'dashboard');
   Access.updateNav();
   if (typeof Telemetry !== 'undefined' && Telemetry.startupAutoSync) setTimeout(() => Telemetry.startupAutoSync(), 800);
   console.log('[KC] boot complete -clients=' + DB.clients.length + ' scenarios=' + Object.keys(DB.scenarios).length);
