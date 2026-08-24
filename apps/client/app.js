@@ -5,6 +5,34 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 const today = () => new Date().toISOString().slice(0, 10);
 const fmt = iso => iso ? new Date(iso + (iso.length <= 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
+// Match-entry suggestions stay as datalists so clients can still enter custom
+// workshop maps or future heroes. The API canonicalizes these same names.
+const MATCH_HERO_NAMES = [
+  'Ashe', 'Bastion', 'Cassidy', 'Echo', 'Emre', 'Freja', 'Genji', 'Hanzo', 'Junkrat', 'Mei', 'Pharah',
+  'Reaper', 'Shion', 'Sojourn', 'Soldier: 76', 'Sombra', 'Symmetra', 'Torbjorn', 'Tracer', 'Venture', 'Widowmaker',
+  'D.Va', 'Doomfist', 'Hazard', 'Junker Queen', 'Mauga', 'Orisa', 'Ramattra', 'Reinhardt', 'Roadhog',
+  'Sigma', 'Winston', 'Wrecking Ball', 'Zarya',
+  'Ana', 'Baptiste', 'Brigitte', 'Illari', 'Juno', 'Kiriko', 'Lifeweaver', 'Lucio', 'Mercy', 'Moira', 'Zenyatta'
+];
+const MATCH_MAPS = [
+  { name: 'Antarctic Peninsula', mode: 'Control' }, { name: 'Busan', mode: 'Control' },
+  { name: 'Ilios', mode: 'Control' }, { name: 'Lijiang Tower', mode: 'Control' },
+  { name: 'Nepal', mode: 'Control' }, { name: 'Oasis', mode: 'Control' }, { name: 'Samoa', mode: 'Control' },
+  { name: 'Circuit Royal', mode: 'Escort' }, { name: 'Dorado', mode: 'Escort' },
+  { name: 'Havana', mode: 'Escort' }, { name: 'Junkertown', mode: 'Escort' },
+  { name: 'Rialto', mode: 'Escort' }, { name: 'Route 66', mode: 'Escort' },
+  { name: 'Shambali Monastery', mode: 'Escort' }, { name: 'Watchpoint: Gibraltar', mode: 'Escort' },
+  { name: 'Blizzard World', mode: 'Hybrid' }, { name: 'Eichenwalde', mode: 'Hybrid' },
+  { name: 'Hollywood', mode: 'Hybrid' }, { name: "King's Row", mode: 'Hybrid' },
+  { name: 'Midtown', mode: 'Hybrid' }, { name: 'Neon Junction', mode: 'Hybrid' },
+  { name: 'Numbani', mode: 'Hybrid' }, { name: 'Paraiso', mode: 'Hybrid' },
+  { name: 'Colosseo', mode: 'Push' }, { name: 'Esperanca', mode: 'Push' },
+  { name: 'New Queen Street', mode: 'Push' }, { name: 'Runasapi', mode: 'Push' },
+  { name: 'New Junk City', mode: 'Flashpoint' }, { name: 'Suravasa', mode: 'Flashpoint' },
+  { name: 'Hanaoka', mode: 'Clash' }, { name: 'Throne of Anubis', mode: 'Clash' }
+];
+const MATCH_MAP_MODE = Object.fromEntries(MATCH_MAPS.map(map => [map.name, map.mode]));
+
 function toast(message, type = '') {
   const el = document.createElement('div');
   el.className = 'toast ' + type;
@@ -454,7 +482,9 @@ function renderMatches() {
     <div class="card mb"><form onsubmit="submitMatch(event)">
       ${editing ? `<p class="mb"><span class="pill pending-pill">Editing a match</span></p>` : ''}
       <div class="row"><label class="field"><span>Date</span><input id="m-date" type="date" value="${E(em.date || today())}"></label><label class="field"><span>Type</span><select id="m-type">${['Competitive','Scrim','Quick Play','Custom','Tournament'].map(x => opt(x, em.type)).join('')}</select></label><label class="field"><span>Result</span><select id="m-result">${['Win','Loss','Draw'].map(x => opt(x, em.result)).join('')}</select></label></div>
-      <div class="row"><label class="field"><span>Role</span><input id="m-role" value="${E(em.role || '')}" placeholder="Damage, Support, Tank..."></label><label class="field"><span>Map</span><input id="m-map" value="${E(em.map || '')}" placeholder="King's Row"></label><label class="field"><span>Heroes</span><input id="m-heroes" value="${E((em.heroes || []).join(', '))}" placeholder="Tracer, Cassidy"></label></div>
+      <div class="row"><label class="field"><span>Role</span><input id="m-role" value="${E(em.role || '')}" placeholder="Damage, Support, Tank..."></label><label class="field"><span>Map</span><input id="m-map" list="m-map-options" value="${E(em.map || '')}" placeholder="King's Row"></label><label class="field"><span>Heroes</span><input id="m-heroes" list="m-hero-options" value="${E((em.heroes || []).join(', '))}" placeholder="Tracer, Cassidy"></label></div>
+      <datalist id="m-map-options">${MATCH_MAPS.map(map => `<option value="${E(map.name)}">${E(map.mode)}</option>`).join('')}</datalist>
+      <datalist id="m-hero-options">${MATCH_HERO_NAMES.map(name => `<option value="${E(name)}"></option>`).join('')}</datalist>
       <div class="row"><label class="field"><span>Rank before</span><input id="m-rankBefore" value="${E(em.rankBefore || '')}" placeholder="Diamond 3"></label><label class="field"><span>Rank after</span><input id="m-rankAfter" value="${E(em.rankAfter || '')}" placeholder="Diamond 2"></label><label class="field"><span>Replay code</span><input id="m-replayCode" value="${E(em.replayCode || '')}" placeholder="ABC123"></label></div>
       <label class="field"><span>Notes</span><textarea id="m-notes" placeholder="What happened, key mistakes, what to ask your coach about...">${E(em.notes || '')}</textarea></label>
       <button class="btn btn-primary">${editing ? 'Update match' : 'Save match'}</button>
@@ -706,10 +736,13 @@ function submitMatch(event) {
   const val = id => document.getElementById(id).value.trim();
   const editing = !!State.editMatch;
   const id = editing ? State.editMatch.id : uid();
+  const typedMap = val('m-map');
+  const map = MATCH_MAPS.find(item => item.name.toLowerCase() === typedMap.toLowerCase())?.name || typedMap;
   State.editMatch = null;
   return syncChanges({ matches: [{
     id, date: val('m-date') || today(), type: val('m-type'), result: val('m-result'),
-    role: val('m-role'), map: val('m-map'), heroes: val('m-heroes').split(',').map(x => x.trim()).filter(Boolean),
+    role: val('m-role'), map, mode: MATCH_MAP_MODE[map] || '',
+    heroes: val('m-heroes').split(',').map(x => MATCH_HERO_NAMES.find(name => name.toLowerCase() === x.trim().toLowerCase()) || x.trim()).filter(Boolean),
     rankBefore: val('m-rankBefore'), rankAfter: val('m-rankAfter'), replayCode: val('m-replayCode'), notes: val('m-notes')
   }] }, editing ? 'Match updated.' : 'Match synced to your coach.');
 }

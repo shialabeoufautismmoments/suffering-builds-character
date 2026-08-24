@@ -21,18 +21,31 @@ const discordIdFrom = value => /^(?:<@!?)?(\d{17,20})>?$/.exec(String(value || "
 // is added there.
 const OW_ROLES = ["Tank", "Damage", "Support"];
 const OW_HERO_NAMES = [
-  "Ashe", "Bastion", "Cassidy", "Echo", "Freja", "Genji", "Hanzo", "Junkrat", "Mei", "Pharah",
-  "Reaper", "Sojourn", "Soldier: 76", "Sombra", "Symmetra", "Torbjorn", "Tracer", "Venture", "Widowmaker",
+  "Ashe", "Bastion", "Cassidy", "Echo", "Emre", "Freja", "Genji", "Hanzo", "Junkrat", "Mei", "Pharah",
+  "Reaper", "Shion", "Sojourn", "Soldier: 76", "Sombra", "Symmetra", "Torbjorn", "Tracer", "Venture", "Widowmaker",
   "D.Va", "Doomfist", "Hazard", "Junker Queen", "Mauga", "Orisa", "Ramattra", "Reinhardt", "Roadhog",
   "Sigma", "Winston", "Wrecking Ball", "Zarya",
   "Ana", "Baptiste", "Brigitte", "Illari", "Juno", "Kiriko", "Lifeweaver", "Lucio", "Mercy", "Moira", "Zenyatta",
 ];
-const OW_MAP_NAMES = [
-  "Antarctic Peninsula", "Busan", "Ilios", "Lijiang Tower", "Nepal", "Oasis", "Samoa",
-  "Circuit Royal", "Dorado", "Havana", "Junkertown", "Rialto", "Route 66", "Shambali Monastery", "Watchpoint: Gibraltar",
-  "Blizzard World", "Eichenwalde", "Hollywood", "King's Row", "Midtown", "Numbani", "Paraiso",
-  "Colosseo", "Esperanca", "New Queen Street", "Runasapi", "New Junk City", "Suravasa", "Hanaoka", "Throne of Anubis",
+const OW_MAPS = [
+  { name: "Antarctic Peninsula", mode: "Control" }, { name: "Busan", mode: "Control" },
+  { name: "Ilios", mode: "Control" }, { name: "Lijiang Tower", mode: "Control" },
+  { name: "Nepal", mode: "Control" }, { name: "Oasis", mode: "Control" }, { name: "Samoa", mode: "Control" },
+  { name: "Circuit Royal", mode: "Escort" }, { name: "Dorado", mode: "Escort" },
+  { name: "Havana", mode: "Escort" }, { name: "Junkertown", mode: "Escort" },
+  { name: "Rialto", mode: "Escort" }, { name: "Route 66", mode: "Escort" },
+  { name: "Shambali Monastery", mode: "Escort" }, { name: "Watchpoint: Gibraltar", mode: "Escort" },
+  { name: "Blizzard World", mode: "Hybrid" }, { name: "Eichenwalde", mode: "Hybrid" },
+  { name: "Hollywood", mode: "Hybrid" }, { name: "King's Row", mode: "Hybrid" },
+  { name: "Midtown", mode: "Hybrid" }, { name: "Neon Junction", mode: "Hybrid" },
+  { name: "Numbani", mode: "Hybrid" }, { name: "Paraiso", mode: "Hybrid" },
+  { name: "Colosseo", mode: "Push" }, { name: "Esperanca", mode: "Push" },
+  { name: "New Queen Street", mode: "Push" }, { name: "Runasapi", mode: "Push" },
+  { name: "New Junk City", mode: "Flashpoint" }, { name: "Suravasa", mode: "Flashpoint" },
+  { name: "Hanaoka", mode: "Clash" }, { name: "Throne of Anubis", mode: "Clash" },
 ];
+const OW_MAP_NAMES = OW_MAPS.map(map => map.name);
+const OW_MAP_MODE = Object.fromEntries(OW_MAPS.map(map => [map.name, map.mode]));
 // Case-insensitive match against a canonical list; falls back to the value
 // as typed if it's not recognized (a typo or a hero/map not yet in the list
 // shouldn't get silently dropped).
@@ -169,6 +182,7 @@ function applyMatch(workspace, client, input) {
   const id = clean(input.id, 80) || uid();
   const existing = workspace.matches.find(match => match.id === id && match.clientId === client.id);
   const result = canonicalize(input.result, ["Win", "Loss", "Draw"]);
+  const map = canonicalize(clean(input.map, 120), OW_MAP_NAMES);
   const data = {
     id,
     clientId: client.id,
@@ -176,8 +190,8 @@ function applyMatch(workspace, client, input) {
     type: clean(input.type, 80) || "Competitive",
     result: ["Win", "Loss", "Draw"].includes(result) ? result : "Win",
     role: canonicalize(clean(input.role, 80), OW_ROLES),
-    map: canonicalize(clean(input.map, 120), OW_MAP_NAMES),
-    mode: clean(input.mode, 80),
+    map,
+    mode: OW_MAP_MODE[map] || clean(input.mode, 80),
     heroes: Array.isArray(input.heroes)
       ? input.heroes.map(hero => canonicalize(clean(hero, 80), OW_HERO_NAMES)).filter(Boolean).slice(0, 8)
       : [],

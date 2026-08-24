@@ -17,7 +17,8 @@ const OW_MAPS = [
   // Hybrid
   { name: 'Blizzard World', mode: 'Hybrid' }, { name: 'Eichenwalde', mode: 'Hybrid' },
   { name: 'Hollywood', mode: 'Hybrid' }, { name: "King's Row", mode: 'Hybrid' },
-  { name: 'Midtown', mode: 'Hybrid' }, { name: 'Numbani', mode: 'Hybrid' }, { name: 'Paraiso', mode: 'Hybrid' },
+  { name: 'Midtown', mode: 'Hybrid' }, { name: 'Neon Junction', mode: 'Hybrid' },
+  { name: 'Numbani', mode: 'Hybrid' }, { name: 'Paraiso', mode: 'Hybrid' },
   // Push
   { name: 'Colosseo', mode: 'Push' }, { name: 'Esperanca', mode: 'Push' },
   { name: 'New Queen Street', mode: 'Push' }, { name: 'Runasapi', mode: 'Push' },
