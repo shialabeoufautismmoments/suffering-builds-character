@@ -9,6 +9,8 @@ const DB = {
   matches: [],          // [{ id, clientId, date, type, role, map, mode, heroes:[name], result, rankBefore, rankAfter, sr, enemyComp, replayCode, notes, createdAt }]
   sessions: [],         // [{ id, clientId, date, durationMin, prepMinutes, topics, notes, homework:[{id,text,type,dueDate,done}], createdAt }]
   feedback: [],         // [{ id, clientId, sessionId, rating, privateNote, issue, testimonialAllowed, status, createdAt }]
+  teams: [],            // [{ id, name, clientIds, coachIds, goals, scrims, mapPool, compositions, ... }]
+  referrals: [],        // [{ id, leadId, referrerClientId, referredClientId, status, rewardLabel, ... }]
   playbook: {},         // { [mapName]: { notes } } -reusable OW map knowledge base, shared across clients
   leads: [],            // [{ id, discord, name, game, rank, contactDate, notes, createdAt }] -prospective-client waitlist
   benchmarks: [],       // [{ id, name, ranks:[name], scenarios:[{id,name,metric,thresholds:[value]}], createdAt }] -coach-defined benchmarks
@@ -37,7 +39,7 @@ async function loadDB() {
       Object.assign(DB, parsed);
       // Backfill any missing top-level keys from older saves.
       DB.clients ||= []; DB.scenarios ||= {}; DB.playlists ||= []; DB.vods ||= [];
-      DB.matches ||= []; DB.sessions ||= []; DB.feedback ||= []; DB.playbook ||= {}; DB.leads ||= [];
+      DB.matches ||= []; DB.sessions ||= []; DB.feedback ||= []; DB.teams ||= []; DB.referrals ||= []; DB.playbook ||= {}; DB.leads ||= [];
       DB.benchmarks ||= []; DB.scheduled ||= []; DB.reminders ||= []; DB.packageTemplates ||= []; DB.settings ||= {};
       DB.coaches ||= []; DB.cloud ||= { revision: 0, updatedAt: null };
     }
@@ -50,7 +52,7 @@ function saveDB() {
   DB.cloud.localUpdatedAt = new Date().toISOString();
   const coachId = typeof Access !== 'undefined' ? Access.currentCoachId : null;
   if (coachId) {
-    ['clients', 'playlists', 'vods', 'matches', 'sessions', 'feedback', 'leads', 'benchmarks', 'scheduled', 'reminders', 'packageTemplates'].forEach(key => {
+    ['clients', 'playlists', 'vods', 'matches', 'sessions', 'feedback', 'teams', 'referrals', 'leads', 'benchmarks', 'scheduled', 'reminders', 'packageTemplates'].forEach(key => {
       (DB[key] || []).forEach(item => {
         if (!item.coachId) item.coachId = coachId;
       });

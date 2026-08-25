@@ -190,7 +190,7 @@ Data.replaceDatabaseString = function (raw) {
 };
 Data.replaceDatabase = function (data) {
   const defaults = {
-    clients: [], scenarios: {}, playlists: [], vods: [], matches: [], sessions: [],
+    clients: [], scenarios: {}, playlists: [], vods: [], matches: [], sessions: [], feedback: [], teams: [], referrals: [],
     playbook: {}, leads: [], benchmarks: [], scheduled: [], reminders: [], packageTemplates: [], coaches: [], cloud: { revision: 0, updatedAt: null }, settings: {},
     activeClientId: null,
   };

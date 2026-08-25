@@ -176,6 +176,57 @@ function setMetaTags({ title, image }) {
   }
 }
 
+// Privacy-conscious aggregate analytics: no cookies, visitor IDs, IP fields,
+// browser fingerprints, or full referrer URLs are sent by the site.
+function siteAttribution() {
+  const params = new URLSearchParams(window.location.search);
+  const referral = String(params.get("ref") || "").toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 32);
+  let referrerHost = "";
+  try {
+    const referrer = document.referrer ? new URL(document.referrer) : null;
+    if (referrer && referrer.origin !== window.location.origin) referrerHost = referrer.host;
+  } catch (error) {}
+  const utmSource = String(params.get("utm_source") || "").slice(0, 100);
+  return {
+    page: window.location.pathname || "/",
+    source: referral ? "Referral" : utmSource || referrerHost || "Direct",
+    campaign: String(params.get("utm_campaign") || "").slice(0, 120),
+  };
+}
+
+function sendSiteAnalytics(event, label = "") {
+  const payload = JSON.stringify({ event, label: String(label || "").slice(0, 100), ...siteAttribution() });
+  try {
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon("/api/site-analytics", new Blob([payload], { type: "application/json" }));
+      return;
+    }
+    fetch("/api/site-analytics", { method: "POST", headers: { "Content-Type": "application/json" }, body: payload, keepalive: true }).catch(() => {});
+  } catch (error) {}
+}
+
+function setupSiteAnalytics() {
+  sendSiteAnalytics("page_view");
+  document.addEventListener("click", event => {
+    const link = event.target.closest("a");
+    if (!link) return;
+    const href = link.getAttribute("href") || "";
+    try {
+      const target = new URL(link.href, window.location.href);
+      if (target.origin === window.location.origin && target.hash === "#coaching-intake" && target.pathname !== window.location.pathname) {
+        target.searchParams.set("from", window.location.pathname || "/");
+        const current = new URLSearchParams(window.location.search);
+        ["ref", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(key => {
+          if (!target.searchParams.has(key) && current.get(key)) target.searchParams.set(key, current.get(key));
+        });
+        link.href = target.href;
+      }
+    } catch (error) {}
+    const isCta = link.classList.contains("hero-button") || link.classList.contains("pricing-cta") || /#coaching-intake|cal\.com|buy\.stripe\.com|discord\.(?:gg|com)/i.test(href);
+    if (isCta) sendSiteAnalytics("cta_click", link.textContent.trim() || href);
+  }, { passive: true });
+}
+
 // Fetches Wiki/Threads/Roadmap/VOD Reviews/News/Custom Pages/Player Spotlights
 // once and flattens them into one searchable list. Only called the first time
 // someone opens the search panel, so pages that never use search don't pay
@@ -241,6 +292,7 @@ function searchResultsHtml(results) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  setupSiteAnalytics();
   const { site, pages } = await window.__siteDataPromise;
   applySiteSettings(site);
 

@@ -158,7 +158,30 @@ function setupCoachingIntake(site) {
   const next = document.getElementById("coaching-intake-next");
   const back = document.getElementById("coaching-intake-back");
   const service = document.getElementById("coaching-intake-service");
+  const referralBanner = document.getElementById("coaching-referral-banner");
   if (!form) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const referralCode = String(params.get("ref") || "").toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 32);
+  let referrerHost = "";
+  try {
+    const referrer = document.referrer ? new URL(document.referrer) : null;
+    if (referrer && referrer.origin !== window.location.origin) referrerHost = referrer.host;
+  } catch (error) {}
+  const attribution = {
+    referralCode,
+    landingPath: String(params.get("from") || window.location.pathname || "/").startsWith("/") ? String(params.get("from") || window.location.pathname || "/").slice(0, 180) : "/",
+    referrerHost,
+    utmSource: String(params.get("utm_source") || "").slice(0, 100),
+    utmMedium: String(params.get("utm_medium") || "").slice(0, 100),
+    utmCampaign: String(params.get("utm_campaign") || "").slice(0, 120),
+    utmContent: String(params.get("utm_content") || "").slice(0, 120),
+    utmTerm: String(params.get("utm_term") || "").slice(0, 120),
+  };
+  if (referralCode && referralBanner) {
+    referralBanner.hidden = false;
+    referralBanner.textContent = `Referral code ${referralCode} applied. If you become a client, the referring player can receive their coaching reward.`;
+  }
 
   const panels = [...form.querySelectorAll("[data-coaching-step]")];
   const stepNumber = document.getElementById("coaching-step-number");
@@ -241,6 +264,7 @@ function setupCoachingIntake(site) {
       const formData = new FormData(form);
       const payload = Object.fromEntries(formData.entries());
       payload.consent = formData.get("consent") === "on";
+      Object.assign(payload, attribution);
       const response = await fetch("/api/coaching-intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

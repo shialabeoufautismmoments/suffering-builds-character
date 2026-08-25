@@ -1,4 +1,5 @@
 import { createCoachingLead } from "../lib/coaching-leads.mjs";
+import { recordSiteEvent } from "../lib/site-analytics.mjs";
 
 const json = (body, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
@@ -47,7 +48,16 @@ export default async (request) => {
     availability: oneLine(input.availability, 200),
     vodUrl: optionalHttpUrl(input.vodUrl),
     goals: clean(input.goals, 1800),
+    referralCode: oneLine(input.referralCode, 32).toUpperCase().replace(/[^A-Z0-9-]/g, ""),
+    landingPath: oneLine(input.landingPath, 180).split(/[?#]/)[0],
+    referrerHost: oneLine(input.referrerHost, 120).toLowerCase().replace(/[^a-z0-9.:-]/g, ""),
+    utmSource: oneLine(input.utmSource, 100),
+    utmMedium: oneLine(input.utmMedium, 100),
+    utmCampaign: oneLine(input.utmCampaign, 120),
+    utmContent: oneLine(input.utmContent, 120),
+    utmTerm: oneLine(input.utmTerm, 120),
   };
+  if (!application.landingPath.startsWith("/")) application.landingPath = "/";
 
   const required = ["name", "discord", "game", "rank", "role", "service", "availability", "goals"];
   if (required.some(field => !application[field])) {
@@ -66,8 +76,8 @@ export default async (request) => {
       ...application,
       source: "website",
       acceptedPolicies: {
-        privacy: "2026-08-24",
-        terms: "2026-08-24",
+        privacy: "2026-08-25",
+        terms: "2026-08-25",
         cancellation: "2026-08-24",
         acceptedAt: new Date().toISOString(),
       },
@@ -75,6 +85,18 @@ export default async (request) => {
   } catch (error) {
     console.error("Could not save coaching application:", error);
     return json({ error: "We could not safely save the application. Please try again shortly." }, 503);
+  }
+
+  const attributionSource = application.referralCode
+    ? "Referral"
+    : application.utmSource || application.referrerHost || "Direct";
+  try {
+    await recordSiteEvent({
+      event: "application", page: application.landingPath, source: attributionSource,
+      campaign: application.utmCampaign, label: application.service,
+    });
+  } catch (error) {
+    console.error("Could not update anonymous application analytics:", error);
   }
 
   const webhook = process.env.DISCORD_INTAKE_WEBHOOK_URL || "";
@@ -99,6 +121,8 @@ export default async (request) => {
     { name: "Availability", value: application.availability, inline: false },
   ];
   if (application.vodUrl) fields.push({ name: "VOD / replay", value: application.vodUrl, inline: false });
+  if (application.referralCode) fields.push({ name: "Referral", value: application.referralCode, inline: true });
+  if (application.utmCampaign) fields.push({ name: "Campaign", value: application.utmCampaign, inline: true });
 
   try {
     const discordPayload = {

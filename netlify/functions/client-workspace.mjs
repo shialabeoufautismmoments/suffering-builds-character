@@ -66,6 +66,26 @@ function publicPlan(plan) {
   };
 }
 
+function publicTeam(workspace, client) {
+  const team = (workspace.teams || []).find(item => item.id === client.teamId || (!client.teamId && client.team && item.name === client.team));
+  if (!team) return null;
+  const memberIds = new Set(team.clientIds || []);
+  const roster = (workspace.clients || []).filter(member => memberIds.has(member.id) || member.teamId === team.id).map(member => ({
+    id: member.id, name: member.name || "Player", role: member.role || "", rank: member.rank || "", avatar: member.avatar || ""
+  }));
+  const coaches = (team.coachIds || []).map(id => (workspace.coaches || []).find(coach => coach.id === id)).filter(Boolean).map(coach => ({
+    id: coach.id, name: coach.name || "Coach", role: coach.role || "", color: coach.color || ""
+  }));
+  return {
+    id: team.id, name: team.name || "Team", game: team.game || "", division: team.division || "", season: team.season || "", objective: team.objective || "",
+    roster, coaches,
+    goals: (team.goals || []).map(goal => ({ id: goal.id, text: goal.text || "", owner: goal.owner || "", dueDate: goal.dueDate || "", done: !!goal.done })),
+    scrims: (team.scrims || []).map(scrim => ({ id: scrim.id, date: scrim.date || "", time: scrim.time || "", opponent: scrim.opponent || "", format: scrim.format || "", status: scrim.status || "Scheduled", result: scrim.result || "", mapPool: scrim.mapPool || "", notes: scrim.notes || "" })),
+    mapPool: (team.mapPool || []).map(entry => ({ id: entry.id, map: entry.map || "", priority: entry.priority || "", attackComp: entry.attackComp || "", defenseComp: entry.defenseComp || "", notes: entry.notes || "" })),
+    compositions: (team.compositions || []).map(comp => ({ id: comp.id, name: comp.name || "", map: comp.map || "", mode: comp.mode || "", lineup: comp.lineup || "", notes: comp.notes || "" })),
+  };
+}
+
 function clientView(workspace, client) {
   const clientId = client.id;
   const sessions = (workspace.sessions || []).filter(session => session.clientId === clientId);
@@ -92,6 +112,9 @@ function clientView(workspace, client) {
     remaining: Math.max(0, num(p.total) - num(p.used))
   }));
   const sessionsRemaining = packages.reduce((sum, p) => sum + p.remaining, 0);
+  const referralRewards = (workspace.referrals || []).filter(item => item.referrerClientId === clientId).map(item => ({
+    id: item.id, status: item.status || "Pending", rewardLabel: item.rewardLabel || "Referral reward", createdAt: item.createdAt || "", fulfilledAt: item.fulfilledAt || ""
+  }));
   const publicVods = (workspace.vods || []).filter(item => item.clientId === clientId).map(vod => ({
     id: vod.id,
     title: vod.title || "",
@@ -148,6 +171,14 @@ function clientView(workspace, client) {
     matches: (workspace.matches || []).filter(item => item.clientId === clientId),
     scheduled,
     feedback,
+    team: publicTeam(workspace, client),
+    referralProgram: {
+      code: client.referralCode || "",
+      total: referralRewards.length,
+      pending: referralRewards.filter(item => ["Pending", "Approved"].includes(item.status)).length,
+      fulfilled: referralRewards.filter(item => item.status === "Fulfilled").length,
+      rewards: referralRewards,
+    },
     sessions: sessions.map(session => ({
       id: session.id,
       date: session.date || "",

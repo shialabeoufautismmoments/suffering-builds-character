@@ -11,6 +11,11 @@ const clean = (value, max = 5000) => String(value ?? "")
   .slice(0, max);
 const oneLine = (value, max = 500) => clean(value, max).replace(/\s+/g, " ");
 const safeId = value => /^[a-zA-Z0-9-]{8,80}$/.test(String(value || "")) ? String(value) : "";
+const referralCode = value => oneLine(value, 32).toUpperCase().replace(/[^A-Z0-9-]/g, "");
+const pagePath = value => {
+  const path = oneLine(value, 180).split(/[?#]/)[0];
+  return path.startsWith("/") ? path : "";
+};
 
 function leadFields(input = {}) {
   return {
@@ -26,6 +31,15 @@ function leadFields(input = {}) {
     assignedCoachId: oneLine(input.assignedCoachId, 80),
     internalNotes: clean(input.internalNotes ?? input.notes, 3000),
     contactDate: oneLine(input.contactDate, 20),
+    referralCode: referralCode(input.referralCode),
+    landingPath: pagePath(input.landingPath),
+    referrerHost: oneLine(input.referrerHost, 120).toLowerCase().replace(/[^a-z0-9.:-]/g, ""),
+    utmSource: oneLine(input.utmSource, 100),
+    utmMedium: oneLine(input.utmMedium, 100),
+    utmCampaign: oneLine(input.utmCampaign, 120),
+    utmContent: oneLine(input.utmContent, 120),
+    utmTerm: oneLine(input.utmTerm, 120),
+    convertedClientId: oneLine(input.convertedClientId, 80),
   };
 }
 

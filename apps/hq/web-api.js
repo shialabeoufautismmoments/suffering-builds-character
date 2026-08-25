@@ -41,7 +41,7 @@
 
   window.COACHSBC_WEB = true;
   window.api = {
-    appVersion: async () => 'web-3.2.0',
+    appVersion: async () => 'web-3.3.0',
     loadStore: async () => localStorage.getItem(STORE_KEY),
     saveStore: async data => { localStorage.setItem(STORE_KEY, String(data || '')); return true; },
     coachUnlock: async password => {
@@ -77,6 +77,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload || {}),
     }),
+    siteAnalyticsGet: days => authedFetch(`/api/site-analytics?days=${encodeURIComponent(days || 90)}`),
     exportBackup: async (filename, data) => download(filename, data, 'application/json'),
     exportJson: async (filename, data) => download(filename, data, 'application/json'),
     exportHtml: async (filename, html) => download(filename, html, 'text/html'),

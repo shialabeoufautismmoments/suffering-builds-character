@@ -190,6 +190,8 @@ function plans() { return State.data && State.data.developmentPlans || []; }
 function playlists() { return State.data && State.data.playlists || []; }
 function vods() { return State.data && State.data.vods || []; }
 function feedbacks() { return State.data && State.data.feedback || []; }
+function teamWorkspace() { return State.data && State.data.team || null; }
+function referralProgram() { return State.data && State.data.referralProgram || { code: '', total: 0, pending: 0, fulfilled: 0, rewards: [] }; }
 function feedbackFor(sessionId) { return feedbacks().find(item => item.sessionId === sessionId) || null; }
 function feedbackSessions() { return sessions().filter(session => Number(session.durationMin || 0) > 0); }
 function pendingFeedback() { return feedbackSessions().filter(session => !feedbackFor(session.id)); }
@@ -216,7 +218,7 @@ function avatarBadgeHtml(c) {
 function renderShell() {
   const c = client();
   const pending = loadQueue().length;
-  const tabs = [['today', 'Today'], ['dashboard', 'Overview'], ['matches', 'Matches'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['sessions', 'Sessions'], ['feedback', `Feedback${pendingFeedback().length ? ` (${pendingFeedback().length})` : ''}`], ['notes', 'My Notes'], ['plans', 'Plan'], ['playlists', 'Playlists'], ['vods', `Reviews${unreadVods().length ? ` (${unreadVods().length})` : ''}`]];
+  const tabs = [['today', 'Today'], ['dashboard', 'Overview'], ...(teamWorkspace() ? [['team', 'My Team']] : []), ['matches', 'Matches'], ['map-winrate', 'Map Winrate'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['sessions', 'Sessions'], ['feedback', `Feedback${pendingFeedback().length ? ` (${pendingFeedback().length})` : ''}`], ['notes', 'My Notes'], ['plans', 'Plan'], ['playlists', 'Playlists'], ['vods', `Reviews${unreadVods().length ? ` (${unreadVods().length})` : ''}`], ...(referralProgram().code ? [['referrals', 'Referrals']] : [])];
   app.innerHTML = `<div class="shell">
     <div class="topbar">
       <div class="brand"><span class="dot"></span>CoachSBC Client</div>
@@ -285,15 +287,48 @@ function dismissBanner() { State.since = null; renderShell(); }
 function renderView() {
   if (State.view === 'today') return renderToday();
   if (State.view === 'matches') return renderMatches();
+  if (State.view === 'map-winrate') return renderMapWinrate();
   if (State.view === 'kovaaks') return renderKovaaks();
   if (State.view === 'homework') return renderHomework();
   if (State.view === 'sessions') return renderSessions();
   if (State.view === 'feedback') return renderFeedback();
+  if (State.view === 'team') return renderTeamWorkspace();
+  if (State.view === 'referrals') return renderReferrals();
   if (State.view === 'notes') return renderNotes();
   if (State.view === 'plans') return renderPlans();
   if (State.view === 'playlists') return renderPlaylists();
   if (State.view === 'vods') return renderVods();
   return renderDashboard();
+}
+
+function renderTeamWorkspace() {
+  const team = teamWorkspace();
+  if (!team) return '<div class="empty">Your coach has not assigned you to a team workspace.</div>';
+  const scrims = (team.scrims || []).slice().sort((a, b) => `${a.date || ''}${a.time || ''}`.localeCompare(`${b.date || ''}${b.time || ''}`));
+  return `<div class="page-head"><div><div class="kicker">${E([team.game, team.division, team.season].filter(Boolean).join(' · ') || 'TEAM COACHING')}</div><h1>${E(team.name)}</h1><div class="sub">${E(team.objective || 'Your shared team coaching workspace.')}</div></div></div>
+    <div class="team-client-grid">
+      <section class="card"><div class="card-head"><h2>Roster</h2><span class="pill">${(team.roster || []).length} players</span></div><div class="team-roster">${(team.roster || []).map(member => `<article>${member.avatar ? `<img src="${E(member.avatar)}" alt="">` : `<span>${E(initials(member.name))}</span>`}<div><b>${E(member.name)}</b><small>${E([member.role, member.rank].filter(Boolean).join(' · '))}</small></div></article>`).join('') || '<p class="muted">No roster published yet.</p>'}</div>${(team.coaches || []).length ? `<div class="team-coaches"><span>Coaches</span><b>${team.coaches.map(coach => E(`${coach.name}${coach.role ? ` — ${coach.role}` : ''}`)).join('<br>')}</b></div>` : ''}</section>
+      <section class="card"><div class="card-head"><h2>Shared goals</h2></div>${(team.goals || []).length ? team.goals.map(goal => `<div class="list-row"><div><b style="${goal.done ? 'text-decoration:line-through;color:var(--dim)' : ''}">${E(goal.text)}</b><div class="muted">${E([goal.owner, goal.dueDate ? `Due ${fmt(goal.dueDate)}` : ''].filter(Boolean).join(' · '))}</div></div><span class="pill ${goal.done ? 'good' : 'pending-pill'}">${goal.done ? 'Done' : 'Open'}</span></div>`).join('') : '<div class="empty">No team goals yet.</div>'}</section>
+      <section class="card team-client-wide"><div class="card-head"><h2>Scrims</h2></div>${scrims.length ? scrims.map(scrim => `<article class="team-scrim"><div><b>${E(scrim.opponent || 'Scrim')}</b><span>${E([fmt(scrim.date), scrim.time, scrim.format].filter(Boolean).join(' · '))}</span></div><span class="pill ${scrim.status === 'Completed' ? 'good' : ''}">${E(scrim.result || scrim.status || 'Scheduled')}</span>${scrim.mapPool ? `<p><b>Map pool:</b> ${E(scrim.mapPool)}</p>` : ''}${scrim.notes ? `<p>${E(scrim.notes)}</p>` : ''}</article>`).join('') : '<div class="empty">No scrims scheduled yet.</div>'}</section>
+      <section class="card"><div class="card-head"><h2>Map pool</h2></div>${(team.mapPool || []).length ? team.mapPool.map(entry => `<article class="team-plan"><div><b>${E(entry.map)}</b><span class="pill">${E(entry.priority || 'Practice')}</span></div>${entry.attackComp ? `<p><strong>Attack:</strong> ${E(entry.attackComp)}</p>` : ''}${entry.defenseComp ? `<p><strong>Defense:</strong> ${E(entry.defenseComp)}</p>` : ''}${entry.notes ? `<p class="muted">${E(entry.notes)}</p>` : ''}</article>`).join('') : '<div class="empty">No maps added yet.</div>'}</section>
+      <section class="card"><div class="card-head"><h2>Compositions</h2></div>${(team.compositions || []).length ? team.compositions.map(comp => `<article class="team-plan"><div><b>${E(comp.name)}</b><span>${E([comp.map, comp.mode].filter(Boolean).join(' · '))}</span></div>${comp.lineup ? `<p>${E(comp.lineup)}</p>` : ''}${comp.notes ? `<p class="muted">${E(comp.notes)}</p>` : ''}</article>`).join('') : '<div class="empty">No team compositions published yet.</div>'}</section>
+    </div>`;
+}
+
+function referralLink() {
+  const code = referralProgram().code;
+  return code ? `${location.origin}/?ref=${encodeURIComponent(code)}#coaching-intake` : '';
+}
+async function copyReferralLink() {
+  try { await navigator.clipboard.writeText(referralLink()); toast('Referral link copied.', 'good'); }
+  catch (error) { toast('Could not copy your referral link.', 'bad'); }
+}
+function renderReferrals() {
+  const program = referralProgram();
+  return `<div class="page-head"><div><h1>Referrals & Rewards</h1><div class="sub">Invite a player to HONE using your personal link. Rewards appear after the coaching team verifies a converted referral.</div></div></div>
+    <div class="referral-hero card"><div><span>Your referral code</span><strong>${E(program.code || 'Not assigned')}</strong><p>Share this link. The application records your code without exposing your private coaching information.</p></div><button class="btn btn-primary" onclick="copyReferralLink()">Copy referral link</button></div>
+    <div class="grid cols-3 mb"><div class="stat"><div class="label">Converted referrals</div><div class="value accent">${Number(program.total || 0)}</div></div><div class="stat"><div class="label">Pending rewards</div><div class="value">${Number(program.pending || 0)}</div></div><div class="stat"><div class="label">Fulfilled rewards</div><div class="value good">${Number(program.fulfilled || 0)}</div></div></div>
+    <div class="card"><div class="card-head"><h2>Reward history</h2></div>${(program.rewards || []).length ? program.rewards.map(reward => `<div class="list-row"><div><b>${E(reward.rewardLabel || 'Referral reward')}</b><div class="muted">Earned ${fmt(String(reward.createdAt || '').slice(0, 10))}</div></div><span class="pill ${reward.status === 'Fulfilled' ? 'good' : 'pending-pill'}">${E(reward.status || 'Pending')}</span></div>`).join('') : '<div class="empty">No converted referrals yet.</div>'}</div>`;
 }
 
 // Every date the client did *something* — logged a match/stat, completed
@@ -486,6 +521,58 @@ function renderMatches() {
       ${editing ? `<button type="button" class="btn btn-sm" onclick="cancelEditMatch()">Cancel</button>` : ''}
     </form></div>
     <div class="card"><div class="card-head"><h2>Match log</h2></div>${matchTable(matches().slice().reverse(), true)}</div>`;
+}
+
+function mapWinrateStats() {
+  const groups = new Map();
+  matches().forEach(match => {
+    const typedMap = String(match.map || '').trim();
+    if (!typedMap) return;
+    const catalogMap = MATCH_MAPS.find(item => item.name.toLowerCase() === typedMap.toLowerCase());
+    const name = catalogMap?.name || typedMap;
+    const key = name.toLowerCase();
+    if (!groups.has(key)) groups.set(key, { name, mode: catalogMap?.mode || match.mode || '', wins: 0, losses: 0, draws: 0, total: 0 });
+    const row = groups.get(key);
+    const result = String(match.result || '').toLowerCase();
+    if (result === 'win') row.wins += 1;
+    else if (result === 'loss') row.losses += 1;
+    else if (result === 'draw') row.draws += 1;
+    row.total += 1;
+  });
+  return [...groups.values()].map(row => {
+    const decisive = row.wins + row.losses;
+    return { ...row, decisive, winrate: decisive ? Math.round((row.wins / decisive) * 100) : 0 };
+  }).sort((a, b) => b.total - a.total || b.winrate - a.winrate || a.name.localeCompare(b.name));
+}
+
+function renderMapWinrate() {
+  const rows = mapWinrateStats();
+  const totals = rows.reduce((record, row) => ({
+    wins: record.wins + row.wins,
+    losses: record.losses + row.losses,
+    draws: record.draws + row.draws,
+  }), { wins: 0, losses: 0, draws: 0 });
+  const overallDecisive = totals.wins + totals.losses;
+  const overallRate = overallDecisive ? Math.round((totals.wins / overallDecisive) * 100) : 0;
+  const bestMap = rows.filter(row => row.decisive).slice().sort((a, b) => b.winrate - a.winrate || b.total - a.total || a.name.localeCompare(b.name))[0];
+  const mostPlayed = rows[0];
+
+  return `<div class="page-head"><div><h1>Map Winrate</h1><div class="sub">Your results by map. Draws are shown in your record but are not counted in the winrate percentage.</div></div></div>
+    <div class="grid cols-3 mb">
+      <div class="stat"><div class="label">Overall map winrate</div><div class="value ${overallDecisive ? (overallRate >= 50 ? 'good' : 'bad') : ''}">${overallDecisive ? `${overallRate}%` : '-'}</div><div class="muted">${totals.wins}-${totals.losses}-${totals.draws} record</div></div>
+      <div class="stat"><div class="label">Best map</div><div class="value accent map-stat-name">${E(bestMap?.name || '-')}</div><div class="muted">${bestMap ? `${bestMap.winrate}% across ${bestMap.total} match${bestMap.total === 1 ? '' : 'es'}` : 'Log a decisive result'}</div></div>
+      <div class="stat"><div class="label">Most played</div><div class="value map-stat-name">${E(mostPlayed?.name || '-')}</div><div class="muted">${mostPlayed ? `${mostPlayed.total} match${mostPlayed.total === 1 ? '' : 'es'}` : 'No maps logged yet'}</div></div>
+    </div>
+    <div class="card"><div class="card-head"><h2>Performance by map</h2>${rows.length ? `<span class="pill">${rows.length} map${rows.length === 1 ? '' : 's'}</span>` : ''}</div>
+      ${rows.length ? `<div class="map-winrate-list">${rows.map(row => {
+        const rateClass = row.decisive ? (row.winrate >= 50 ? 'is-winning' : 'is-losing') : 'is-unrated';
+        return `<article class="map-winrate-row">
+          <div class="map-winrate-name"><b>${E(row.name)}</b><span>${E(row.mode || 'Custom map')}</span></div>
+          <div class="map-winrate-performance"><div><span>${row.total} match${row.total === 1 ? '' : 'es'}</span><b class="${row.decisive ? (row.winrate >= 50 ? 'good' : 'bad') : 'muted'}">${row.decisive ? `${row.winrate}%` : '-'}</b></div><div class="map-winrate-meter ${rateClass}" role="progressbar" aria-label="${E(row.name)} winrate" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${row.winrate}"><span style="width:${row.winrate}%"></span></div></div>
+          <div class="map-winrate-record"><strong>${row.wins}-${row.losses}-${row.draws}</strong><span>W-L-D</span></div>
+        </article>`;
+      }).join('')}</div>` : `<div class="empty">No map results yet. <button class="btn btn-sm" onclick="nav('matches')">Log your first match</button></div>`}
+    </div>`;
 }
 
 function scenarioNames() {

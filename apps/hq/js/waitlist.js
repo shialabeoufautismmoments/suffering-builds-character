@@ -90,12 +90,12 @@ Waitlist.card = function (lead) {
     <div class="lead-card-main">
       <div class="lead-card-title"><div><h2>${UI.escape(lead.name || lead.discord || 'Unnamed lead')}</h2><p>${UI.escape(lead.discord || 'No Discord username')} · ${UI.escape(lead.game || 'Game not provided')} · ${UI.escape(lead.rank || 'Rank not provided')}</p></div><span class="lead-source">${UI.escape(lead.source || 'manual')}</span></div>
       <p class="lead-goals">${UI.escape(lead.goals || lead.internalNotes || 'No coaching goals recorded.')}</p>
-      <div class="lead-meta"><span>Submitted ${submitted}</span>${lead.service ? `<span>${UI.escape(lead.service)}</span>` : ''}${lead.role ? `<span>${UI.escape(lead.role)}</span>` : ''}</div>
+      <div class="lead-meta"><span>Submitted ${submitted}</span>${lead.service ? `<span>${UI.escape(lead.service)}</span>` : ''}${lead.role ? `<span>${UI.escape(lead.role)}</span>` : ''}${lead.referralCode ? `<span>Referral: ${UI.escape(lead.referralCode)}</span>` : ''}${lead.utmCampaign ? `<span>Campaign: ${UI.escape(lead.utmCampaign)}</span>` : ''}${lead.landingPath ? `<span>Landing: ${UI.escape(lead.landingPath)}</span>` : ''}</div>
     </div>
     <div class="lead-card-controls">
       <label><span>Status</span><select onchange="Waitlist.quickUpdate('${id}', 'status', this.value)">${Waitlist.statuses.map(value => `<option ${value === status ? 'selected' : ''}>${value}</option>`).join('')}</select></label>
       <label><span>Assigned coach</span><select onchange="Waitlist.quickUpdate('${id}', 'assignedCoachId', this.value)">${coachOptions}</select></label>
-      <div class="lead-actions"><button class="btn btn-xs btn-primary" onclick="Waitlist.convert('${id}')">Convert</button><button class="btn btn-xs btn-ghost" onclick="Waitlist.edit('${id}')">Open</button>${status !== 'Archived' ? `<button class="btn btn-xs btn-danger" onclick="Waitlist.archive('${id}')">Archive</button>` : ''}</div>
+      <div class="lead-actions">${status !== 'Booked' ? `<button class="btn btn-xs btn-primary" onclick="Waitlist.convert('${id}')">Convert</button>` : ''}<button class="btn btn-xs btn-ghost" onclick="Waitlist.edit('${id}')">Open</button>${status !== 'Archived' ? `<button class="btn btn-xs btn-danger" onclick="Waitlist.archive('${id}')">Archive</button>` : ''}</div>
     </div>
   </article>`;
 };
@@ -135,6 +135,7 @@ Waitlist.edit = function (id = '') {
     <label class="field"><span>Availability</span><input id="l-availability" value="${f('availability')}"></label>
     <label class="field"><span>VOD / replay link</span><input id="l-vodUrl" type="url" value="${f('vodUrl')}"></label>
     <label class="field"><span>Coaching goals</span><textarea id="l-goals" placeholder="What they want to improve">${f('goals')}</textarea></label>
+    <div class="row"><label class="field"><span>Referral code</span><input id="l-referralCode" value="${f('referralCode')}" placeholder="HONE-PLAYER-XXXXX"></label><label class="field"><span>Campaign</span><input id="l-utmCampaign" value="${f('utmCampaign')}" placeholder="summer-campaign"></label><label class="field"><span>Landing page</span><input id="l-landingPath" value="${f('landingPath')}" placeholder="/coaching.html"></label></div>
     <label class="field"><span>Internal notes</span><textarea id="l-internalNotes" placeholder="Follow-up notes, budget, next action...">${f('internalNotes', lead?.notes || '')}</textarea></label>
     <div class="modal-foot"><button class="btn btn-ghost" onclick="UI.closeModal()">Cancel</button><button class="btn btn-primary" onclick="Waitlist.save('${UI.escape(id)}')">${lead ? 'Save changes' : 'Add lead'}</button></div>`);
 };
@@ -145,6 +146,7 @@ Waitlist.formData = function () {
     name: get('name'), discord: get('discord'), game: get('game'), rank: get('rank'), role: get('role'),
     service: get('service'), status: get('status'), assignedCoachId: get('assignedCoachId'),
     availability: get('availability'), vodUrl: get('vodUrl'), goals: get('goals'), internalNotes: get('internalNotes'),
+    referralCode: get('referralCode'), utmCampaign: get('utmCampaign'), landingPath: get('landingPath'),
   };
 };
 
@@ -174,16 +176,16 @@ Waitlist.save = async function (id = '') {
   }
 };
 
-Waitlist.quickUpdate = async function (id, field, value) {
+Waitlist.quickUpdate = async function (id, field, value, extra = {}) {
   const lead = Waitlist.find(id);
   if (!lead) return;
   try {
     if (Waitlist.isRemote() && lead._storage !== 'legacy') {
-      const result = await window.api.coachLeadsPut({ id, [field]: value });
+      const result = await window.api.coachLeadsPut({ id, [field]: value, ...extra });
       Waitlist.items = Waitlist.items.map(item => item.id === id ? result.lead : item);
     } else {
       const local = DB.leads.find(item => item.id === id);
-      if (local) Object.assign(local, { [field]: value, updatedAt: new Date().toISOString() });
+      if (local) Object.assign(local, { [field]: value, ...extra, updatedAt: new Date().toISOString() });
       saveDB();
     }
     UI.toast('Lead updated.', 'good');
@@ -203,18 +205,22 @@ Waitlist.archive = function (id) {
 Waitlist.convert = function (id) {
   const lead = Waitlist.find(id);
   if (!lead) return;
+  if ((lead.status || 'New') === 'Booked') return UI.toast('This lead has already been converted.', 'bad');
   const name = lead.name || lead.discord || 'New Client';
   UI.confirm(`Convert "${name}" to an active client and mark the lead as booked?`, async () => {
     const client = {
       id: uid(), name, game: lead.game || 'Overwatch 2', rank: lead.rank || '', role: lead.role || '',
       discord: lead.discord || '', coachId: lead.assignedCoachId || Access.currentCoachId || '',
       dpi: '', sens: '', cm360: '', notes: lead.internalNotes || lead.goals || '',
-      goals: lead.goals ? [{ id: uid(), text: lead.goals, done: false, createdAt: new Date().toISOString() }] : [], heroes: [], prs: {}, activity: {}, createdAt: new Date().toISOString(),
+      goals: lead.goals ? [{ id: uid(), text: lead.goals, done: false, createdAt: new Date().toISOString() }] : [], heroes: [], prs: {}, activity: {},
+      referralCode: '', createdAt: new Date().toISOString(),
     };
+    if (typeof Referrals !== 'undefined') client.referralCode = Referrals.codeCandidate(client);
     DB.clients.push(client);
+    if (typeof Referrals !== 'undefined') Referrals.recordConversion(lead, client);
     DB.activeClientId = client.id;
     saveDB();
-    await Waitlist.quickUpdate(id, 'status', 'Booked');
+    await Waitlist.quickUpdate(id, 'status', 'Booked', { convertedClientId: client.id });
     UI.updateClientPill();
     UI.toast(`${name} is now an active client.`, 'good');
     App.nav('dashboard');

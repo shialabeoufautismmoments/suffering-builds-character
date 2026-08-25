@@ -1407,6 +1407,7 @@ footer {
 
 .coaching-intake-progress { height: 3px; margin: -8px 0 26px; overflow: hidden; background: var(--border); }
 .coaching-intake-progress span { display: block; width: 50%; height: 100%; background: var(--accent-bright); transition: width .2s ease; }
+.coaching-referral-banner { margin: -10px 0 24px; padding: 12px 14px; border: 1px solid rgba(181, 82, 255, .35); border-left: 3px solid var(--accent-bright); border-radius: 8px; background: rgba(143, 0, 255, .1); color: var(--text); line-height: 1.5; }
 .coaching-intake-panel { min-width: 0; margin: 0; padding: 0; border: 0; }
 .coaching-intake-panel legend { margin-bottom: 18px; color: var(--text); font-family: "Oswald", "Segoe UI", sans-serif; font-size: 1.1rem; letter-spacing: .05em; text-transform: uppercase; }
 

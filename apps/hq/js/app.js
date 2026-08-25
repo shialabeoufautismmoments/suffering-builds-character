@@ -76,6 +76,13 @@ App.boot = async function () {
   });
   DB.reminders ||= [];
   DB.packageTemplates ||= [];
+  DB.teams ||= [];
+  DB.referrals ||= [];
+  DB.teams.forEach(team => {
+    team.clientIds ||= []; team.coachIds ||= []; team.goals ||= []; team.scrims ||= [];
+    team.mapPool ||= []; team.compositions ||= [];
+  });
+  if (typeof Referrals !== 'undefined') Referrals.ensureCodes();
   DB.vods.forEach(v => {
     v.notes ||= [];
     v.reviewStatus ||= v.notes.length ? 'complete' : 'inbox';

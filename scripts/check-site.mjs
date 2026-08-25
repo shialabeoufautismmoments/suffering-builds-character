@@ -59,6 +59,10 @@ for (const file of ["privacy.html", "terms.html", "refund-policy.html"]) {
   const html = await readFile(path.join(root, file), "utf8");
   assert(html.includes('content="HONE your skills. Suffering Builds Character."'), `${file} has the wrong embed description.`);
 }
+const privacy = await readFile(path.join(root, "privacy.html"), "utf8");
+const terms = await readFile(path.join(root, "terms.html"), "utf8");
+assert(privacy.includes("does not set tracking cookies") && privacy.includes("referral code"), "Privacy policy must explain anonymous analytics and referral attribution.");
+assert(terms.includes("Referral rewards") && terms.includes("genuine new clients"), "Referral eligibility terms are missing.");
 
 const homepage = await readFile(path.join(root, "index.html"), "utf8");
 const homepageIds = [...homepage.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
@@ -85,11 +89,24 @@ const clientWorkspace = await readFile(path.join(root, "netlify/functions/client
 const clientApp = await readFile(path.join(root, "apps/client/app.js"), "utf8");
 const hqFeedback = await readFile(path.join(root, "apps/hq/js/feedback.js"), "utf8");
 const hqSync = await readFile(path.join(root, "apps/hq/js/sync.js"), "utf8");
+const hqTeams = await readFile(path.join(root, "apps/hq/js/teams.js"), "utf8");
+const hqReferrals = await readFile(path.join(root, "apps/hq/js/referrals.js"), "utf8");
+const hqConversions = await readFile(path.join(root, "apps/hq/js/conversions.js"), "utf8");
+const siteAnalytics = await readFile(path.join(root, "netlify/functions/site-analytics.mjs"), "utf8");
+const siteScript = await readFile(path.join(root, "js/site.js"), "utf8");
 assert(clientWorkspace.includes("applySessionFeedback") && clientWorkspace.includes("testimonialAllowed"), "Server-side session feedback handling is missing.");
 assert(clientWorkspace.includes('quoteNeedsReview ? "Not reviewed"'), "Changed testimonial quotes must return to review before publication.");
 assert(clientApp.includes("submitSessionFeedback") && clientApp.includes("Private feedback for the coaching team"), "The client feedback form is missing.");
 assert(hqFeedback.includes("Feedback.alertHtml") && hqFeedback.includes("publicationStatus"), "Coach HQ feedback triage is missing.");
 assert(hqSync.includes("'feedback'") && hqSync.includes("feedback: []"), "Coach HQ cloud sync must include feedback records.");
+assert(hqSync.includes("'teams'") && hqSync.includes("'referrals'"), "Coach HQ cloud sync must include teams and referrals.");
+assert(hqTeams.includes("UI.renderers.teams") && hqTeams.includes("team.mapPool") && hqTeams.includes("team.compositions"), "The team coaching workspace is incomplete.");
+assert(clientWorkspace.includes("publicTeam") && clientApp.includes("renderTeamWorkspace"), "Team workspaces must be available in the client app.");
+assert(clientApp.includes("renderMapWinrate") && clientApp.includes("mapWinrateStats") && clientApp.includes("Draws are shown in your record but are not counted"), "The client map winrate tab is missing or incomplete.");
+assert(hqReferrals.includes("Referrals.recordConversion") && clientApp.includes("renderReferrals"), "Referral rewards are not connected across HQ and the client app.");
+assert(intake.includes("referralCode") && intake.includes("recordSiteEvent"), "Coaching applications must retain referral and conversion attribution.");
+assert(hqConversions.includes("UI.renderers.conversions") && siteAnalytics.includes("siteAnalyticsSummary"), "Conversion analytics are missing.");
+assert(siteScript.includes("sendSiteAnalytics") && siteScript.includes("no cookies"), "Anonymous aggregate public-site analytics are missing their privacy guardrail.");
 
 const coachingGuide = JSON.parse(await readFile(path.join(root, "data/coaching-guide.json"), "utf8"));
 assert(coachingGuide.services.length >= 2 && coachingGuide.faq.length >= 3, "The coaching comparison needs published services and FAQs.");

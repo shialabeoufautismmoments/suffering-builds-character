@@ -107,9 +107,9 @@ UI.confirm = (message, onYes, { danger = true, yes = 'Confirm' } = {}) => {
 /* -- Navigation ------------------------------------------------------------- */
 UI.renderers = {}; // view -> render fn, registered by feature modules
 UI.NAV_GROUPS = {
-  clients: ['dashboard', 'clients', 'coaches', 'matches', 'vods', 'plans', 'playlists', 'mechanics'],
+  clients: ['dashboard', 'clients', 'coaches', 'teams', 'matches', 'vods', 'plans', 'playlists', 'mechanics'],
   activity: ['waitlist', 'today', 'telemetry', 'sessions', 'feedback'],
-  business: ['business', 'coachanalytics', 'reports'],
+  business: ['business', 'referrals', 'conversions', 'coachanalytics', 'reports'],
 };
 
 UI.nav = (view) => {

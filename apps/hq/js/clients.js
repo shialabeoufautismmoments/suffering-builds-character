@@ -411,8 +411,11 @@ Clients.remove = function (id) {
     DB.vods = DB.vods.filter(v => v.clientId !== id);
     DB.matches = DB.matches.filter(m => m.clientId !== id);
     DB.sessions = DB.sessions.filter(s => s.clientId !== id);
+    DB.feedback = (DB.feedback || []).filter(f => f.clientId !== id);
     DB.scheduled = DB.scheduled.filter(s => s.clientId !== id);
     DB.reminders = (DB.reminders || []).filter(r => r.clientId !== id);
+    (DB.teams || []).forEach(team => { team.clientIds = (team.clientIds || []).filter(clientId => clientId !== id); });
+    DB.referrals = (DB.referrals || []).filter(referral => referral.referrerClientId !== id && referral.referredClientId !== id);
     if (DB.activeClientId === id) DB.activeClientId = DB.clients[0]?.id || null;
     saveDB();
     UI.updateClientPill();
