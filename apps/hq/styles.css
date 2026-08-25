@@ -104,6 +104,21 @@ code, .mono { font-family: 'Consolas', 'SF Mono', monospace; }
 .lead-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: .4rem; margin-top: .2rem; }
 @media (max-width: 800px) { .lead-stats { grid-template-columns: 1fr 1fr; } .lead-card { grid-template-columns: 1fr; } }
 @media (max-width: 480px) { .lead-stats { grid-template-columns: 1fr; } .lead-card-controls { grid-template-columns: 1fr; } }
+.feedback-alert { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; padding: .8rem 1rem; background: rgba(248,81,73,.09); border: 1px solid rgba(248,81,73,.35); border-left: 3px solid var(--bad); border-radius: var(--radius-sm); }
+.feedback-alert b, .feedback-alert span { display: block; }.feedback-alert span { margin-top: .15rem; color: var(--text-muted); font-size: .78rem; }
+.feedback-toolbar { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
+.feedback-inbox { display: grid; gap: .8rem; }
+.feedback-card { padding: 1rem; background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius); }
+.feedback-card.attention { border-left-color: var(--bad); }
+.feedback-card-head, .feedback-card-foot { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.feedback-card-head h2 { font-size: 1rem; }.feedback-card-head p { margin-top: .15rem; color: var(--text-muted); font-size: .78rem; }.feedback-card-head > div:last-child { display: flex; align-items: center; gap: .7rem; }
+.feedback-stars { color: var(--warn); letter-spacing: .06em; white-space: nowrap; }
+.feedback-card section { margin-top: .7rem; padding: .7rem; background: rgba(255,255,255,.02); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); }
+.feedback-card section > span { display: block; margin-bottom: .3rem; color: var(--text-muted); font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; }
+.feedback-card section p, .feedback-card blockquote { margin: 0; line-height: 1.55; white-space: pre-line; }.feedback-card blockquote { color: var(--text); font-style: italic; }
+.feedback-card .feedback-issue { background: rgba(248,81,73,.06); border-color: rgba(248,81,73,.3); }.feedback-card .feedback-testimonial { background: rgba(63,185,80,.05); border-color: rgba(63,185,80,.25); }
+.feedback-card-foot { align-items: center; margin-top: .8rem; padding-top: .7rem; border-top: 1px solid var(--border-soft); }
+@media (max-width: 640px) { .feedback-alert, .feedback-card-head, .feedback-card-foot { align-items: stretch; flex-direction: column; } }
 
 /* ── Buttons ────────────────────────────────────────────────────────────── */
 .btn {

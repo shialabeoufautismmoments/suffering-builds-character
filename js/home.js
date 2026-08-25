@@ -77,7 +77,8 @@ function homeDuoMemberHtml(player) {
 function renderHomeProof(spotlightsData, testimonialsData) {
   const section = document.getElementById("home-proof-section");
   const grid = document.getElementById("home-proof-grid");
-  const spotlight = (spotlightsData.spotlights || []).find(item => item.enabled !== false);
+  const publicResults = (spotlightsData.spotlights || []).filter(item => item.enabled !== false && item.consentConfirmed === true);
+  const spotlight = publicResults.find(item => item.featured) || publicResults[0];
   const testimonial = (testimonialsData.testimonials || []).find(item => item.enabled !== false);
 
   if (!spotlight && !testimonial) {
@@ -91,7 +92,7 @@ function renderHomeProof(spotlightsData, testimonialsData) {
       <div class="home-proof-kicker">PLAYER RESULT</div>
       <div class="home-result-content">
         ${spotlight.photo ? `<img src="${spotlight.photo}" alt="${spotlight.playerName}" />` : ""}
-        <div><strong>${spotlight.summary || spotlight.playerName}</strong><span>${spotlight.playerName} &middot; Read the case study &rarr;</span></div>
+        <div><strong>${spotlight.summary || spotlight.result || spotlight.playerName}</strong><span>${spotlight.playerName} &middot; Read the result &rarr;</span></div>
       </div>
     </a>` : ""}
     ${testimonial ? `<article class="home-testimonial-card">

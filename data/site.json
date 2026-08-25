@@ -9,6 +9,10 @@
       "heading": "Coaching",
       "intro": ""
     },
+    "coaching-guide": {
+      "heading": "Compare Coaching",
+      "intro": "See who each option is for, what is included, and what happens next."
+    },
     "threads": {
       "heading": "Threads",
       "intro": ""
@@ -58,8 +62,8 @@
       "intro": "A group built on improvement and bridging the gap between trainers and the game."
     },
     "spotlights": {
-      "heading": "Player Spotlights",
-      "intro": ""
+      "heading": "Results Library",
+      "intro": "Real development stories, the work behind them, and the timeframe involved. Results vary by player and practice."
     }
   },
   "socials": [
@@ -139,8 +143,15 @@
       "parents": "coaching"
     },
     {
+      "id": "coaching-guide",
+      "label": "Compare & FAQ",
+      "path": "coaching-guide.html",
+      "enabled": true,
+      "parents": "coaching"
+    },
+    {
       "id": "spotlights",
-      "label": "Player Spotlights",
+      "label": "Results",
       "path": "player-spotlights.html",
       "enabled": true,
       "parents": "coaching"

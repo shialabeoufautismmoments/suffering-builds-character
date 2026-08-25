@@ -42,8 +42,9 @@ OVERWATCH_CATALOG.maps.forEach(map => assert(map.name && mapModes.has(map.mode),
 assert(OVERWATCH_CATALOG.heroes.some(hero => hero.name === "Emre"), "Emre is missing from the shared catalog.");
 assert(OVERWATCH_CATALOG.heroes.some(hero => hero.name === "Shion"), "Shion is missing from the shared catalog.");
 assert(OVERWATCH_CATALOG.maps.some(map => map.name === "Neon Junction" && map.mode === "Hybrid"), "Neon Junction must be a Hybrid map.");
+assert(OVERWATCH_CATALOG.maps.some(map => map.name === "Aatlis" && map.mode === "Flashpoint"), "Aatlis must be a Flashpoint map.");
 
-for (const file of ["data/site.json", "data/players.json", "data/news.json", "data/testimonials.json"]) {
+for (const file of ["data/site.json", "data/players.json", "data/news.json", "data/testimonials.json", "data/coaching-guide.json", "data/spotlights.json"]) {
   try {
     JSON.parse(await readFile(path.join(root, file), "utf8"));
   } catch (error) {
@@ -53,6 +54,7 @@ for (const file of ["data/site.json", "data/players.json", "data/news.json", "da
 
 const site = JSON.parse(await readFile(path.join(root, "data/site.json"), "utf8"));
 assert(site.navigation.some(item => item.id === "client-login" && item.path === "apps/client/" && item.enabled !== false), "Client Login must be enabled in site navigation.");
+assert(site.navigation.some(item => item.id === "coaching-guide" && item.path === "coaching-guide.html" && item.enabled !== false), "The coaching comparison must be enabled in site navigation.");
 for (const file of ["privacy.html", "terms.html", "refund-policy.html"]) {
   const html = await readFile(path.join(root, file), "utf8");
   assert(html.includes('content="HONE your skills. Suffering Builds Character."'), `${file} has the wrong embed description.`);
@@ -78,6 +80,22 @@ for (const file of htmlFiles) {
 const intake = await readFile(path.join(root, "netlify/functions/coaching-intake.mjs"), "utf8");
 assert(intake.indexOf("createCoachingLead") < intake.indexOf("fetch(destination"), "The coaching application must be persisted before Discord delivery.");
 assert(intake.includes("input.consent !== true"), "Server-side coaching consent validation is missing.");
+
+const clientWorkspace = await readFile(path.join(root, "netlify/functions/client-workspace.mjs"), "utf8");
+const clientApp = await readFile(path.join(root, "apps/client/app.js"), "utf8");
+const hqFeedback = await readFile(path.join(root, "apps/hq/js/feedback.js"), "utf8");
+const hqSync = await readFile(path.join(root, "apps/hq/js/sync.js"), "utf8");
+assert(clientWorkspace.includes("applySessionFeedback") && clientWorkspace.includes("testimonialAllowed"), "Server-side session feedback handling is missing.");
+assert(clientWorkspace.includes('quoteNeedsReview ? "Not reviewed"'), "Changed testimonial quotes must return to review before publication.");
+assert(clientApp.includes("submitSessionFeedback") && clientApp.includes("Private feedback for the coaching team"), "The client feedback form is missing.");
+assert(hqFeedback.includes("Feedback.alertHtml") && hqFeedback.includes("publicationStatus"), "Coach HQ feedback triage is missing.");
+assert(hqSync.includes("'feedback'") && hqSync.includes("feedback: []"), "Coach HQ cloud sync must include feedback records.");
+
+const coachingGuide = JSON.parse(await readFile(path.join(root, "data/coaching-guide.json"), "utf8"));
+assert(coachingGuide.services.length >= 2 && coachingGuide.faq.length >= 3, "The coaching comparison needs published services and FAQs.");
+assert(coachingGuide.services.some(item => item.sourceType === "Duo Coaching") && coachingGuide.services.some(item => item.sourceType === "Team Coaching"), "The coaching comparison must stay connected to the live offer sources.");
+const spotlights = JSON.parse(await readFile(path.join(root, "data/spotlights.json"), "utf8"));
+assert(spotlights.spotlights.every(item => item.enabled === false || item.consentConfirmed === true), "Every enabled public result must have confirmed player permission.");
 
 if (errors.length) {
   console.error(errors.map(error => `- ${error}`).join("\n"));

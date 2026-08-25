@@ -1,7 +1,7 @@
 function renderMissingSpotlight(container, message) {
   container.innerHTML = `
     <p>${message}</p>
-    <p><a class="back-link" href="player-spotlights.html">&larr; Back to Player Spotlights</a></p>
+    <p><a class="back-link" href="player-spotlights.html">&larr; Back to Results</a></p>
   `;
 }
 
@@ -36,7 +36,7 @@ async function renderSpotlight() {
     return;
   }
 
-  if (!spotlight || spotlight.enabled === false) {
+  if (!spotlight || spotlight.enabled === false || spotlight.consentConfirmed !== true) {
     renderMissingSpotlight(container, "That player spotlight doesn't exist.");
     document.title = "Spotlight Not Found — Suffering Builds Character";
     return;
@@ -51,11 +51,19 @@ async function renderSpotlight() {
     ? marked.parse(spotlight.notes || "")
     : `<p class="story">${spotlight.notes || ""}</p>`;
 
+  const focusAreas = String(spotlight.focusAreas || "").split("\n").map(value => value.trim()).filter(Boolean);
+  const metrics = (spotlight.metrics || []).filter(metric => metric.label && (metric.before || metric.after));
   container.innerHTML = `
-    <h2 style="margin-top:0">${spotlight.playerName}</h2>
-    ${spotlight.summary ? `<p class="founded">${spotlight.summary}</p>` : ""}
+    <div class="result-detail-head">
+      <div><div class="coaching-intake-kicker">PLAYER RESULT</div><h2>${escapeSiteHtml(spotlight.playerName)}</h2>${spotlight.summary ? `<p>${escapeSiteHtml(spotlight.summary)}</p>` : ""}</div>
+      <div class="result-detail-meta">${[spotlight.game, spotlight.coachingType, spotlight.timeframe].filter(Boolean).map(value => `<span>${escapeSiteHtml(value)}</span>`).join("")}</div>
+    </div>
+    ${(spotlight.startingPoint || spotlight.result) ? `<div class="result-detail-arc"><div><small>Starting point</small><strong>${escapeSiteHtml(spotlight.startingPoint || "—")}</strong></div><b aria-hidden="true">→</b><div><small>Result</small><strong>${escapeSiteHtml(spotlight.result || "—")}</strong></div></div>` : ""}
+    ${metrics.length ? `<div class="result-metrics">${metrics.map(metric => `<article><span>${escapeSiteHtml(metric.label)}</span><div><small>${escapeSiteHtml(metric.before || "—")}</small><b>→</b><strong>${escapeSiteHtml(metric.after || "—")}</strong></div></article>`).join("")}</div>` : ""}
+    ${(spotlight.coaches || focusAreas.length) ? `<div class="result-program"><div><span>Coaches</span><strong>${escapeSiteHtml(spotlight.coaches || "HONE coaching team")}</strong></div><div><span>Focus areas</span><p>${focusAreas.map(area => `<em>${escapeSiteHtml(area)}</em>`).join("")}</p></div></div>` : ""}
     <div class="markdown-body">${bodyHtml}</div>
     ${documentEmbedHtml(spotlight.document)}
+    <p class="result-disclaimer">Individual results vary. Improvement depends on practice, consistency, and competitive conditions.</p>
   `;
 }
 

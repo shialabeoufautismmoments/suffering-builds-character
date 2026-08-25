@@ -62,7 +62,8 @@ export const OVERWATCH_CATALOG = Object.freeze({
     { name: "Numbani", mode: "Hybrid" }, { name: "Paraiso", mode: "Hybrid" },
     { name: "Colosseo", mode: "Push" }, { name: "Esperanca", mode: "Push" },
     { name: "New Queen Street", mode: "Push" }, { name: "Runasapi", mode: "Push" },
-    { name: "New Junk City", mode: "Flashpoint" }, { name: "Suravasa", mode: "Flashpoint" },
+    { name: "Aatlis", mode: "Flashpoint" }, { name: "New Junk City", mode: "Flashpoint" },
+    { name: "Suravasa", mode: "Flashpoint" },
     { name: "Hanaoka", mode: "Clash" }, { name: "Throne of Anubis", mode: "Clash" }
   ])
 });

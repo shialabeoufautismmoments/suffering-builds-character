@@ -1,0 +1,87 @@
+{
+  "eyebrow": "CHOOSE YOUR COACHING PATH",
+  "intro": "Compare the current HONE coaching options, then apply once and let the team match you to the right fit.",
+  "services": [
+    {
+      "id": "duo",
+      "sourceType": "Duo Coaching",
+      "sourceName": "Mechanics + Macro Duo",
+      "name": "Duo Coaching",
+      "bestFor": "Individual Overwatch players who want mechanics and game sense developed together.",
+      "price": "$60 USD / hour",
+      "format": "One player, two coordinated coaches",
+      "support": "Mechanics, aim, positioning, decision-making, and one shared development direction.",
+      "features": "Coordinated feedback from both coaches\nVOD and gameplay diagnosis\nMechanics and aim development\nMacro and decision-making support",
+      "ctaLabel": "Apply for Duo Coaching",
+      "ctaUrl": "index.html?service=duo#coaching-intake",
+      "featured": true,
+      "enabled": true
+    },
+    {
+      "id": "team-pro",
+      "sourceType": "Team Coaching",
+      "sourceName": "Pro Package",
+      "name": "Pro Team Coaching",
+      "bestFor": "Overwatch teams that want structured development for two player slots.",
+      "price": "$125 USD/week ($500 USD/mo)",
+      "format": "Two player-development slots",
+      "support": "Custom benchmarking, coaching software, and two sessions per week for each included player.",
+      "features": "2 player-development slots\nCustom benchmarking\nAccess to coaching software\n2 sessions per week, per player",
+      "ctaLabel": "Explore Team Coaching",
+      "ctaUrl": "team-coaching.html",
+      "featured": false,
+      "enabled": true
+    },
+    {
+      "id": "team-elite",
+      "sourceType": "Team Coaching",
+      "sourceName": "Elite Package",
+      "name": "Elite Team Coaching",
+      "bestFor": "Larger rosters, Valorant teams, or organizations needing more coached player slots.",
+      "price": "$180 USD/week ($720 USD/mo)",
+      "format": "Five player-development slots",
+      "support": "Custom benchmarking, coaching software, and two sessions per week for each included player.",
+      "features": "5 player-development slots\nCustom benchmarking\nAccess to coaching software\n2 sessions per week, per player",
+      "ctaLabel": "Explore Team Coaching",
+      "ctaUrl": "team-coaching.html",
+      "featured": false,
+      "enabled": true
+    }
+  ],
+  "faq": [
+    {
+      "question": "What happens after I apply?",
+      "answer": "Your application is saved for the coaching team to review. We usually contact you on Discord within 2 business days to confirm fit, availability, and the next step.",
+      "enabled": true
+    },
+    {
+      "question": "Why does Duo Coaching use two coaches?",
+      "answer": "The duo combines mechanics and aim development with positioning, decision-making, and game sense. Both coaches work from one coordinated direction instead of giving disconnected advice.",
+      "enabled": true
+    },
+    {
+      "question": "Do I need a VOD before applying?",
+      "answer": "No. A VOD or replay link helps the team understand your current play, but it is optional at the application stage.",
+      "enabled": true
+    },
+    {
+      "question": "Is a specific rank guaranteed?",
+      "answer": "No. Coaching provides diagnosis, practice direction, and feedback, but results depend on practice, consistency, and competitive conditions.",
+      "enabled": true
+    },
+    {
+      "question": "How do team-coaching slots work?",
+      "answer": "Each included slot covers one selected player. The Pro package includes two slots and Elite includes five. The team can ask about additional slots before purchasing.",
+      "enabled": true
+    },
+    {
+      "question": "What are the cancellation and refund terms?",
+      "answer": "The written terms supplied for your booking or package apply. Read the Cancellation & Refund Policy before completing payment and contact HONE promptly if plans change.",
+      "enabled": true
+    }
+  ],
+  "closingHeading": "Still not sure which option fits?",
+  "closingText": "Submit one application and describe what you want to improve. The coaching team will recommend the most useful path instead of pushing you into the largest package.",
+  "closingLabel": "Find My Coaching Fit",
+  "closingUrl": "index.html#coaching-intake"
+}

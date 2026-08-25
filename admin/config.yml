@@ -292,8 +292,55 @@ collections:
               - { label: "PDF Attachment", name: "pdf", widget: "file", required: false, hint: "Optional. e.g. a written coaching session report." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this testimonial without deleting it." }
 
+  - name: "coaching_guide"
+    label: "Coaching Comparison / FAQ"
+    files:
+      - file: "data/coaching-guide.json"
+        label: "Comparison and FAQ"
+        name: "coaching_guide"
+        fields:
+          - { label: "Eyebrow", name: "eyebrow", widget: "string", required: false, hint: "Small all-caps line above the comparison." }
+          - { label: "Introduction", name: "intro", widget: "text", required: false }
+          - label: "Coaching Options"
+            name: "services"
+            widget: "list"
+            summary: "{{fields.name}} — {{fields.price}}"
+            hint: "Each enabled option becomes one comparison card. Drag to control the display order."
+            fields:
+              - { label: "ID", name: "id", widget: "string", hint: "Unique lowercase ID, e.g. duo or team-pro." }
+              - label: "Live Offer Source"
+                name: "sourceType"
+                widget: "select"
+                options: ["Manual", "Duo Coaching", "Team Coaching"]
+                default: "Manual"
+                hint: "Duo or Team sources automatically use the current price, features, and button from that offer elsewhere in Admin, preventing conflicting prices."
+              - { label: "Live Offer Name", name: "sourceName", widget: "string", required: false, hint: "Exact package name to pull from, e.g. Mechanics + Macro Duo or Pro Package. Leave blank for a Manual option." }
+              - { label: "Name", name: "name", widget: "string" }
+              - { label: "Best For", name: "bestFor", widget: "text" }
+              - { label: "Fallback Price", name: "price", widget: "string", required: false, hint: "Used for Manual options or if the named live offer cannot be found." }
+              - { label: "Format", name: "format", widget: "string", required: false, hint: "e.g. One player, two coordinated coaches." }
+              - { label: "Support", name: "support", widget: "text", required: false, hint: "Short description of the help included." }
+              - { label: "Fallback Features", name: "features", widget: "text", required: false, hint: "One per line. Live Duo/Team sources use the current offer features instead." }
+              - { label: "Button Label", name: "ctaLabel", widget: "string", required: false }
+              - { label: "Button URL", name: "ctaUrl", widget: "string", required: false }
+              - { label: "Recommended?", name: "featured", widget: "boolean", default: false }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
+          - label: "Frequently Asked Questions"
+            name: "faq"
+            widget: "list"
+            summary: "{{fields.question}}"
+            hint: "Drag to reorder. Answers can include full http/https links, which become clickable."
+            fields:
+              - { label: "Question", name: "question", widget: "string" }
+              - { label: "Answer", name: "answer", widget: "text" }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
+          - { label: "Closing Heading", name: "closingHeading", widget: "string", required: false }
+          - { label: "Closing Text", name: "closingText", widget: "text", required: false }
+          - { label: "Closing Button Label", name: "closingLabel", widget: "string", required: false }
+          - { label: "Closing Button URL", name: "closingUrl", widget: "string", required: false }
+
   - name: "spotlights"
-    label: "Player Spotlights"
+    label: "Results / Player Spotlights"
     files:
       - file: "data/spotlights.json"
         label: "Spotlights"
@@ -303,15 +350,34 @@ collections:
             name: "spotlights"
             widget: "list"
             summary: "{{fields.playerName}}"
-            hint: "A public case study for one player: what coaching work was done, before/after screenshots, and notes. Each gets its own page at player-spotlight.html?slug=... and is listed on the Player Spotlights index. This is public — get the player's OK before posting their name, screenshots, or progress."
+            hint: "A public case study for one player. Each gets its own results page and appears in the filterable Results Library. Confirm written permission before enabling it."
             fields:
               - { label: "Slug", name: "slug", widget: "string", hint: "URL-safe, lowercase, no spaces (e.g. peanut-aim-arc)" }
               - { label: "Player Name", name: "playerName", widget: "string" }
               - { label: "Photo", name: "photo", widget: "image", required: false, hint: "Optional portrait/avatar. Falls back to initials if left blank." }
               - { label: "Summary", name: "summary", widget: "string", required: false, hint: "Short teaser shown on the index page (e.g. \"Diamond 2 to Masters in 6 weeks\")." }
+              - { label: "Game", name: "game", widget: "string", required: false, hint: "Used as a Results Library filter, e.g. Overwatch or Valorant." }
+              - { label: "Starting Point", name: "startingPoint", widget: "string", required: false, hint: "e.g. Diamond 2 or inconsistent tracking." }
+              - { label: "Result", name: "result", widget: "string", required: false, hint: "e.g. Masters 4 or improved reactive tracking." }
+              - { label: "Timeframe", name: "timeframe", widget: "string", required: false, hint: "e.g. 6 weeks." }
+              - { label: "Coaching Type", name: "coachingType", widget: "string", required: false, hint: "Used as a filter, e.g. Duo Coaching or Team Coaching." }
+              - { label: "Coaches", name: "coaches", widget: "string", required: false, hint: "Public coach attribution, e.g. psev + EOO." }
+              - { label: "Focus Areas", name: "focusAreas", widget: "text", required: false, hint: "One focus area per line. Used as filter tags." }
+              - label: "Before / After Metrics"
+                name: "metrics"
+                widget: "list"
+                required: false
+                summary: "{{fields.label}}: {{fields.before}} → {{fields.after}}"
+                fields:
+                  - { label: "Metric", name: "label", widget: "string", hint: "e.g. Competitive rank, Smoothness score, Hero pool." }
+                  - { label: "Before", name: "before", widget: "string" }
+                  - { label: "After", name: "after", widget: "string" }
+              - { label: "Published Date", name: "publishedDate", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false }
+              - { label: "Featured Result?", name: "featured", widget: "boolean", default: false, hint: "Featured results sort first." }
+              - { label: "Player Permission Confirmed?", name: "consentConfirmed", widget: "boolean", default: false, hint: "Required for the result to appear publicly. Confirm permission covers the name, quote, screenshots, and progress shown." }
               - { label: "Notes", name: "notes", widget: "markdown", hint: "The write-up: what was worked on, progress over time, etc. Full markdown editor — use the image button in the toolbar to embed before/after screenshots directly in the text, right where they're relevant." }
               - { label: "Document", name: "document", widget: "file", required: false, hint: "Optional. Upload one PDF (a written report, a training plan, etc.) to embed below the notes, with a download link. For more documents, just link them from within the Notes text instead." }
-              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "Uncheck to hide this spotlight without deleting it." }
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: true, hint: "The result appears only when both Enabled and Player Permission Confirmed are checked." }
 
   - name: "team_coaching"
     label: "Team Coaching"
@@ -379,11 +445,11 @@ collections:
             name: "navigation"
             widget: "list"
             summary: "{{fields.label}}"
-            hint: "Controls the nav bar: order, labels, visibility, AND grouping into hover dropdowns (see Parent Group(s) below). The built-in entries (home/roster/news/staff/about/partners/how-it-works/wiki/vod-reviews/threads/roadmap/coaching/spotlights/team-coaching/reading/information/client-login) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
+            hint: "Controls the nav bar: order, labels, visibility, AND grouping into hover dropdowns (see Parent Group(s) below). The built-in entries (home/roster/news/staff/about/partners/how-it-works/coaching-guide/wiki/vod-reviews/threads/roadmap/coaching/spotlights/team-coaching/reading/information/client-login) must keep their exact ID and Path unchanged or their Enabled toggle stops working correctly — but you can reorder them, relabel them, or uncheck Enabled to take that whole section offline (not just hide the menu link). You can also add a brand-new entry for an external link (e.g. Discord) — give it any unique ID and put the full URL in Path."
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / staff / about / partners / how-it-works / wiki / vod-reviews / threads / roadmap / coaching / spotlights / team-coaching / reading / information / client-login. Anything else = a custom link, unrelated to any real page." }
+              - { label: "ID", name: "id", widget: "string", hint: "Built-ins: home / roster / news / staff / about / partners / how-it-works / coaching-guide / wiki / vod-reviews / threads / roadmap / coaching / spotlights / team-coaching / reading / information / client-login. Anything else = a custom link, unrelated to any real page." }
               - { label: "Label", name: "label", widget: "string" }
-              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / staff.html / about.html / partners.html / how-it-works.html / wiki.html / vod-reviews.html / threads.html / roadmap.html / coaching.html / player-spotlights.html / team-coaching.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
+              - { label: "Path / URL", name: "path", widget: "string", required: false, hint: "Built-ins: index.html / roster.html / news.html / staff.html / about.html / partners.html / how-it-works.html / coaching-guide.html / wiki.html / vod-reviews.html / threads.html / roadmap.html / coaching.html / player-spotlights.html / team-coaching.html / reading.html. Custom links: any URL. Leave blank for a dropdown-only label with no page of its own (like \"Information\") — it becomes unclickable text that just triggers its dropdown on hover." }
               - { label: "Parent Group(s)", name: "parents", widget: "string", required: false, hint: "Leave blank to show this item as its own top-level nav button. To nest it as a hover-dropdown item instead, put the ID(s) of the top-level item(s) it should appear under, comma-separated if more than one (e.g. \"home\" or \"home,about\"). An item with children automatically gets a hover dropdown; hovering an item with no children does nothing." }
               - { label: "Enabled", name: "enabled", widget: "boolean", default: true }
           - label: "Social / Contact Links"
@@ -464,7 +530,13 @@ collections:
                 fields:
                   - { label: "Heading", name: "heading", widget: "string" }
                   - { label: "Intro text", name: "intro", widget: "text", required: false }
-              - label: "Player Spotlights Page"
+              - label: "Coaching Comparison Page"
+                name: "coaching-guide"
+                widget: "object"
+                fields:
+                  - { label: "Heading", name: "heading", widget: "string" }
+                  - { label: "Intro text", name: "intro", widget: "text", required: false }
+              - label: "Results Library Page"
                 name: "spotlights"
                 widget: "object"
                 fields:

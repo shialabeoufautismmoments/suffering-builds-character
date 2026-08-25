@@ -181,14 +181,15 @@ function setMetaTags({ title, image }) {
 // someone opens the search panel, so pages that never use search don't pay
 // for the extra fetches.
 async function buildSearchIndex() {
-  const [wiki, threads, roadmap, vod, news, pages, spotlights] = await Promise.all([
+  const [wiki, threads, roadmap, vod, news, pages, spotlights, coachingGuide] = await Promise.all([
     fetch("data/wiki.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ entries: [] })),
     fetch("data/threads.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ threads: [] })),
     fetch("data/roadmap.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ items: [] })),
     fetch("data/vod-reviews.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ reviews: [] })),
     fetch("data/news.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ news: [] })),
     fetch("data/pages.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ pages: [] })),
-    fetch("data/spotlights.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ spotlights: [] }))
+    fetch("data/spotlights.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ spotlights: [] })),
+    fetch("data/coaching-guide.json", { cache: "no-store" }).then(r => r.json()).catch(() => ({ services: [], faq: [] }))
   ]);
 
   const items = [];
@@ -214,9 +215,15 @@ async function buildSearchIndex() {
     type: "Page", title: p.heading || p.label, snippet: "",
     url: `page.html?slug=${encodeURIComponent(p.slug)}`
   }));
-  (spotlights.spotlights || []).filter(s => s.enabled !== false).forEach(s => items.push({
-    type: "Spotlight", title: s.playerName, snippet: s.summary || "",
+  (spotlights.spotlights || []).filter(s => s.enabled !== false && s.consentConfirmed === true).forEach(s => items.push({
+    type: "Result", title: s.playerName, snippet: [s.summary, s.startingPoint, s.result, s.focusAreas].filter(Boolean).join(" "),
     url: `player-spotlight.html?slug=${encodeURIComponent(s.slug)}`
+  }));
+  (coachingGuide.services || []).filter(service => service.enabled !== false).forEach(service => items.push({
+    type: "Coaching", title: service.name, snippet: [service.bestFor, service.price, service.support].filter(Boolean).join(" "), url: "coaching-guide.html"
+  }));
+  (coachingGuide.faq || []).filter(item => item.enabled !== false).forEach(item => items.push({
+    type: "FAQ", title: item.question, snippet: item.answer || "", url: "coaching-guide.html"
   }));
 
   return items;

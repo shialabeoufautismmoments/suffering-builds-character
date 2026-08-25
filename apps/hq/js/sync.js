@@ -41,7 +41,7 @@ Sync.mergeArray = function (local = [], remote = []) {
 
 Sync.merge = function (local, remote) {
   const merged = { ...remote, ...local };
-  ['clients', 'playlists', 'vods', 'matches', 'sessions', 'leads', 'benchmarks', 'scheduled', 'reminders', 'packageTemplates', 'coaches']
+  ['clients', 'playlists', 'vods', 'matches', 'sessions', 'feedback', 'leads', 'benchmarks', 'scheduled', 'reminders', 'packageTemplates', 'coaches']
     .forEach(key => { merged[key] = Sync.mergeArray(local[key], remote[key]); });
   merged.scenarios = { ...(remote.scenarios || {}), ...(local.scenarios || {}) };
   merged.playbook = { ...(remote.playbook || {}), ...(local.playbook || {}) };
@@ -53,7 +53,7 @@ Sync.merge = function (local, remote) {
 Sync.apply = async function (data) {
   if (!data || !Array.isArray(data.clients)) return false;
   const defaults = {
-    clients: [], scenarios: {}, playlists: [], vods: [], matches: [], sessions: [],
+    clients: [], scenarios: {}, playlists: [], vods: [], matches: [], sessions: [], feedback: [],
     playbook: {}, leads: [], benchmarks: [], scheduled: [], reminders: [],
     packageTemplates: [], coaches: [], settings: {}, cloud: { revision: 0, updatedAt: null },
     activeClientId: null,

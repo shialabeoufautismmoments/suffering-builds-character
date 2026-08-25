@@ -69,6 +69,20 @@ function publicPlan(plan) {
 function clientView(workspace, client) {
   const clientId = client.id;
   const sessions = (workspace.sessions || []).filter(session => session.clientId === clientId);
+  const feedback = (workspace.feedback || []).filter(item => item.clientId === clientId).map(item => ({
+    id: item.id,
+    sessionId: item.sessionId,
+    rating: num(item.rating),
+    privateNote: item.privateNote || "",
+    issue: !!item.issue,
+    issueDetails: item.issueDetails || "",
+    testimonialAllowed: !!item.testimonialAllowed,
+    publicQuote: item.testimonialAllowed ? item.publicQuote || "" : "",
+    status: item.status || "new",
+    coachResponse: item.coachResponse || "",
+    createdAt: item.createdAt || "",
+    updatedAt: item.updatedAt || ""
+  }));
   const scheduled = (workspace.scheduled || []).filter(item => item.clientId === clientId && !item.done)
     .map(item => ({ id: item.id, date: item.date || "", time: item.time || "", notes: item.notes || "" }));
   const packages = (client.packages || []).map(p => ({
@@ -133,9 +147,11 @@ function clientView(workspace, client) {
     vods: publicVods,
     matches: (workspace.matches || []).filter(item => item.clientId === clientId),
     scheduled,
+    feedback,
     sessions: sessions.map(session => ({
       id: session.id,
       date: session.date || "",
+      durationMin: num(session.durationMin),
       topics: session.topics || "",
       notes: session.notes || "",
       homework: (session.homework || []).map(homework => ({
@@ -310,6 +326,43 @@ function applyClientNote(client, input) {
   });
 }
 
+function applySessionFeedback(workspace, client, input) {
+  const sessionId = clean(input.sessionId, 80);
+  const session = (workspace.sessions || []).find(item => item.id === sessionId && item.clientId === client.id);
+  const rating = Math.trunc(num(input.rating));
+  if (!session || num(session.durationMin) <= 0 || rating < 1 || rating > 5) return;
+  workspace.feedback ||= [];
+  const existing = workspace.feedback.find(item => item.clientId === client.id && item.sessionId === sessionId);
+  const now = new Date().toISOString();
+  const testimonialAllowed = !!input.testimonialAllowed;
+  const issue = !!input.issue;
+  const publicQuote = testimonialAllowed ? clean(input.publicQuote, 1800) : "";
+  const quoteNeedsReview = !existing?.testimonialAllowed || publicQuote !== (existing?.publicQuote || "");
+  const data = {
+    id: existing?.id || clean(input.id, 80) || uid(),
+    clientId: client.id,
+    sessionId,
+    coachId: existing?.coachId || session.coachId || client.coachId || "",
+    rating,
+    privateNote: clean(input.privateNote, 4000),
+    issue,
+    issueDetails: issue ? clean(input.issueDetails, 3000) : "",
+    testimonialAllowed,
+    publicQuote,
+    priority: issue || rating <= 2 ? "high" : rating === 3 ? "normal" : "low",
+    status: "new",
+    publicationStatus: testimonialAllowed
+      ? (quoteNeedsReview ? "Not reviewed" : existing?.publicationStatus || "Not reviewed")
+      : "Permission not granted",
+    permissionUpdatedAt: now,
+    source: "client-app",
+    createdAt: existing?.createdAt || now,
+    updatedAt: now,
+  };
+  if (existing) Object.assign(existing, data);
+  else workspace.feedback.push(data);
+}
+
 function applyHomework(workspace, client, input) {
   const session = (workspace.sessions || []).find(item => item.clientId === client.id && item.id === input.sessionId);
   const homework = session && (session.homework || []).find(item => item.id === input.homeworkId);
@@ -401,6 +454,7 @@ export default async (request) => {
     (changes.vodReplies || []).slice(0, 50).forEach(item => applyVodReply(workspace, client, item));
     (changes.sessionRequests || []).slice(0, 10).forEach(item => applySessionRequest(client, item));
     (changes.clientNotes || []).slice(0, 10).forEach(item => applyClientNote(client, item));
+    (changes.sessionFeedback || []).slice(0, 10).forEach(item => applySessionFeedback(workspace, client, item));
     if (changes.avatar) applyAvatar(client, changes.avatar);
     // Deletes run after adds so an edit (delete old id + add new) leaves the
     // recomputed PR reflecting the new value.

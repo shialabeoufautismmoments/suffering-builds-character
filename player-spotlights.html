@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Player Spotlights — Hone</title>
+  <title>Results Library — Hone</title>
   <meta name="description" content="HONE your skills. Suffering Builds Character." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Suffering Builds Character" />
@@ -39,9 +39,16 @@
   </header>
 
   <main>
-    <h2 class="section-title" data-page-heading>Player Spotlights</h2>
+    <h2 class="section-title" data-page-heading>Results Library</h2>
     <p class="page-intro" data-page-intro></p>
-    <div class="staff-grid" id="spotlights-grid"></div>
+    <section class="results-toolbar" aria-label="Filter player results">
+      <label><span>Search</span><input id="results-search" type="search" placeholder="Player, coach, focus area..." /></label>
+      <label><span>Game</span><select id="results-game"><option value="">All games</option></select></label>
+      <label><span>Coaching</span><select id="results-type"><option value="">All coaching types</option></select></label>
+      <label><span>Focus</span><select id="results-focus"><option value="">All focus areas</option></select></label>
+    </section>
+    <p class="results-count" id="results-count" aria-live="polite"></p>
+    <div class="results-grid" id="spotlights-grid"></div>
   </main>
 
   <footer>

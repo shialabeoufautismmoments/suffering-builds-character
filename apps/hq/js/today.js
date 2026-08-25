@@ -350,6 +350,7 @@ UI.renderers.today = function (el) {
         <button class="btn" onclick="Business.scheduleEdit()">+ Session</button><button class="btn btn-primary" onclick="Today.reminderEdit()">+ Follow-up</button>
       </div>
     </div>
+    ${typeof Feedback !== 'undefined' ? Feedback.alertHtml() : ''}
     <div class="stat-tiles mb">
       <div class="stat-tile"><div class="label">Sessions Today</div><div class="value accent">${sessionsToday.length}</div></div>
       <div class="stat-tile"><div class="label">Overdue Homework</div><div class="value" style="color:${snap.overdueHomework.length ? 'var(--bad)' : 'var(--good)'}">${snap.overdueHomework.length}</div></div>

@@ -189,6 +189,10 @@ function sessions() { return State.data && State.data.sessions || []; }
 function plans() { return State.data && State.data.developmentPlans || []; }
 function playlists() { return State.data && State.data.playlists || []; }
 function vods() { return State.data && State.data.vods || []; }
+function feedbacks() { return State.data && State.data.feedback || []; }
+function feedbackFor(sessionId) { return feedbacks().find(item => item.sessionId === sessionId) || null; }
+function feedbackSessions() { return sessions().filter(session => Number(session.durationMin || 0) > 0); }
+function pendingFeedback() { return feedbackSessions().filter(session => !feedbackFor(session.id)); }
 function sessionRequests() { return client().sessionRequests || []; }
 function clientNotes() { return client().clientNotes || []; }
 function scheduled() { return (State.data && State.data.scheduled) || []; }
@@ -212,7 +216,7 @@ function avatarBadgeHtml(c) {
 function renderShell() {
   const c = client();
   const pending = loadQueue().length;
-  const tabs = [['today', 'Today'], ['dashboard', 'Overview'], ['matches', 'Matches'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['sessions', 'Sessions'], ['notes', 'My Notes'], ['plans', 'Plan'], ['playlists', 'Playlists'], ['vods', `Reviews${unreadVods().length ? ` (${unreadVods().length})` : ''}`]];
+  const tabs = [['today', 'Today'], ['dashboard', 'Overview'], ['matches', 'Matches'], ['kovaaks', "KovaaK's"], ['homework', 'Homework'], ['sessions', 'Sessions'], ['feedback', `Feedback${pendingFeedback().length ? ` (${pendingFeedback().length})` : ''}`], ['notes', 'My Notes'], ['plans', 'Plan'], ['playlists', 'Playlists'], ['vods', `Reviews${unreadVods().length ? ` (${unreadVods().length})` : ''}`]];
   app.innerHTML = `<div class="shell">
     <div class="topbar">
       <div class="brand"><span class="dot"></span>CoachSBC Client</div>
@@ -284,6 +288,7 @@ function renderView() {
   if (State.view === 'kovaaks') return renderKovaaks();
   if (State.view === 'homework') return renderHomework();
   if (State.view === 'sessions') return renderSessions();
+  if (State.view === 'feedback') return renderFeedback();
   if (State.view === 'notes') return renderNotes();
   if (State.view === 'plans') return renderPlans();
   if (State.view === 'playlists') return renderPlaylists();
@@ -533,6 +538,7 @@ function renderSessions() {
   const statusLabel = { open: 'Waiting on coach', scheduled: 'Scheduled', dismissed: 'Handled' };
   const statusStyle = { open: 'color:var(--warn);border-color:var(--warn)', scheduled: 'color:var(--good);border-color:var(--good)', dismissed: '' };
   return `<div class="page-head"><div><h1>Sessions</h1><div class="sub">Request your next session and review recaps your coach wrote up.</div></div></div>
+    ${pendingFeedback().length ? `<div class="banner"><span><b>${pendingFeedback().length} completed session${pendingFeedback().length === 1 ? '' : 's'}</b> waiting for your feedback.</span><button class="btn btn-sm btn-primary" onclick="nav('feedback')">Leave feedback</button></div>` : ''}
     <div class="card mb"><div class="card-head"><h2>Upcoming Sessions</h2></div>
       ${upcoming.length ? upcoming.map(s => `<div class="list-row"><div><b>${fmt(s.date)}${s.time ? ' - ' + E(s.time) : ''}</b>${s.notes ? `<div class="muted">${E(s.notes)}</div>` : ''}</div></div>`).join('') : '<div class="empty">No upcoming sessions scheduled yet.</div>'}
     </div>
@@ -735,6 +741,54 @@ function submitMatch(event) {
     heroes: val('m-heroes').split(',').map(x => MATCH_HERO_NAMES.find(name => name.toLowerCase() === x.trim().toLowerCase()) || x.trim()).filter(Boolean),
     rankBefore: val('m-rankBefore'), rankAfter: val('m-rankAfter'), replayCode: val('m-replayCode'), notes: val('m-notes')
   }] }, editing ? 'Match updated.' : 'Match synced to your coach.');
+}
+
+function feedbackStars(rating) {
+  return `<span class="feedback-rating" aria-label="${rating} out of 5 stars">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</span>`;
+}
+
+function feedbackFormHtml(session) {
+  const saved = feedbackFor(session.id);
+  const rating = Number(saved?.rating || 0);
+  return `<article class="card feedback-form-card">
+    <div class="card-head"><div><h2>${E(session.topics || 'Coaching session')}</h2><span class="muted small">${fmt(session.date)} · ${E(session.durationMin)} minutes</span></div>${saved ? `<span class="pill ${saved.status === 'resolved' ? 'good' : ''}">${saved.status === 'resolved' ? 'Coach followed up' : 'Submitted'}</span>` : '<span class="pill pending-pill">Feedback requested</span>'}</div>
+    ${saved?.coachResponse ? `<div class="notice"><b>Response from your coach</b><p class="mt" style="white-space:pre-wrap">${E(saved.coachResponse)}</p></div>` : ''}
+    <form onsubmit="submitSessionFeedback(event,'${E(session.id)}')">
+      <fieldset class="feedback-rating-field"><legend>Overall experience</legend><div class="feedback-stars-input">${[5,4,3,2,1].map(value => `<label><input type="radio" name="rating" value="${value}" ${value === rating ? 'checked' : ''} required><span aria-hidden="true">★</span><span class="sr-only">${value} star${value === 1 ? '' : 's'}</span></label>`).join('')}</div></fieldset>
+      <label class="field"><span>Private feedback for the coaching team</span><textarea name="privateNote" maxlength="4000" placeholder="What helped most? What should we change next time? This is never published.">${E(saved?.privateNote || '')}</textarea></label>
+      <label class="feedback-check"><input type="checkbox" name="issue" ${saved?.issue ? 'checked' : ''}><span>I need the team to follow up about a problem</span></label>
+      <label class="field"><span>Problem details (optional)</span><textarea name="issueDetails" maxlength="3000" placeholder="Tell us what happened and what resolution would help.">${E(saved?.issueDetails || '')}</textarea></label>
+      <div class="feedback-permission">
+        <label class="feedback-check"><input type="checkbox" name="testimonialAllowed" ${saved?.testimonialAllowed ? 'checked' : ''}><span>You may use the public quote below as a testimonial. My private feedback and problem details remain private.</span></label>
+        <label class="field"><span>Optional public quote</span><textarea name="publicQuote" maxlength="1800" placeholder="A short quote HONE may publish only with the permission above.">${E(saved?.publicQuote || '')}</textarea></label>
+      </div>
+      <button class="btn btn-primary">${saved ? 'Update feedback' : 'Send feedback'}</button>
+      ${saved ? `<span class="muted small"> ${feedbackStars(rating)} Last updated ${fmt(saved.updatedAt || saved.createdAt)}</span>` : ''}
+    </form>
+  </article>`;
+}
+
+function renderFeedback() {
+  const rows = feedbackSessions().slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const submitted = rows.filter(session => feedbackFor(session.id)).length;
+  return `<div class="page-head"><div><h1>Session Feedback</h1><div class="sub">Private feedback helps your coaches adjust the next session. Public testimonial permission is always separate.</div></div></div>
+    <div class="grid cols-3 mb"><div class="stat"><div class="label">Completed sessions</div><div class="value">${rows.length}</div></div><div class="stat"><div class="label">Feedback sent</div><div class="value good">${submitted}</div></div><div class="stat"><div class="label">Waiting for feedback</div><div class="value ${rows.length - submitted ? 'warn' : 'good'}">${rows.length - submitted}</div></div></div>
+    <div class="feedback-form-list">${rows.length ? rows.map(feedbackFormHtml).join('') : '<div class="empty">Feedback forms appear after your coach logs a completed session.</div>'}</div>`;
+}
+
+function submitSessionFeedback(event, sessionId) {
+  event.preventDefault();
+  const values = new FormData(event.currentTarget);
+  const rating = Number(values.get('rating'));
+  if (rating < 1 || rating > 5) return toast('Choose a rating from 1 to 5 stars.', 'bad');
+  const issue = values.get('issue') === 'on';
+  const testimonialAllowed = values.get('testimonialAllowed') === 'on';
+  return syncChanges({ sessionFeedback: [{
+    id: feedbackFor(sessionId)?.id || uid(), sessionId, rating,
+    privateNote: String(values.get('privateNote') || ''), issue,
+    issueDetails: String(values.get('issueDetails') || ''), testimonialAllowed,
+    publicQuote: testimonialAllowed ? String(values.get('publicQuote') || '') : '',
+  }] }, 'Feedback sent privately to your coaching team.');
 }
 function editMatch(id) {
   State.editMatch = matches().find(m => m.id === id) || null;
