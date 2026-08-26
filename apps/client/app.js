@@ -1,4 +1,4 @@
-const State = { code: '', data: null, view: 'today', busy: false, since: null, editMatch: null, editStat: null, avatarPanelOpen: false };
+const State = { code: '', data: null, view: 'today', busy: false, since: null, editMatch: null, editStat: null, avatarPanelOpen: false, mapSort: 'winrate' };
 const app = document.getElementById('app');
 const E = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -523,6 +523,24 @@ function renderMatches() {
     <div class="card"><div class="card-head"><h2>Match log</h2></div>${matchTable(matches().slice().reverse(), true)}</div>`;
 }
 
+function sortMapWinrateRows(rows, sortKey = State.mapSort) {
+  const byName = (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+  return rows.slice().sort((a, b) => {
+    if (sortKey === 'name') return byName(a, b);
+    if (sortKey === 'mode') {
+      const modeOrder = (a.mode || '\uffff').localeCompare(b.mode || '\uffff', undefined, { sensitivity: 'base' });
+      return modeOrder || byName(a, b);
+    }
+    return b.winrate - a.winrate || b.total - a.total || byName(a, b);
+  });
+}
+
+function setMapWinrateSort(sortKey) {
+  if (!['winrate', 'name', 'mode'].includes(sortKey)) return;
+  State.mapSort = sortKey;
+  renderShell();
+}
+
 function mapWinrateStats() {
   const groups = new Map();
   matches().forEach(match => {
@@ -533,16 +551,18 @@ function mapWinrateStats() {
     const key = name.toLowerCase();
     if (!groups.has(key)) groups.set(key, { name, mode: catalogMap?.mode || match.mode || '', wins: 0, losses: 0, draws: 0, total: 0 });
     const row = groups.get(key);
+    if (!row.mode && match.mode) row.mode = match.mode;
     const result = String(match.result || '').toLowerCase();
     if (result === 'win') row.wins += 1;
     else if (result === 'loss') row.losses += 1;
     else if (result === 'draw') row.draws += 1;
     row.total += 1;
   });
-  return [...groups.values()].map(row => {
+  const rows = [...groups.values()].map(row => {
     const decisive = row.wins + row.losses;
     return { ...row, decisive, winrate: decisive ? Math.round((row.wins / decisive) * 100) : 0 };
-  }).sort((a, b) => b.total - a.total || b.winrate - a.winrate || a.name.localeCompare(b.name));
+  });
+  return sortMapWinrateRows(rows);
 }
 
 function renderMapWinrate() {
@@ -555,9 +575,15 @@ function renderMapWinrate() {
   const overallDecisive = totals.wins + totals.losses;
   const overallRate = overallDecisive ? Math.round((totals.wins / overallDecisive) * 100) : 0;
   const bestMap = rows.filter(row => row.decisive).slice().sort((a, b) => b.winrate - a.winrate || b.total - a.total || a.name.localeCompare(b.name))[0];
-  const mostPlayed = rows[0];
+  const mostPlayed = rows.slice().sort((a, b) => b.total - a.total || b.winrate - a.winrate || a.name.localeCompare(b.name))[0];
 
-  return `<div class="page-head"><div><h1>Map Winrate</h1><div class="sub">Your results by map. Draws are shown in your record but are not counted in the winrate percentage.</div></div></div>
+  return `<div class="page-head"><div><h1>Map Winrate</h1><div class="sub">Your results by map. Draws are shown in your record but are not counted in the winrate percentage.</div></div>
+      <label class="map-sort-control"><span>Sort maps</span><select aria-label="Sort maps" onchange="setMapWinrateSort(this.value)">
+        <option value="winrate" ${State.mapSort === 'winrate' ? 'selected' : ''}>Winrate (high to low)</option>
+        <option value="name" ${State.mapSort === 'name' ? 'selected' : ''}>Name (A-Z)</option>
+        <option value="mode" ${State.mapSort === 'mode' ? 'selected' : ''}>Mode (A-Z)</option>
+      </select></label>
+    </div>
     <div class="grid cols-3 mb">
       <div class="stat"><div class="label">Overall map winrate</div><div class="value ${overallDecisive ? (overallRate >= 50 ? 'good' : 'bad') : ''}">${overallDecisive ? `${overallRate}%` : '-'}</div><div class="muted">${totals.wins}-${totals.losses}-${totals.draws} record</div></div>
       <div class="stat"><div class="label">Best map</div><div class="value accent map-stat-name">${E(bestMap?.name || '-')}</div><div class="muted">${bestMap ? `${bestMap.winrate}% across ${bestMap.total} match${bestMap.total === 1 ? '' : 'es'}` : 'Log a decisive result'}</div></div>

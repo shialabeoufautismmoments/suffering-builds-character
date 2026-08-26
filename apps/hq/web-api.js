@@ -41,7 +41,7 @@
 
   window.COACHSBC_WEB = true;
   window.api = {
-    appVersion: async () => 'web-3.3.0',
+    appVersion: async () => 'web-3.4.0',
     loadStore: async () => localStorage.getItem(STORE_KEY),
     saveStore: async data => { localStorage.setItem(STORE_KEY, String(data || '')); return true; },
     coachUnlock: async password => {

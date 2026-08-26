@@ -22,7 +22,7 @@
     return result;
   }
   window.clientApi = {
-    appVersion: async () => 'web-3.6.0',
+    appVersion: async () => 'web-3.7.0',
     cacheGet: async () => cacheGet(),
     cacheSet: async data => cacheSet(data),
     workspaceGet: async code => {

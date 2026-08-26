@@ -610,6 +610,11 @@ canvas { display: block; max-width: 100%; }
   .coach-month-bars > div > span { font-size: .58rem; }
 }
 
+/* ── Map winrate sorting ──────────────────────────────────────────────────── */
+.map-sort-control { display: flex; align-items: center; gap: .45rem; color: var(--text-dim); font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.map-sort-control select { width: auto; min-width: 170px; padding: .34rem 1.8rem .34rem .5rem; font-size: .72rem; font-weight: 500; text-transform: none; letter-spacing: normal; }
+@media (max-width: 620px) { .map-sort-control span { display: none; } .map-sort-control select { min-width: 145px; } }
+
 /* ── Encrypted cloud sync ─────────────────────────────────────────────────── */
 .sync-panel { border: 1px solid var(--border); border-left: 3px solid var(--warn); background: var(--bg-2); border-radius: var(--radius-sm); padding: .75rem; }
 .sync-panel.good { border-left-color: var(--good); }

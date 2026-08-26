@@ -1,7 +1,7 @@
 // Precaches the app shell so the client app opens and runs offline; the
 // offline change-queue in app.js then holds any edits until the connection
 // returns. Bump CACHE to force clients onto a new shell after a deploy.
-const CACHE = 'coachsbc-client-v8';
+const CACHE = 'coachsbc-client-v9';
 const SHELL = [
   './',
   './index.html',

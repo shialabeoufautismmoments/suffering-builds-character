@@ -9,6 +9,7 @@ const MAP_MODE = {};
 const RESULT_COLOR = { Win: 'var(--good)', Loss: 'var(--bad)', Draw: 'var(--text-muted)' };
 
 Matches._formHeroes = [];
+Matches.mapSort = 'winrate';
 
 Matches.loadCatalog = function (catalog) {
   OW_MAPS.splice(0, OW_MAPS.length, ...(catalog?.maps || []).map(map => ({ ...map })));
@@ -55,6 +56,32 @@ Matches.groupStats = function (matches, keyFn, canonicalList) {
     .sort((a, b) => b.total - a.total || b.winrate - a.winrate);
 };
 
+Matches.sortMapStats = function (rows, sortKey = Matches.mapSort) {
+  const byName = (a, b) => a.key.localeCompare(b.key, undefined, { sensitivity: 'base' });
+  return rows.slice().sort((a, b) => {
+    if (sortKey === 'name') return byName(a, b);
+    if (sortKey === 'mode') {
+      const modeOrder = (a.mode || '\uffff').localeCompare(b.mode || '\uffff', undefined, { sensitivity: 'base' });
+      return modeOrder || byName(a, b);
+    }
+    return b.winrate - a.winrate || b.total - a.total || byName(a, b);
+  });
+};
+
+Matches.setMapSort = function (sortKey) {
+  if (!['winrate', 'name', 'mode'].includes(sortKey)) return;
+  Matches.mapSort = sortKey;
+  UI.refresh();
+};
+
+Matches.mapSortControl = function () {
+  return `<label class="map-sort-control"><span>Sort maps</span><select aria-label="Sort maps" onchange="Matches.setMapSort(this.value)">
+    <option value="winrate" ${Matches.mapSort === 'winrate' ? 'selected' : ''}>Winrate (high to low)</option>
+    <option value="name" ${Matches.mapSort === 'name' ? 'selected' : ''}>Name (A-Z)</option>
+    <option value="mode" ${Matches.mapSort === 'mode' ? 'selected' : ''}>Mode (A-Z)</option>
+  </select></label>`;
+};
+
 /* -- View ------------------------------------------------------------------- */
 UI.renderers.matches = function (el) {
   if (UI.requireClient(el, 'Matches')) return;
@@ -62,7 +89,11 @@ UI.renderers.matches = function (el) {
   const ms = clientMatches(c.id).slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.createdAt.localeCompare(a.createdAt));
   const rec = Matches.record(ms);
   const byHero = Matches.groupStats(ms, m => m.heroes, typeof HEROES !== 'undefined' ? HEROES.map(h => h.name) : null);
-  const byMap = Matches.groupStats(ms, m => [m.map], OW_MAPS.map(x => x.name));
+  const mapNames = OW_MAPS.map(x => x.name);
+  const byMap = Matches.sortMapStats(Matches.groupStats(ms, m => [m.map], mapNames).map(row => {
+    const sample = ms.find(match => match.mode && Matches.canonicalize(match.map, mapNames).toLowerCase() === row.key.toLowerCase());
+    return { ...row, mode: MAP_MODE[row.key] || sample?.mode || '' };
+  }));
   const byRole = Matches.groupStats(ms, m => [m.role], ['Tank', 'Damage', 'Support']);
 
   el.innerHTML = `
@@ -91,8 +122,8 @@ UI.renderers.matches = function (el) {
         ${Matches.statTable(byHero, 'Hero')}
       </div>
       <div class="card">
-        <div class="card-head"><h2>By Map</h2></div>
-        ${Matches.statTable(byMap, 'Map', m => MAP_MODE[m] || '')}
+        <div class="card-head"><h2>By Map</h2>${Matches.mapSortControl()}</div>
+        ${Matches.statTable(byMap, 'Map', row => row.mode || '')}
       </div>
     </div>
 
@@ -119,8 +150,9 @@ Matches.statTable = function (rows, label, sub) {
     ${rows.map(r => {
       const pct = r.w + r.l ? r.winrate : 0;
       const col = pct >= 55 ? 'var(--good)' : pct >= 45 ? 'var(--warn)' : 'var(--bad)';
+      const detail = sub ? sub(r) : '';
       return `<tr>
-        <td><b>${UI.escape(r.key)}</b>${sub && sub(r.key) ? ` <span class="muted" style="font-size:.72rem">${sub(r.key)}</span>` : ''}</td>
+        <td><b>${UI.escape(r.key)}</b>${detail ? ` <span class="muted" style="font-size:.72rem">${UI.escape(detail)}</span>` : ''}</td>
         <td>${r.total}</td><td>${r.w}-${r.l}</td>
         <td style="color:${r.w + r.l ? col : 'var(--text-dim)'};font-weight:600">${r.w + r.l ? pct + '%' : '-'}</td>
         <td style="width:80px"><div class="mech-track" style="height:6px"><div class="mech-fill" style="width:${pct}%;background:${col}"></div></div></td>
