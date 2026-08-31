@@ -839,27 +839,31 @@ VOD links, and rate-limits each IP/domain to five submissions per minute.
 
 ### Discord client-stats and meeting bot
 
-The Discord bot is implemented as signed HTTP interactions at `/api/discord`,
-so it runs in the existing Netlify project without a separate always-on bot
-server or privileged Discord gateway intents. Its commands read and update the
-same Netlify Blobs workspace used by Coach HQ and the client app:
+The Discord bot is implemented as signed HTTP interactions at
+`https://sufferingbuildscharacter.com/api/discord`, so it runs in the existing
+Suffering Builds Character Netlify site without a second website, hosting
+project, database, always-on bot server, or privileged Discord gateway intents.
+Its commands read and update the same Netlify Blobs workspace used by Coach HQ
+and the client app:
 
-- `/client-stats code:<code> [map]` returns a private overall W-L-D record and
-  per-map win rates. Draws appear in the record but do not count toward the
-  percentage.
-- `/meeting schedule code:<code> date:<YYYY-MM-DD> time:<HH:MM> ...` adds the
-  meeting to Coach HQ. It can select the client Discord member, reminder
-  channel, timezone, notes, and 1-52 weekly occurrences.
-- `/meeting list [code]` returns upcoming meetings and their IDs privately.
+- `/client-stats code:<code> [map]` or `/client-stats client:@member [map]`
+  returns an overall W-L-D record and per-map win rates. Draws appear in the
+  record but do not count toward the percentage.
+- `/meeting schedule date:<YYYY-MM-DD> time:<HH:MM> code:<code> ...` or the
+  same command with `client:@member` adds the meeting to Coach HQ. It can select
+  the reminder channel, timezone, notes, and 1-52 weekly occurrences.
+- `/meeting list [code] [client]` returns upcoming meetings and their IDs.
 - `/meeting cancel meeting-id:<id> [series]` cancels one meeting or its full
   repeating series so pending reminders are skipped.
 
-All command responses are ephemeral. Commands default to members with Discord's
-**Manage Server** permission, and the function independently checks the guild,
-configured staff roles/users, or Manage Server/Administrator permission before
-reading client data. If a configured staff role does not have Manage Server,
-grant that role access under **Server Settings → Integrations → the bot →
-Commands** as well. The client code is never echoed in a response.
+Command responses are public so everyone in the channel can see the bot's stats,
+schedule confirmations, meeting lists, and errors. Commands default to members
+with Discord's **Manage Server** permission, and the function independently
+checks the guild, configured staff roles/users, or Manage Server/Administrator
+permission before reading client data. If a configured staff role does not have
+Manage Server, grant that role access under **Server Settings → Integrations →
+the bot → Commands** as well. Client codes are accepted as command inputs but
+are never echoed by the bot's response.
 
 #### One-time setup
 
@@ -912,7 +916,7 @@ Commands** as well. The client code is never echoed in a response.
    in the Discord Developer Portal to:
 
    ```text
-   https://YOUR-DOMAIN/api/discord
+   https://sufferingbuildscharacter.com/api/discord
    ```
 
    Discord will send a signed PING and accept the URL after the deployed
@@ -940,10 +944,12 @@ Commands** as well. The client code is never echoed in a response.
    file afterward if you do not want the token retained on disk.
 
 7. **Link each client's Discord account.** In Coach HQ → client profile, put the
-   numeric Discord User ID in **Discord username / User ID**, or choose the
-   `client` member each time `/meeting schedule` is used. The selected channel
-   and member are stored on that meeting, so reminders keep their intended
-   destination even if the global default later changes.
+   numeric Discord User ID in **Discord username / User ID**. Linked clients can
+   then be selected with `client:@member` instead of entering a client code. You
+   can also provide both: the code selects the website client and the tagged
+   member receives the reminder. The selected channel and member are stored on
+   that meeting, so reminders keep their intended destination even if the
+   global default later changes.
 
 8. **Test the workflow.** Run `/client-stats`, schedule a meeting far enough in
    the future to hit an offset, then check **Netlify → Functions** for the

@@ -6,7 +6,9 @@ import {
   DISCORD_COMMANDS,
   clientMapStats,
   createMeetings,
+  findClientByDiscordId,
   isAuthorizedStaff,
+  messageResponse,
   statsEmbed,
   verifyDiscordRequest,
   zonedTimeToUtc,
@@ -34,10 +36,18 @@ function workspace() {
   };
 }
 
-test("Discord command definitions expose the requested private workflows", () => {
+test("Discord command definitions expose the requested workflows", () => {
   assert.deepEqual(DISCORD_COMMANDS.map(command => command.name), ["client-stats", "meeting"]);
   assert.ok(DISCORD_COMMANDS.every(command => command.default_member_permissions === "32"));
   assert.ok(DISCORD_COMMANDS.every(command => command.contexts.length === 1 && command.contexts[0] === 0));
+  const statsOptions = DISCORD_COMMANDS.find(command => command.name === "client-stats").options;
+  assert.equal(statsOptions.find(option => option.name === "code").required, false);
+  assert.equal(statsOptions.find(option => option.name === "client").type, 6);
+});
+
+test("bot command replies are public by default", () => {
+  assert.equal(messageResponse({ content: "Visible" }).data.flags, undefined);
+  assert.equal(messageResponse({ content: "Private", ephemeral: true }).data.flags, 64);
 });
 
 test("Discord signatures are verified and stale requests are rejected", () => {
@@ -91,7 +101,10 @@ test("staff authorization accepts managers and configured roles only in the conf
 });
 
 test("client stats group map names case-insensitively and exclude draws from win rate", () => {
-  const stats = clientMapStats(workspace(), CLIENT_CODE.toLowerCase());
+  const data = workspace();
+  const linked = findClientByDiscordId(data, USER_ID);
+  assert.equal(linked.id, CLIENT_ID);
+  const stats = clientMapStats(data, linked);
   assert.equal(stats.client.name, "Player One");
   assert.deepEqual(stats.overall, { wins: 2, losses: 1, draws: 1, total: 4, decisive: 3, winRate: 67 });
   const kingsRow = stats.maps.find(map => map.name === "King's Row");

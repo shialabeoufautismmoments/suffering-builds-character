@@ -8,6 +8,7 @@ import {
   discordId,
   discordTimestamp,
   findClientByCode,
+  findClientByDiscordId,
   interactionUserId,
   isAuthorizedStaff,
   messageResponse,
@@ -71,24 +72,43 @@ function formatMeetingList(items) {
   return `${lines.join("\n")}${remaining > 0 ? `\n…and ${remaining} more.` : ""}`;
 }
 
+function resolveClient(workspace, { code, userId } = {}) {
+  const normalizedCode = clean(code, 80);
+  const normalizedUserId = discordId(userId);
+  if (!normalizedCode && !normalizedUserId) {
+    return { error: "Provide either a private client code or tag a linked Discord client." };
+  }
+  const byCode = normalizedCode ? findClientByCode(workspace, normalizedCode) : null;
+  const byUser = normalizedUserId ? findClientByDiscordId(workspace, normalizedUserId) : null;
+  if (normalizedCode && !byCode) return { error: "That client code was not found." };
+  if (!normalizedCode && normalizedUserId && !byUser) {
+    return { error: "That Discord user is not linked to a Coach HQ client. Link their numeric Discord User ID or provide their client code." };
+  }
+  if (byCode && byUser && byCode.id !== byUser.id) {
+    return { error: "That code and Discord user are linked to different clients. Check the selection and try again." };
+  }
+  return { client: byCode || byUser };
+}
+
 async function handleClientStats(interaction, workspace) {
   const options = commandOptions(interaction.data?.options);
-  const stats = clientMapStats(workspace, options.code, options.map);
-  if (!stats) return unavailable("That client code was not found.");
+  const resolved = resolveClient(workspace, { code: options.code, userId: options.client });
+  if (resolved.error) return unavailable(resolved.error);
+  const stats = clientMapStats(workspace, resolved.client, options.map);
   return json(messageResponse({ embeds: [statsEmbed(stats)] }));
 }
 
 async function handleMeetingSchedule(interaction, store, options) {
   if (!env("DISCORD_BOT_TOKEN")) return unavailable("DISCORD_BOT_TOKEN is not configured on Netlify, so reminders cannot be delivered.");
-  const code = options.code;
   const date = clean(options.date, 10);
   const time = clean(options.time, 5);
   const repeatWeeks = Math.max(1, Math.min(52, Number(options["repeat-weeks"] || 1)));
   if (!Number.isInteger(repeatWeeks)) return unavailable("Repeat weeks must be a whole number from 1 to 52.");
 
   const outcome = await mutateWorkspace(store, workspace => {
-    const client = findClientByCode(workspace, code);
-    if (!client) return { skipWrite: true, error: "That client code was not found." };
+    const resolved = resolveClient(workspace, { code: options.code, userId: options.client });
+    if (resolved.error) return { skipWrite: true, error: resolved.error };
+    const client = resolved.client;
     const timeZone = clean(options.timezone, 80)
       || env("COACH_TIME_ZONE")
       || clean(workspace.settings?.timeZone, 80)
@@ -130,8 +150,13 @@ async function handleMeetingSchedule(interaction, store, options) {
 async function handleMeetingList(store, options) {
   const workspace = await readWorkspace(store);
   if (!workspace) return unavailable("The coaching workspace has not been synced yet.");
-  const items = upcomingMeetings(workspace, options.code);
-  if (items === null) return unavailable("That client code was not found.");
+  let filter = "";
+  if (options.code || options.client) {
+    const resolved = resolveClient(workspace, { code: options.code, userId: options.client });
+    if (resolved.error) return unavailable(resolved.error);
+    filter = resolved.client;
+  }
+  const items = upcomingMeetings(workspace, filter);
   return json(messageResponse({ content: formatMeetingList(items) }));
 }
 

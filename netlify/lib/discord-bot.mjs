@@ -20,9 +20,15 @@ export const DISCORD_COMMANDS = [
         type: 3,
         name: "code",
         description: "The private client code from Coach HQ",
-        required: true,
+        required: false,
         min_length: 4,
         max_length: 80,
+      },
+      {
+        type: 6,
+        name: "client",
+        description: "Linked Discord client (use this or the private client code)",
+        required: false,
       },
       {
         type: 3,
@@ -46,10 +52,10 @@ export const DISCORD_COMMANDS = [
         name: "schedule",
         description: "Schedule one or more weekly client meetings",
         options: [
-          { type: 3, name: "code", description: "The private client code", required: true, min_length: 4, max_length: 80 },
           { type: 3, name: "date", description: "First date in YYYY-MM-DD format", required: true, min_length: 10, max_length: 10 },
           { type: 3, name: "time", description: "Start time in 24-hour HH:MM format", required: true, min_length: 5, max_length: 5 },
-          { type: 6, name: "client", description: "Discord member to ping (uses the linked client account if omitted)", required: false },
+          { type: 3, name: "code", description: "Private client code (use this or a linked Discord client)", required: false, min_length: 4, max_length: 80 },
+          { type: 6, name: "client", description: "Discord client to look up and ping", required: false },
           { type: 7, name: "channel", description: "Reminder channel (defaults to the current channel)", required: false, channel_types: [0, 5, 10, 11, 12] },
           { type: 4, name: "repeat-weeks", description: "Number of weekly meetings, from 1 to 52", required: false, min_value: 1, max_value: 52 },
           { type: 3, name: "timezone", description: "IANA timezone, for example America/Winnipeg", required: false, max_length: 80 },
@@ -62,6 +68,7 @@ export const DISCORD_COMMANDS = [
         description: "List upcoming meetings",
         options: [
           { type: 3, name: "code", description: "Optional private client code", required: false, min_length: 4, max_length: 80 },
+          { type: 6, name: "client", description: "Optional linked Discord client", required: false },
         ],
       },
       {
@@ -135,6 +142,14 @@ export function findClientByCode(workspace, code) {
   return (workspace?.clients || []).find(client => normalizeCode(client.clientCode) === normalized) || null;
 }
 
+export function findClientByDiscordId(workspace, userId) {
+  const normalized = discordId(userId);
+  if (!normalized) return null;
+  return (workspace?.clients || []).find(client =>
+    discordId(client.discordId) === normalized || discordId(client.discord) === normalized
+  ) || null;
+}
+
 function record(matches) {
   const wins = matches.filter(match => clean(match.result, 20).toLowerCase() === "win").length;
   const losses = matches.filter(match => clean(match.result, 20).toLowerCase() === "loss").length;
@@ -151,7 +166,7 @@ function record(matches) {
 }
 
 export function clientMapStats(workspace, code, mapFilter = "") {
-  const client = findClientByCode(workspace, code);
+  const client = code && typeof code === "object" ? code : findClientByCode(workspace, code);
   if (!client) return null;
   const matches = (workspace.matches || []).filter(match => match.clientId === client.id);
   const groups = new Map();
@@ -353,7 +368,7 @@ export function discordTimestamp(instant, style = "F") {
 }
 
 export function upcomingMeetings(workspace, code = "", now = new Date()) {
-  const client = code ? findClientByCode(workspace, code) : null;
+  const client = code && typeof code === "object" ? code : code ? findClientByCode(workspace, code) : null;
   if (code && !client) return null;
   const clients = new Map((workspace.clients || []).map(item => [item.id, item]));
   const fallbackZone = clean(workspace.settings?.timeZone, 80) || DEFAULT_TIME_ZONE;
@@ -367,7 +382,7 @@ export function upcomingMeetings(workspace, code = "", now = new Date()) {
     .sort((left, right) => left.instant - right.instant);
 }
 
-export function messageResponse({ content = "", embeds, ephemeral = true }) {
+export function messageResponse({ content = "", embeds, ephemeral = false }) {
   return {
     type: 4,
     data: {
