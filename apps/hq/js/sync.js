@@ -27,7 +27,9 @@ Sync.renderSettingsStatus = function () {
   if (box) box.innerHTML = Sync.settingsHtml();
 };
 
-Sync.recordTime = item => new Date(item && (item.updatedAt || item.createdAt || item.date) || 0).getTime();
+// A future appointment date is not a modification timestamp. Using it here
+// could make a stale local meeting beat a newer Discord cancellation.
+Sync.recordTime = item => new Date(item && (item.updatedAt || item.createdAt) || 0).getTime();
 
 Sync.mergeArray = function (local = [], remote = []) {
   const map = new Map();

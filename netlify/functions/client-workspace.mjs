@@ -460,7 +460,9 @@ function applyVodReply(workspace, client, input) {
 }
 
 export default async (request) => {
-  const workspace = await store().get(key, { type: "json" }) || null;
+  const workspaceStorage = store();
+  const workspaceRecord = await workspaceStorage.getWithMetadata(key, { type: "json", consistency: "strong" });
+  const workspace = workspaceRecord?.data || null;
   if (!workspace) return json({ error: "The coaching workspace has not been synced yet." }, 404);
 
   if (request.method === "GET") {
@@ -497,7 +499,9 @@ export default async (request) => {
       revision: Number(workspace.cloud?.revision || 0) + 1,
       updatedAt: new Date().toISOString()
     };
-    await store().setJSON(key, workspace);
+    if (!workspaceRecord?.etag) return json({ error: "The workspace could not be locked for a safe update." }, 409);
+    const write = await workspaceStorage.setJSON(key, workspace, { onlyIfMatch: workspaceRecord.etag });
+    if (!write.modified) return json({ error: "The workspace changed while syncing. Please retry." }, 409);
     return json({ data: clientView(workspace, client) });
   }
 

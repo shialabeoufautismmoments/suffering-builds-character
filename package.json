@@ -4,7 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "check": "node scripts/check-site.mjs"
+    "check": "node scripts/check-site.mjs && node --test",
+    "test": "node --test",
+    "discord:register": "node scripts/register-discord-commands.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^10.7.9"

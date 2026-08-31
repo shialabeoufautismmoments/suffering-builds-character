@@ -159,7 +159,8 @@ Business.scheduleEdit = function (id, presetDate) {
 };
 Business.scheduleSave = function (id) {
   const data = { clientId: document.getElementById('sc-client').value, date: document.getElementById('sc-date').value || UI.today(), time: document.getElementById('sc-time').value, notes: document.getElementById('sc-notes').value.trim() };
-  if (id) { Object.assign(DB.scheduled.find(x => x.id === id), data); }
+  const now = new Date().toISOString();
+  if (id) { Object.assign(DB.scheduled.find(x => x.id === id), data, { updatedAt: now }); }
   else {
     DB.scheduled ||= [];
     const repeat = Math.max(1, Math.min(52, parseInt((document.getElementById('sc-repeat') || {}).value) || 1));
@@ -168,12 +169,12 @@ Business.scheduleSave = function (id) {
     for (let i = 0; i < repeat; i++) {
       const d = new Date(data.date + 'T00:00:00'); d.setDate(d.getDate() + i * 7);
       const ds = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-      DB.scheduled.push({ id: uid(), ...data, date: ds, done: false, recurId });
+      DB.scheduled.push({ id: uid(), ...data, date: ds, done: false, recurId, createdAt: now, updatedAt: now });
     }
   }
   saveDB(); UI.closeModal(); UI.toast('Session scheduled.', 'good'); UI.refresh();
 };
-Business.toggleDone = function (id) { const s = DB.scheduled.find(x => x.id === id); s.done = !s.done; saveDB(); UI.refresh(); };
+Business.toggleDone = function (id) { const s = DB.scheduled.find(x => x.id === id); s.done = !s.done; s.updatedAt = new Date().toISOString(); saveDB(); UI.refresh(); };
 Business.scheduleRemove = function (id) {
   const s = DB.scheduled.find(x => x.id === id);
   if (s && s.recurId && DB.scheduled.filter(x => x.recurId === s.recurId).length > 1) {

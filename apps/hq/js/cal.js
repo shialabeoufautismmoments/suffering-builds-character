@@ -106,14 +106,15 @@ Cal.ingest = function (bookings) {
     const start = new Date(b.start);
     if (isNaN(start)) return;
     const att = (b.attendees && b.attendees[0]) || {};
+    const now = new Date().toISOString();
     const rec = {
       date: Cal._date(start), time: Cal._time(start),
       notes: b.title || ('Booking with ' + (att.name || 'client')),
-      clientId: Cal.matchClient(att), calUid: b.uid || '', source: 'cal', done: false,
+      clientId: Cal.matchClient(att), calUid: b.uid || '', source: 'cal', done: false, updatedAt: now,
     };
     const existing = b.uid && DB.scheduled.find(s => s.calUid && s.calUid === b.uid);
     if (existing) Object.assign(existing, rec, { id: existing.id, done: existing.done });
-    else { DB.scheduled.push({ id: uid(), ...rec }); added++; }
+    else { DB.scheduled.push({ id: uid(), ...rec, createdAt: now }); added++; }
   });
   return added;
 };

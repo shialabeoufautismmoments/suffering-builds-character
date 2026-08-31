@@ -25,7 +25,8 @@ export default async (request) => {
       return json({ error: "Workspace is too large to sync." }, 413);
     }
 
-    const current = await store.get(key, { type: "json" });
+    const currentRecord = await store.getWithMetadata(key, { type: "json", consistency: "strong" });
+    const current = currentRecord?.data || null;
     const currentRevision = Number(current?.cloud?.revision || 0);
     const baseRevision = Number(body.baseRevision || 0);
     if (current && baseRevision !== currentRevision) {
@@ -40,7 +41,12 @@ export default async (request) => {
         updatedAt: new Date().toISOString()
       }
     };
-    await store.setJSON(key, saved);
+    const condition = currentRecord?.etag ? { onlyIfMatch: currentRecord.etag } : { onlyIfNew: true };
+    const write = await store.setJSON(key, saved, condition);
+    if (!write.modified) {
+      const latest = await store.get(key, { type: "json", consistency: "strong" });
+      return json({ error: "Workspace changed on another device.", data: latest }, 409);
+    }
     return json({ data: saved });
   }
 

@@ -836,3 +836,127 @@ Project configuration → Environment variables**, with access for Functions:
 Redeploy after adding the variables. The endpoint validates and length-limits
 every field, disables Discord mentions, includes a honeypot, accepts only HTTP(S)
 VOD links, and rate-limits each IP/domain to five submissions per minute.
+
+### Discord client-stats and meeting bot
+
+The Discord bot is implemented as signed HTTP interactions at `/api/discord`,
+so it runs in the existing Netlify project without a separate always-on bot
+server or privileged Discord gateway intents. Its commands read and update the
+same Netlify Blobs workspace used by Coach HQ and the client app:
+
+- `/client-stats code:<code> [map]` returns a private overall W-L-D record and
+  per-map win rates. Draws appear in the record but do not count toward the
+  percentage.
+- `/meeting schedule code:<code> date:<YYYY-MM-DD> time:<HH:MM> ...` adds the
+  meeting to Coach HQ. It can select the client Discord member, reminder
+  channel, timezone, notes, and 1-52 weekly occurrences.
+- `/meeting list [code]` returns upcoming meetings and their IDs privately.
+- `/meeting cancel meeting-id:<id> [series]` cancels one meeting or its full
+  repeating series so pending reminders are skipped.
+
+All command responses are ephemeral. Commands default to members with Discord's
+**Manage Server** permission, and the function independently checks the guild,
+configured staff roles/users, or Manage Server/Administrator permission before
+reading client data. If a configured staff role does not have Manage Server,
+grant that role access under **Server Settings → Integrations → the bot →
+Commands** as well. The client code is never echoed in a response.
+
+#### One-time setup
+
+1. **Reset the bot token first.** A token pasted into chat or anywhere public
+   must be treated as compromised. In the Discord Developer Portal, open the
+   application → **Bot** → **Reset Token**. Use only the new token below and
+   never commit it.
+
+2. **Install the app in the coaching server.** Use the Developer Portal's
+   **Installation** page with the `bot` and `applications.commands` scopes.
+   Grant **View Channels** and **Send Messages**, then install it in the server.
+   The application does not need Message Content, Server Members, or Presence
+   privileged intents.
+
+3. **Copy the Discord IDs.** Turn on Discord **User Settings → Advanced →
+   Developer Mode**, then copy:
+
+   - the coaching server ID (`DISCORD_GUILD_ID`),
+   - the default reminders channel ID (`DISCORD_REMINDER_CHANNEL_ID`), and
+   - optionally comma-separated coach role/user IDs
+     (`DISCORD_STAFF_ROLE_IDS`, `DISCORD_STAFF_USER_IDS`).
+
+4. **Configure Netlify.** In **Netlify → Project configuration → Environment
+   variables**, add the values listed in `.env.example` with Functions access:
+
+   ```text
+   DISCORD_APPLICATION_ID=1544093486981062788
+   DISCORD_PUBLIC_KEY=f4a732ae0b047c1d622b70e603ee13a63320855cc71a5203edb36c60f4fe51dc
+   DISCORD_BOT_TOKEN=<the newly reset token>
+   DISCORD_GUILD_ID=<server ID>
+   DISCORD_REMINDER_CHANNEL_ID=<channel ID>
+   DISCORD_STAFF_ROLE_IDS=<optional comma-separated role IDs>
+   DISCORD_STAFF_USER_IDS=<optional comma-separated user IDs>
+   COACH_TIME_ZONE=America/Winnipeg
+   DISCORD_REMINDER_OFFSETS_MINUTES=1440,60
+   DISCORD_REMINDER_GRACE_MINUTES=10
+   DISCORD_REMINDER_ADMIN_SECRET=<a new long random value>
+   ```
+
+   `DISCORD_APPLICATION_ID` and `DISCORD_PUBLIC_KEY` are public identifiers.
+   `DISCORD_BOT_TOKEN` and `DISCORD_REMINDER_ADMIN_SECRET` are secrets. The
+   default reminder offsets send at 24 hours and 1 hour before each meeting.
+   Generate the admin secret locally with:
+
+   ```powershell
+   node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+   ```
+
+5. **Deploy the site**, then set the application's **Interactions Endpoint URL**
+   in the Discord Developer Portal to:
+
+   ```text
+   https://YOUR-DOMAIN/api/discord
+   ```
+
+   Discord will send a signed PING and accept the URL after the deployed
+   function verifies it. The public key supplied above is also kept as the
+   application-specific code fallback, but setting it in Netlify makes the
+   configuration explicit.
+
+6. **Register the slash commands.** Create a local `.env.discord` file (it is
+   ignored by Git) containing only the new token and IDs:
+
+   ```text
+   DISCORD_APPLICATION_ID=1544093486981062788
+   DISCORD_GUILD_ID=<server ID>
+   DISCORD_BOT_TOKEN=<the newly reset token>
+   ```
+
+   Then register the guild commands; guild commands appear immediately:
+
+   ```powershell
+   node --env-file=.env.discord scripts/register-discord-commands.mjs
+   ```
+
+   The registration script bulk-replaces this application's commands in that
+   guild with the definitions in `netlify/lib/discord-bot.mjs`. Delete the local
+   file afterward if you do not want the token retained on disk.
+
+7. **Link each client's Discord account.** In Coach HQ → client profile, put the
+   numeric Discord User ID in **Discord username / User ID**, or choose the
+   `client` member each time `/meeting schedule` is used. The selected channel
+   and member are stored on that meeting, so reminders keep their intended
+   destination even if the global default later changes.
+
+8. **Test the workflow.** Run `/client-stats`, schedule a meeting far enough in
+   the future to hit an offset, then check **Netlify → Functions** for the
+   `discord-session-reminders` scheduled function. It runs every five minutes
+   on published deploys. For a quick test, temporarily use
+   `DISCORD_REMINDER_OFFSETS_MINUTES=5` and schedule a meeting 6-10 minutes out,
+   then restore `1440,60` after confirming delivery.
+
+Discord's HTTP interaction protocol requires signature verification and an
+initial response within three seconds; the function performs a strong workspace
+read and responds directly. Netlify scheduled functions run only on published
+deploys. See the official [Discord interactions
+documentation](https://docs.discord.com/developers/interactions/overview) and
+[Netlify scheduled-functions
+documentation](https://docs.netlify.com/build/functions/scheduled-functions/)
+for platform details.
