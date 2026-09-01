@@ -69,6 +69,13 @@ function saveDB() {
 /* -- Accessors -------------------------------------------------------------- */
 function activeClient() { return DB.clients.find(c => c.id === DB.activeClientId) || null; }
 function getClient(id) { return DB.clients.find(c => c.id === id) || null; }
+function clientIsArchived(client) { return !!(client && client.archivedAt); }
+function activeClients() { return DB.clients.filter(client => !clientIsArchived(client)); }
+function selectableClients(includeId = '') {
+  const roster = activeClients();
+  const included = includeId && getClient(includeId);
+  return included && clientIsArchived(included) ? [included, ...roster] : roster;
+}
 function clientPlaylists(id) { return DB.playlists.filter(p => p.clientId === id); }
 function clientVods(id) { return DB.vods.filter(v => v.clientId === id); }
 function clientMatches(id) { return DB.matches.filter(m => m.clientId === id); }

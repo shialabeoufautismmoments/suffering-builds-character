@@ -52,6 +52,8 @@ CoachAnalytics.monthKeys = function (count = 6) {
 
 CoachAnalytics.data = function () {
   const start = CoachAnalytics.startDate();
+  const roster = activeClients();
+  const rosterIds = new Set(roster.map(c => c.id));
   const sessions = (DB.sessions || []).filter(s => CoachAnalytics.inRange(s.date || s.createdAt, start));
   const packages = DB.clients.flatMap(c => (c.packages || []).map(p => ({
     ...p, clientId: c.id, packageDate: (p.date || p.createdAt || '').slice(0, 10),
@@ -71,13 +73,13 @@ CoachAnalytics.data = function () {
     const d = CoachAnalytics.date(UI.today()); d.setDate(d.getDate() - 7);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   })();
-  const matureClients = DB.clients.filter(c => (c.createdAt || '').slice(0, 10) && (c.createdAt || '').slice(0, 10) <= thirtyDaysAgo);
-  const active30 = DB.clients.filter(c => CoachAnalytics.lastActivity(c.id) >= thirtyDaysAgo);
-  const active7 = DB.clients.filter(c => CoachAnalytics.lastActivity(c.id) >= sevenDaysAgo);
+  const matureClients = roster.filter(c => (c.createdAt || '').slice(0, 10) && (c.createdAt || '').slice(0, 10) <= thirtyDaysAgo);
+  const active30 = roster.filter(c => CoachAnalytics.lastActivity(c.id) >= thirtyDaysAgo);
+  const active7 = roster.filter(c => CoachAnalytics.lastActivity(c.id) >= sevenDaysAgo);
   const retainedMature = matureClients.filter(c => CoachAnalytics.lastActivity(c.id) >= thirtyDaysAgo);
-  const packageClients = DB.clients.filter(c => (c.packages || []).length > 0);
+  const packageClients = roster.filter(c => (c.packages || []).length > 0);
   const renewedClients = packageClients.filter(c => (c.packages || []).length > 1);
-  const sessionClients = DB.clients.filter(c => clientSessions(c.id).length > 0);
+  const sessionClients = roster.filter(c => clientSessions(c.id).length > 0);
   const repeatClients = sessionClients.filter(c => clientSessions(c.id).length > 1);
 
   const programMap = {};
@@ -119,7 +121,7 @@ CoachAnalytics.data = function () {
     ...row, adherence: row.expected ? Math.min(100, row.done / row.expected * 100) : 0,
   })).sort((a, b) => b.adherence - a.adherence || b.done - a.done);
 
-  const clients = DB.clients.map(c => {
+  const clients = roster.map(c => {
     const clientPackages = packages.filter(p => p.clientId === c.id);
     const clientSessionsInRange = sessions.filter(s => s.clientId === c.id);
     const clientHours = clientSessionsInRange.reduce((sum, s) => sum + (+s.durationMin || 0), 0) / 60;
@@ -142,7 +144,7 @@ CoachAnalytics.data = function () {
     sessions: sessions.filter(s => (s.date || '').startsWith(key)).length,
   }));
 
-  const upcoming14 = (DB.scheduled || []).filter(s => !s.done && s.date >= UI.today() && s.date <= (typeof Today !== 'undefined' ? Today.addDays(UI.today(), 14) : UI.today())).length;
+  const upcoming14 = (DB.scheduled || []).filter(s => !s.done && rosterIds.has(s.clientId) && s.date >= UI.today() && s.date <= (typeof Today !== 'undefined' ? Today.addDays(UI.today(), 14) : UI.today())).length;
   return {
     start, sessions, packages, revenue, outstanding, hours, prepMinutes,
     avgPrep: prepSessions.length ? prepMinutes / prepSessions.length : null,
@@ -150,7 +152,7 @@ CoachAnalytics.data = function () {
     retention: matureClients.length ? retainedMature.length / matureClients.length * 100 : null,
     renewal: packageClients.length ? renewedClients.length / packageClients.length * 100 : null,
     repeatRate: sessionClients.length ? repeatClients.length / sessionClients.length * 100 : null,
-    matureCount: matureClients.length, active7: active7.length, active30: active30.length,
+    matureCount: matureClients.length, active7: active7.length, active30: active30.length, rosterCount: roster.length,
     programs, homework, prescriptions, clients, months, upcoming14,
   };
 };
@@ -215,9 +217,9 @@ UI.renderers.coachanalytics = function (el) {
       <div class="card"><div class="card-head"><h2>Revenue and delivery trend</h2><div class="coach-legend"><span class="revenue"></span>Revenue <span class="hours"></span>Hours</div></div><div class="coach-months">${monthHtml}</div></div>
       <div class="card"><div class="card-head"><h2>Roster engagement</h2><span class="muted" style="font-size:.72rem">Current roster</span></div>
         <div class="coach-engagement">
-          <div><span>Active in 7 days</span><b>${d.active7} / ${DB.clients.length}</b>${CoachAnalytics.bar(d.active7, DB.clients.length, 'good')}</div>
-          <div><span>Active in 30 days</span><b>${d.active30} / ${DB.clients.length}</b>${CoachAnalytics.bar(d.active30, DB.clients.length, 'accent')}</div>
-          <div><span>Upcoming workload</span><b>${d.upcoming14} sessions</b>${CoachAnalytics.bar(d.upcoming14, Math.max(1, DB.clients.length * 2), 'hours')}</div>
+          <div><span>Active in 7 days</span><b>${d.active7} / ${d.rosterCount}</b>${CoachAnalytics.bar(d.active7, d.rosterCount, 'good')}</div>
+          <div><span>Active in 30 days</span><b>${d.active30} / ${d.rosterCount}</b>${CoachAnalytics.bar(d.active30, d.rosterCount, 'accent')}</div>
+          <div><span>Upcoming workload</span><b>${d.upcoming14} sessions</b>${CoachAnalytics.bar(d.upcoming14, Math.max(1, d.rosterCount * 2), 'hours')}</div>
         </div>
       </div>
     </div>

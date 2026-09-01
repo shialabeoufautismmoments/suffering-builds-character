@@ -15,12 +15,20 @@ Clients.setMyClientsOnly = function (on) {
   localStorage.setItem(MY_CLIENTS_KEY, on ? '1' : '0');
   UI.refresh();
 };
-// The roster every list/priority view should actually show. Falls back to
-// everyone if the filter is off, no coach is selected, or there's only one
-// coach on the team (the filter is meaningless in that case).
-Clients.visibleClients = function () {
-  if (!Clients.myClientsOnly || !Access.currentCoachId || (DB.coaches || []).length < 2) return DB.clients;
-  return DB.clients.filter(c => c.coachId === Access.currentCoachId);
+// Archived clients stay in DB so every linked stat and coaching record remains
+// intact. Roster views exclude them by default; the Clients page can explicitly
+// request the archived roster so those profiles can be inspected or restored.
+Clients.visibleClients = function ({ archived = false } = {}) {
+  const roster = DB.clients.filter(c => clientIsArchived(c) === archived);
+  if (!Clients.myClientsOnly || !Access.currentCoachId || (DB.coaches || []).length < 2) return roster;
+  return roster.filter(c => c.coachId === Access.currentCoachId);
+};
+Clients.showArchived = false;
+Clients.rosterClients = () => Clients.visibleClients({ archived: Clients.showArchived });
+Clients.setRosterStatus = function (archived) {
+  Clients.showArchived = !!archived;
+  if (Clients.showArchived) Clients.boardMode = 'cards';
+  UI.refresh();
 };
 
 Clients.sessionsHad = function (c) { return (c.packages || []).reduce((s, p) => s + (+p.used || 0), 0); };
@@ -49,6 +57,7 @@ Clients.ensureCode = function () {
 
 Clients.cardHtml = function (c) {
   const isActive = c.id === DB.activeClientId;
+  const archived = clientIsArchived(c);
   const pls = clientPlaylists(c.id).length;
   const vds = clientVods(c.id).length;
   const clientStats = (c.clientKovaaksStats || []).length;
@@ -56,11 +65,11 @@ Clients.cardHtml = function (c) {
   const hasPkg = (c.packages || []).length;
   const had = Clients.sessionsHad(c), left = Clients.sessionsLeft(c);
   return `
-    <div class="card client-card ${isActive ? 'active-client' : ''}" onclick="Clients.setActive('${c.id}')">
+    <div class="card client-card ${isActive ? 'active-client' : ''}" onclick="${archived ? `Clients.openArchived('${c.id}')` : `Clients.setActive('${c.id}')`}">
       ${Clients.avatarHtml(c)}
       <div class="flex between center">
         <h2>${UI.escape(c.name)}</h2>
-        ${isActive ? '<span class="tag accent">ACTIVE</span>' : ''}
+        ${archived ? '<span class="tag">ARCHIVED</span>' : isActive ? '<span class="tag accent">ACTIVE</span>' : ''}
       </div>
       <div style="margin:.3rem 0 .6rem">
         ${priority ? `<span class="tag">P${priority}</span>` : ''}
@@ -72,8 +81,9 @@ Clients.cardHtml = function (c) {
       <div class="muted" style="font-size:.78rem">${pls} playlist${pls !== 1 ? 's' : ''} - ${vds} VOD${vds !== 1 ? 's' : ''}${clientStats ? ` - ${clientStats} client stat log${clientStats !== 1 ? 's' : ''}` : ''}</div>
       ${hasPkg ? `<div class="muted" style="font-size:.78rem">🎟 ${had} session${had !== 1 ? 's' : ''} had - <b style="color:${left ? 'var(--accent)' : 'var(--text-dim)'}">${left} left</b></div>` : ''}
       <div class="flex gap-sm mt-sm" onclick="event.stopPropagation()">
-        <button class="btn btn-sm btn-ghost" onclick="Sessions.quickAssign('${c.id}')">+ HW</button>
-        <button class="btn btn-sm btn-ghost" onclick="Clients.edit('${c.id}')">Edit</button>
+        ${archived
+          ? `<button class="btn btn-sm" onclick="Clients.openArchived('${c.id}')">View stats</button><button class="btn btn-sm btn-primary" onclick="Clients.restore('${c.id}')">Restore</button>`
+          : `<button class="btn btn-sm btn-ghost" onclick="Sessions.quickAssign('${c.id}')">+ HW</button><button class="btn btn-sm btn-ghost" onclick="Clients.edit('${c.id}')">Edit</button><button class="btn btn-sm" onclick="Clients.archive('${c.id}')">Archive</button>`}
         <button class="btn btn-sm btn-danger" onclick="Clients.remove('${c.id}')">Delete</button>
       </div>
     </div>`;
@@ -82,28 +92,35 @@ Clients.cardHtml = function (c) {
 UI.renderers.clients = function (el) {
   const mode = Clients.boardMode || 'cards';
   const groupBy = Clients.groupBy || 'none';
-  const roster = Clients.visibleClients();
-  const filtered = Clients.myClientsOnly && roster.length !== DB.clients.length;
+  const roster = Clients.rosterClients();
+  const activeCount = activeClients().length;
+  const archivedCount = DB.clients.length - activeCount;
+  const statusCount = Clients.showArchived ? archivedCount : activeCount;
+  const filtered = Clients.myClientsOnly && roster.length !== statusCount;
   const body = !DB.clients.length
     ? UI.emptyState('🎯', 'No clients yet', 'Create your first player profile to start coaching.')
     : !roster.length
-    ? UI.emptyState('🎯', 'No clients assigned to you', 'Turn off "My clients only" to see the full roster, or assign yourself as coach on a client\'s profile.')
+    ? UI.emptyState('🎯', Clients.showArchived ? 'No archived clients' : 'No active clients assigned to you', Clients.showArchived ? 'Archived clients will appear here and can be restored at any time.' : 'Turn off "My clients only" to see the full roster, or assign yourself as coach on a client\'s profile.')
     : mode === 'board' ? Clients.leaderboardHtml()
     : groupBy === 'none' ? `<div class="grid cols-3">${roster.map(Clients.cardHtml).join('')}</div>`
     : Clients.groupedCardsHtml(groupBy);
 
   el.innerHTML = `
     <div class="page-head">
-      <div><h1>Clients</h1><div class="sub">Players you coach. Selecting one scopes every other tab to them.${filtered ? ` Showing ${roster.length} of ${DB.clients.length}.` : ''}</div></div>
+      <div><h1>Clients</h1><div class="sub">${Clients.showArchived ? 'Archived profiles keep all stats and coaching history until restored.' : 'Players you currently coach. Selecting one scopes every other tab to them.'}${filtered ? ` Showing ${roster.length} of ${statusCount}.` : ''}</div></div>
       <div class="flex gap-sm center">
+        <div class="seg">
+          <button class="${!Clients.showArchived ? 'on' : ''}" onclick="Clients.setRosterStatus(false)">Active (${activeCount})</button>
+          <button class="${Clients.showArchived ? 'on' : ''}" onclick="Clients.setRosterStatus(true)">Archived (${archivedCount})</button>
+        </div>
         ${(DB.coaches || []).length > 1 ? `<label class="flex center gap-sm" style="font-size:.8rem;color:var(--text-muted)"><input type="checkbox" style="width:auto" ${Clients.myClientsOnly ? 'checked' : ''} onchange="Clients.setMyClientsOnly(this.checked)"> My clients only</label>` : ''}
-        ${DB.clients.length > 1 ? `<div class="seg">
+        ${!Clients.showArchived && activeCount > 1 ? `<div class="seg">
           <button class="${mode === 'cards' ? 'on' : ''}" onclick="Clients.setMode('cards')">Cards</button>
           <button class="${mode === 'board' ? 'on' : ''}" onclick="Clients.setMode('board')">Leaderboard</button>
         </div>` : ''}
-        ${DB.clients.length > 1 && mode === 'cards' ? `<label class="flex center gap-sm" style="font-size:.8rem;color:var(--text-muted)">Group by
+        ${!Clients.showArchived && activeCount > 1 && mode === 'cards' ? `<label class="flex center gap-sm" style="font-size:.8rem;color:var(--text-muted)">Group by
           <select onchange="Clients.setGroup(this.value)" style="width:auto">${ROSTER_GROUPS.map(g => `<option value="${g.k}" ${groupBy === g.k ? 'selected' : ''}>${g.label}</option>`).join('')}</select></label>` : ''}
-        ${DB.clients.length > 1 && mode === 'board' ? `<button class="btn" onclick="Clients.weightsModal()" title="Configure the weighted Score column">Score weights</button>` : ''}
+        ${!Clients.showArchived && activeCount > 1 && mode === 'board' ? `<button class="btn" onclick="Clients.weightsModal()" title="Configure the weighted Score column">Score weights</button>` : ''}
         <button class="btn btn-primary" onclick="Clients.edit()">+ New Client</button>
       </div>
     </div>
@@ -126,7 +143,7 @@ Clients.packageOf = function (c) {
 Clients.groupedCardsHtml = function (key) {
   const fn = key === 'team' ? Clients.teamOf : Clients.packageOf;
   const groups = {};
-  Clients.visibleClients().forEach(c => { const g = fn(c); (groups[g] ||= []).push(c); });
+  Clients.rosterClients().forEach(c => { const g = fn(c); (groups[g] ||= []).push(c); });
   const names = Object.keys(groups).sort((a, b) => {
     const ae = a.startsWith('No '), be = b.startsWith('No ');
     if (ae !== be) return ae ? 1 : -1;
@@ -168,7 +185,7 @@ Clients.sortBy = function (key) {
 const SCORE_METRICS = [['winrate', 'Win rate'], ['matches', 'Matches played'], ['had', 'Sessions done'], ['remaining', 'Sessions remaining'], ['openHw', 'Open homework'], ['priority', 'Priority']];
 
 Clients.scoredRows = function () {
-  const rows = Clients.visibleClients().map(c => ({ c, m: Clients.metrics(c) }));
+  const rows = Clients.rosterClients().map(c => ({ c, m: Clients.metrics(c) }));
   const W = Object.assign({}, ...SCORE_METRICS.map(([k]) => ({ [k]: 0 })), (DB.settings || {}).scoreWeights || {});
   const raw = ({ m }) => ({ winrate: m.rec.total ? m.rec.winrate : 0, matches: m.rec.total, had: m.had, remaining: m.remaining, openHw: m.openHw, priority: m.priority });
   const raws = rows.map(raw);
@@ -248,7 +265,15 @@ Clients.setActive = function (id) {
   UI.refresh();
 };
 Clients.selectFromNav = function (id) {
-  if (!getClient(id)) return;
+  if (!getClient(id) || clientIsArchived(getClient(id))) return;
+  DB.activeClientId = id;
+  saveDB();
+  UI.updateClientPill();
+  App.nav('dashboard');
+};
+Clients.openArchived = function (id) {
+  const c = getClient(id);
+  if (!c || !clientIsArchived(c)) return;
   DB.activeClientId = id;
   saveDB();
   UI.updateClientPill();
@@ -403,6 +428,31 @@ Clients.removeDiscordAvatar = function () {
   Clients.renderPendingAvatar();
 };
 
+Clients.archive = function (id) {
+  const c = getClient(id);
+  if (!c || clientIsArchived(c)) return;
+  UI.confirm(`Archive "${c.name}"? Their profile, stats, sessions, VODs, matches, and reports will be kept.`, () => {
+    c.archivedAt = new Date().toISOString();
+    c.updatedAt = c.archivedAt;
+    if (DB.activeClientId === id) DB.activeClientId = Clients.visibleClients()[0]?.id || null;
+    saveDB();
+    UI.updateClientPill();
+    UI.toast(`${c.name} archived.`, 'good');
+    UI.refresh();
+  }, { yes: 'Archive client' });
+};
+
+Clients.restore = function (id) {
+  const c = getClient(id);
+  if (!c || !clientIsArchived(c)) return;
+  delete c.archivedAt;
+  c.updatedAt = new Date().toISOString();
+  saveDB();
+  UI.updateClientPill();
+  UI.toast(`${c.name} restored to the active roster.`, 'good');
+  UI.refresh();
+};
+
 Clients.remove = function (id) {
   const c = getClient(id);
   UI.confirm(`Delete "${c.name}" and all their playlists & VOD reviews? This cannot be undone.`, () => {
@@ -416,7 +466,7 @@ Clients.remove = function (id) {
     DB.reminders = (DB.reminders || []).filter(r => r.clientId !== id);
     (DB.teams || []).forEach(team => { team.clientIds = (team.clientIds || []).filter(clientId => clientId !== id); });
     DB.referrals = (DB.referrals || []).filter(referral => referral.referrerClientId !== id && referral.referredClientId !== id);
-    if (DB.activeClientId === id) DB.activeClientId = DB.clients[0]?.id || null;
+    if (DB.activeClientId === id) DB.activeClientId = activeClients()[0]?.id || null;
     saveDB();
     UI.updateClientPill();
     UI.toast('Client deleted.');
@@ -471,15 +521,17 @@ UI.renderers.dashboard = function (el) {
   const nextSes = (typeof Business !== 'undefined') ? Business.nextSession(c.id) : null;
   const unpaidCount = (c.packages || []).filter(p => !p.paid).length;
   const trackerStats = c.trackerStats || null;
+  const archived = clientIsArchived(c);
 
   el.innerHTML = `
+    ${archived ? `<div class="card mb" style="border-color:var(--warn)"><div class="flex between center gap"><div><b>Archived client</b><div class="muted" style="font-size:.8rem">All historical stats and records are preserved. Restore this client to return them to active rosters and pickers.</div></div><button class="btn btn-primary" onclick="Clients.restore('${c.id}')">Restore client</button></div></div>` : ''}
     <div class="page-head">
       <div class="client-profile-head">${Clients.avatarHtml(c, 'client-avatar')}<div><h1>${UI.escape(c.name)}</h1>
         <div class="sub">${[c.game, c.rank, c.cm360 && c.cm360 + ' cm/360', c.discord && '💬 ' + c.discord].filter(Boolean).map(UI.escape).join(' - ') || 'No profile details'}</div></div>
       </div>
       <div class="flex gap-sm">
-        ${(typeof Cal !== 'undefined' && Cal.configured()) ? `<button class="btn" onclick="Cal.embedModal('${c.id}')" title="Open this client's Cal.com booking page">📅 Booking</button>` : ''}
-        <button class="btn" onclick="Sessions.quickAssign('${c.id}')">+ Assign Homework</button>
+        ${!archived && typeof Cal !== 'undefined' && Cal.configured() ? `<button class="btn" onclick="Cal.embedModal('${c.id}')" title="Open this client's Cal.com booking page">📅 Booking</button>` : ''}
+        ${!archived ? `<button class="btn" onclick="Sessions.quickAssign('${c.id}')">+ Assign Homework</button>` : ''}
         <button class="btn" onclick="Clients.edit('${c.id}')">Edit Profile</button>
       </div>
     </div>

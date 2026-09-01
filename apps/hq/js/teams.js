@@ -5,13 +5,13 @@ const Teams = {};
 
 Teams.all = () => (DB.teams || []).slice().sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 Teams.find = id => (DB.teams || []).find(team => team.id === id) || null;
-Teams.clients = team => (team.clientIds || []).map(getClient).filter(Boolean);
+Teams.clients = team => (team.clientIds || []).map(getClient).filter(client => client && !clientIsArchived(client));
 Teams.coaches = team => (team.coachIds || []).map(id => (DB.coaches || []).find(coach => coach.id === id)).filter(Boolean);
 Teams.touch = team => { team.updatedAt = new Date().toISOString(); saveDB(); UI.refresh(); };
 
 UI.renderers.teams = function (el) {
   const teams = Teams.all();
-  const rostered = new Set(teams.flatMap(team => team.clientIds || [])).size;
+  const rostered = new Set(teams.flatMap(team => Teams.clients(team).map(client => client.id))).size;
   const upcoming = teams.flatMap(team => team.scrims || []).filter(scrim => scrim.date >= UI.today() && scrim.status !== 'Completed').length;
   el.innerHTML = `<div class="page-head"><div><div class="kicker">TEAM COACHING</div><h1>Team Workspaces</h1><div class="sub">Shared rosters, objectives, scrims, map pools, and compositions for every coached squad.</div></div><button class="btn btn-primary" onclick="Teams.edit()">+ New team</button></div>
     <div class="stat-tiles mb"><div class="stat-tile"><div class="label">Teams</div><div class="value">${teams.length}</div></div><div class="stat-tile"><div class="label">Rostered players</div><div class="value accent">${rostered}</div></div><div class="stat-tile"><div class="label">Upcoming scrims</div><div class="value">${upcoming}</div></div></div>
@@ -45,11 +45,12 @@ Teams.edit = function (id = '') {
   const f = key => UI.escape(team?.[key] || '');
   const memberIds = new Set(team?.clientIds || []);
   const coachIds = new Set(team?.coachIds || []);
+  const roster = activeClients();
   UI.modal(`<div class="modal-head"><div><h2>${team ? 'Edit team workspace' : 'Create team workspace'}</h2><p class="muted">Members see the shared plan in their Client App.</p></div><button class="close-x" onclick="UI.closeModal()">&times;</button></div>
     <div class="row"><label class="field"><span>Team name</span><input id="team-name" value="${f('name')}" placeholder="Academy Squad"></label><label class="field"><span>Game</span><input id="team-game" value="${f('game')}" placeholder="Overwatch 2"></label></div>
     <div class="row"><label class="field"><span>Division / level</span><input id="team-division" value="${f('division')}" placeholder="Open Division"></label><label class="field"><span>Season</span><input id="team-season" value="${f('season')}" placeholder="2026 Stage 3"></label></div>
     <label class="field"><span>Shared objective</span><textarea id="team-objective" placeholder="The result this team is working toward.">${f('objective')}</textarea></label>
-    <div class="row"><fieldset class="team-picker"><legend>Roster</legend>${DB.clients.length ? DB.clients.slice().sort((a,b) => a.name.localeCompare(b.name)).map(client => `<label><input class="team-member-check" type="checkbox" value="${UI.escape(client.id)}" ${memberIds.has(client.id) ? 'checked' : ''}><span>${UI.escape(client.name)} <small>${UI.escape(client.role || client.rank || '')}</small></span></label>`).join('') : '<p class="muted">Add clients first.</p>'}</fieldset>
+    <div class="row"><fieldset class="team-picker"><legend>Roster</legend>${roster.length ? roster.slice().sort((a,b) => a.name.localeCompare(b.name)).map(client => `<label><input class="team-member-check" type="checkbox" value="${UI.escape(client.id)}" ${memberIds.has(client.id) ? 'checked' : ''}><span>${UI.escape(client.name)} <small>${UI.escape(client.role || client.rank || '')}</small></span></label>`).join('') : '<p class="muted">Add or restore an active client first.</p>'}</fieldset>
     <fieldset class="team-picker"><legend>Coaches</legend>${(DB.coaches || []).length ? (DB.coaches || []).map(coach => `<label><input class="team-coach-check" type="checkbox" value="${UI.escape(coach.id)}" ${coachIds.has(coach.id) ? 'checked' : ''}><span>${UI.escape(coach.name)} <small>${UI.escape(coach.role || '')}</small></span></label>`).join('') : '<p class="muted">Add coach profiles first.</p>'}</fieldset></div>
     <div class="modal-foot"><button class="btn btn-ghost" onclick="UI.closeModal()">Cancel</button><button class="btn btn-primary" onclick="Teams.save('${UI.escape(id)}')">Save team</button></div>`, { wide: true });
 };
@@ -61,7 +62,8 @@ Teams.save = function (id = '') {
   const current = id ? Teams.find(id) : null;
   const team = current || { id: uid(), goals: [], scrims: [], mapPool: [], compositions: [], createdAt: now };
   const oldName = team.name || '';
-  const clientIds = [...document.querySelectorAll('.team-member-check:checked')].map(input => input.value);
+  const archivedMemberIds = (current?.clientIds || []).filter(clientId => clientIsArchived(getClient(clientId)));
+  const clientIds = [...new Set([...document.querySelectorAll('.team-member-check:checked')].map(input => input.value).concat(archivedMemberIds))];
   Object.assign(team, {
     name, game: document.getElementById('team-game').value.trim(), division: document.getElementById('team-division').value.trim(),
     season: document.getElementById('team-season').value.trim(), objective: document.getElementById('team-objective').value.trim(),

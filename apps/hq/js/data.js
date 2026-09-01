@@ -99,7 +99,8 @@ Data.checkUpdate = async function () {
 Data.settings = function () {
   const s = DB.settings || {};
   const cur = s.accent && ACCENTS[s.accent] ? s.accent : 'KovaaK';
-  const counts = `${DB.clients.length} clients - ${DB.matches.length} matches - ${DB.vods.length} VODs - ${DB.sessions.length} sessions - ${DB.playlists.length} playlists`;
+  const archivedCount = DB.clients.filter(clientIsArchived).length;
+  const counts = `${activeClients().length} active client${activeClients().length === 1 ? '' : 's'}${archivedCount ? ` + ${archivedCount} archived` : ''} - ${DB.matches.length} matches - ${DB.vods.length} VODs - ${DB.sessions.length} sessions - ${DB.playlists.length} playlists`;
   UI.modal(`
     <div class="modal-head"><h2>Settings</h2><button class="close-x" onclick="UI.closeModal()">&times;</button></div>
 

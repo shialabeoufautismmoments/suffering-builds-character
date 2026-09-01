@@ -94,7 +94,7 @@ App.boot = async function () {
   if (migratedLegacyStats) saveDB();
 
   // Launch reminder for any coaching sessions scheduled today.
-  const todaySessions = (DB.scheduled || []).filter(s => !s.done && s.date === UI.today());
+  const todaySessions = (DB.scheduled || []).filter(s => !s.done && s.date === UI.today() && !clientIsArchived(getClient(s.clientId)));
   if (!window.COACHSBC_WEB && todaySessions.length && 'Notification' in window) {
     try {
       const names = todaySessions.map(s => (getClient(s.clientId) || {}).name).filter(Boolean).join(', ');

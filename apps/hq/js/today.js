@@ -375,11 +375,13 @@ UI.renderers.today = function (el) {
 };
 
 Today.reminderEdit = function (id, clientId) {
-  if (!DB.clients.length) { UI.toast('Add a client first.', 'bad'); return; }
   const r = id ? (DB.reminders || []).find(x => x.id === id) : null;
-  const selected = r ? r.clientId : (clientId || DB.activeClientId || DB.clients[0].id);
+  const roster = selectableClients(r && r.clientId);
+  if (!roster.length) { UI.toast('Add or restore an active client first.', 'bad'); return; }
+  const requested = r ? r.clientId : (clientId || DB.activeClientId);
+  const selected = roster.some(c => c.id === requested) ? requested : roster[0].id;
   UI.modal(`<div class="modal-head"><h2>${r ? 'Edit' : 'Add'} Follow-up</h2><button class="close-x" onclick="UI.closeModal()">&times;</button></div>
-    <label class="field"><span>Client</span><select id="tr-client">${DB.clients.map(c => `<option value="${c.id}" ${c.id === selected ? 'selected' : ''}>${UI.escape(c.name)}</option>`).join('')}</select></label>
+    <label class="field"><span>Client</span><select id="tr-client">${roster.map(c => `<option value="${c.id}" ${c.id === selected ? 'selected' : ''}>${UI.escape(c.name)}${clientIsArchived(c) ? ' (archived)' : ''}</option>`).join('')}</select></label>
     <label class="field"><span>Reminder</span><input id="tr-text" value="${UI.escape(r ? r.text : '')}" placeholder="Check in after ranked block"></label>
     <label class="field"><span>Due date</span><input id="tr-due" type="date" value="${UI.escape(r ? r.dueDate : UI.today())}"></label>
     <div class="modal-foot">${r ? `<button class="btn btn-danger" onclick="Today.reminderRemove('${r.id}')">Delete</button>` : ''}<div style="flex:1"></div><button class="btn btn-ghost" onclick="UI.closeModal()">Cancel</button><button class="btn btn-primary" onclick="Today.reminderSave('${id || ''}')">Save</button></div>`);

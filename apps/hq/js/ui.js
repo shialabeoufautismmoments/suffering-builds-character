@@ -147,26 +147,33 @@ UI.updateClientPill = () => {
       ava.textContent = c ? UI.initials(c.name) : '-';
     }
   }
-  if (name) name.textContent = c ? c.name : 'No client';
+  if (name) name.textContent = c ? c.name + (clientIsArchived(c) ? ' (archived)' : '') : 'No client';
 
   const select = document.getElementById('nav-client-select');
   if (select) {
     select.replaceChildren();
-    if (!DB.clients.length) {
+    const roster = activeClients();
+    if (!roster.length) {
       const option = document.createElement('option');
       option.value = '';
-      option.textContent = 'No clients';
+      option.textContent = 'No active clients';
       select.appendChild(option);
       select.disabled = true;
     } else {
-      DB.clients.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(client => {
+      if (!roster.some(client => client.id === DB.activeClientId)) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Choose active client';
+        select.appendChild(option);
+      }
+      roster.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(client => {
         const option = document.createElement('option');
         option.value = client.id;
         option.textContent = client.name;
         select.appendChild(option);
       });
       select.disabled = false;
-      select.value = DB.activeClientId || DB.clients[0].id;
+      select.value = roster.some(client => client.id === DB.activeClientId) ? DB.activeClientId : '';
     }
   }
 };
@@ -192,7 +199,8 @@ UI.emptyState = (icon, title, sub) => `
 // Read the picks back with UI.checkedClientIds() after the coach confirms.
 UI.clientChecklistHtml = function ({ includeActive = false, preCheckActive = false } = {}) {
   const activeId = DB.activeClientId;
-  const pool = includeActive ? DB.clients : DB.clients.filter(c => c.id !== activeId);
+  const roster = activeClients();
+  const pool = includeActive ? roster : roster.filter(c => c.id !== activeId);
   const rows = pool.slice().sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   if (!rows.length) return '<p class="muted" style="font-size:.82rem">No other clients yet.</p>';
   return `<div class="client-checklist" style="max-height:220px;overflow-y:auto;border:1px solid var(--border-soft);border-radius:8px;padding:.5rem">

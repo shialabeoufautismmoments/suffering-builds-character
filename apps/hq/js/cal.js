@@ -123,8 +123,9 @@ Cal.matchClient = function (att) {
   if (!att) return '';
   const name = (att.name || '').trim().toLowerCase();
   const email = (att.email || '').trim().toLowerCase();
-  const c = (name && DB.clients.find(x => (x.name || '').trim().toLowerCase() === name))
-    || (email && DB.clients.find(x => (x.discord || '').trim().toLowerCase() === email));
+  const roster = activeClients();
+  const c = (name && roster.find(x => (x.name || '').trim().toLowerCase() === name))
+    || (email && roster.find(x => (x.discord || '').trim().toLowerCase() === email));
   return c ? c.id : '';
 };
 

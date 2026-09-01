@@ -88,6 +88,7 @@ assert(intake.includes("input.consent !== true"), "Server-side coaching consent 
 const clientWorkspace = await readFile(path.join(root, "netlify/functions/client-workspace.mjs"), "utf8");
 const clientApp = await readFile(path.join(root, "apps/client/app.js"), "utf8");
 const hqMatches = await readFile(path.join(root, "apps/hq/js/matches.js"), "utf8");
+const hqClients = await readFile(path.join(root, "apps/hq/js/clients.js"), "utf8");
 const hqFeedback = await readFile(path.join(root, "apps/hq/js/feedback.js"), "utf8");
 const hqSync = await readFile(path.join(root, "apps/hq/js/sync.js"), "utf8");
 const hqTeams = await readFile(path.join(root, "apps/hq/js/teams.js"), "utf8");
@@ -105,6 +106,7 @@ assert(hqTeams.includes("UI.renderers.teams") && hqTeams.includes("team.mapPool"
 assert(clientWorkspace.includes("publicTeam") && clientApp.includes("renderTeamWorkspace"), "Team workspaces must be available in the client app.");
 assert(clientApp.includes("renderMapWinrate") && clientApp.includes("mapWinrateStats") && clientApp.includes("setMapWinrateSort") && clientApp.includes("Draws are shown in your record but are not counted"), "The client map winrate tab is missing or incomplete.");
 assert(hqMatches.includes("Matches.sortMapStats") && hqMatches.includes("Matches.setMapSort") && (hqMatches.match(/Name \(A-Z\)/g) || []).length, "Coach HQ map winrate sorting is missing.");
+assert(hqClients.includes("Clients.archive") && hqClients.includes("Clients.restore") && hqClients.includes("archivedAt"), "Coach HQ client archiving is missing.");
 assert(hqReferrals.includes("Referrals.recordConversion") && clientApp.includes("renderReferrals"), "Referral rewards are not connected across HQ and the client app.");
 assert(intake.includes("referralCode") && intake.includes("recordSiteEvent"), "Coaching applications must retain referral and conversion attribution.");
 assert(hqConversions.includes("UI.renderers.conversions") && siteAnalytics.includes("siteAnalyticsSummary"), "Conversion analytics are missing.");

@@ -164,7 +164,7 @@ Telemetry.syncClient = async function (client, config, opts = {}) {
 Telemetry.startupAutoSync = async function () {
   if (Telemetry._startupAutoSyncDone) return;
   Telemetry._startupAutoSyncDone = true;
-  const clients = Telemetry.autoSyncCandidates(DB.clients);
+  const clients = Telemetry.autoSyncCandidates(activeClients());
   if (!clients.length || !window.api.kovaaksWebSync) return;
   let synced = 0;
   for (const client of clients) {

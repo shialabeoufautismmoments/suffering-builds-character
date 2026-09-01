@@ -35,11 +35,11 @@ UI.renderers.business = function (el) {
   const allPkgs = DB.clients.flatMap(c => (c.packages || []).map(p => ({ ...p, client: c })));
   const collected = allPkgs.filter(p => p.paid).reduce((s, p) => s + (+p.price || 0), 0);
   const outstanding = allPkgs.filter(p => !p.paid).reduce((s, p) => s + (+p.price || 0), 0);
-  const remaining = DB.clients.reduce((s, c) => s + Business.clientRemaining(c), 0);
+  const remaining = activeClients().reduce((s, c) => s + Business.clientRemaining(c), 0);
 
   const today = UI.today();
   const sched = (DB.scheduled || []).slice().sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
-  const upcoming = sched.filter(s => !s.done && s.date >= today);
+  const upcoming = sched.filter(s => !s.done && s.date >= today && !clientIsArchived(getClient(s.clientId)));
   const past = sched.filter(s => s.done || s.date < today).reverse();
   const c = activeClient();
 
@@ -124,7 +124,7 @@ Business.calendarHtml = function () {
   for (let i = 0; i < firstDay; i++) cells += '<div class="cal-cell empty"></div>';
   for (let d = 1; d <= days; d++) {
     const ds = `${year}-${pad(month + 1)}-${pad(d)}`;
-    const evs = (DB.scheduled || []).filter(s => s.date === ds).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    const evs = (DB.scheduled || []).filter(s => s.date === ds && (s.done || s.date < today || !clientIsArchived(getClient(s.clientId)))).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
     cells += `<div class="cal-cell ${ds === today ? 'today' : ''}" ondblclick="Business.scheduleEdit('','${ds}')">
       <div class="cal-day">${d}</div>
       ${evs.map(s => { const cl = getClient(s.clientId); const label = cl ? cl.name : (s.source === 'cal' ? '📅 Cal.com' : '-'); return `<div class="cal-ev ${s.done ? 'done' : ''}" onclick="event.stopPropagation();Business.scheduleEdit('${s.id}')" title="${UI.escape((cl ? cl.name : '') + ' ' + (s.time || '') + ' ' + (s.notes || ''))}">${s.time ? UI.escape(s.time) + ' ' : ''}${UI.escape(label)}</div>`; }).join('')}
@@ -144,10 +144,12 @@ Business.calendarHtml = function () {
 Business.scheduleEdit = function (id, presetDate) {
   const s = id ? DB.scheduled.find(x => x.id === id) : null;
   const f = (k, d = '') => UI.escape(s ? (s[k] ?? d) : d);
-  if (!DB.clients.length) { UI.toast('Add a client first.', 'bad'); return; }
+  const roster = selectableClients(s && s.clientId);
+  if (!roster.length) { UI.toast('Add or restore an active client first.', 'bad'); return; }
+  const selected = s ? s.clientId : (roster.some(c => c.id === DB.activeClientId) ? DB.activeClientId : roster[0].id);
   UI.modal(`
     <div class="modal-head"><h2>${s ? 'Edit' : 'Schedule'} Session</h2><button class="close-x" onclick="UI.closeModal()">&times;</button></div>
-    <label class="field"><span>Client</span><select id="sc-client">${DB.clients.map(c => `<option value="${c.id}" ${(s ? s.clientId : DB.activeClientId) === c.id ? 'selected' : ''}>${UI.escape(c.name)}</option>`).join('')}</select></label>
+    <label class="field"><span>Client</span><select id="sc-client">${roster.map(c => `<option value="${c.id}" ${selected === c.id ? 'selected' : ''}>${UI.escape(c.name)}${clientIsArchived(c) ? ' (archived)' : ''}</option>`).join('')}</select></label>
     <div class="row">
       <label class="field"><span>Date</span><input id="sc-date" type="date" value="${s ? UI.escape(s.date) : (presetDate || UI.today())}"></label>
       <label class="field"><span>Time</span><input id="sc-time" type="time" value="${f('time')}"></label>

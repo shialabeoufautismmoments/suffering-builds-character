@@ -9,11 +9,13 @@ Coaches.currency = value => Number(value || 0).toLocaleString('en-CA', {
 });
 
 Coaches.metrics = function (coach) {
-  const clients = DB.clients.filter(client => client.coachId === coach.id);
-  const clientIds = new Set(clients.map(client => client.id));
-  const sessions = DB.sessions.filter(session => session.coachId === coach.id || clientIds.has(session.clientId));
-  const upcoming = DB.scheduled.filter(item => !item.done && (item.coachId === coach.id || clientIds.has(item.clientId)) && item.date >= UI.today());
-  const packages = clients.flatMap(client => client.packages || []);
+  const assignedClients = DB.clients.filter(client => client.coachId === coach.id);
+  const clients = assignedClients.filter(client => !clientIsArchived(client));
+  const assignedIds = new Set(assignedClients.map(client => client.id));
+  const activeIds = new Set(clients.map(client => client.id));
+  const sessions = DB.sessions.filter(session => session.coachId === coach.id || assignedIds.has(session.clientId));
+  const upcoming = DB.scheduled.filter(item => !item.done && (item.coachId === coach.id || activeIds.has(item.clientId)) && item.date >= UI.today());
+  const packages = assignedClients.flatMap(client => client.packages || []);
   const collected = packages.filter(pkg => pkg.paid).reduce((sum, pkg) => sum + Number(pkg.price || 0), 0);
   const outstanding = packages.filter(pkg => !pkg.paid).reduce((sum, pkg) => sum + Number(pkg.price || 0), 0);
   return { clients, sessions, upcoming, collected, outstanding };
@@ -23,14 +25,15 @@ Coaches.render = function (el) {
   const coaches = DB.coaches || [];
   const allMetrics = coaches.map(Coaches.metrics);
   const totalRevenue = allMetrics.reduce((sum, item) => sum + item.collected, 0);
-  const assigned = new Set(DB.clients.filter(client => client.coachId).map(client => client.id)).size;
+  const roster = activeClients();
+  const assigned = new Set(roster.filter(client => client.coachId).map(client => client.id)).size;
   el.innerHTML = `<div class="page-head">
     <div><div class="kicker">TEAM WORKSPACE</div><h1>Coaches</h1><div class="sub">Manage profiles, assignments, workload, and who is currently using the program.</div></div>
     <button class="btn btn-primary" onclick="Coaches.edit()">+ Add coach</button>
   </div>
   <div class="stat-tiles coach-team-stats">
     <div class="stat-tile"><div class="label">Coaches</div><div class="value">${coaches.length}</div><small>team profiles</small></div>
-    <div class="stat-tile"><div class="label">Assigned clients</div><div class="value">${assigned}</div><small>${DB.clients.length - assigned} unassigned</small></div>
+    <div class="stat-tile"><div class="label">Assigned clients</div><div class="value">${assigned}</div><small>${roster.length - assigned} unassigned</small></div>
     <div class="stat-tile"><div class="label">Upcoming sessions</div><div class="value">${allMetrics.reduce((sum, item) => sum + item.upcoming.length, 0)}</div><small>across the team</small></div>
     <div class="stat-tile"><div class="label">Collected revenue</div><div class="value accent">${Coaches.currency(totalRevenue)}</div><small>assigned packages</small></div>
   </div>
@@ -121,7 +124,7 @@ Coaches.use = function (id) {
 };
 
 Coaches.showClients = function (id) {
-  const assigned = DB.clients.filter(client => client.coachId === id);
+  const assigned = activeClients().filter(client => client.coachId === id);
   UI.modal(`<div class="modal-head"><h2>${UI.escape((DB.coaches.find(coach => coach.id === id) || {}).name || 'Coach')} - Clients</h2><button class="close-x" onclick="UI.closeModal()">&times;</button></div>
     ${assigned.length ? assigned.map(client => `<button class="coach-assigned-client" onclick="UI.closeModal();Clients.setActive('${client.id}');App.nav('dashboard')"><span class="avatar">${UI.escape(UI.initials(client.name))}</span><span><b>${UI.escape(client.name)}</b><small>${UI.escape(client.game || '')} · ${UI.escape(client.rank || 'Unranked')}</small></span></button>`).join('') : UI.emptyState('—', 'No assigned clients', 'Assign this coach from any client profile.')}
     <div class="modal-foot"><button class="btn btn-ghost" onclick="UI.closeModal()">Close</button></div>`);
