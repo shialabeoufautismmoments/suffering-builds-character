@@ -4,11 +4,19 @@ import test from "node:test";
 
 import {
   DISCORD_COMMANDS,
+  auditMessage,
+  autocompleteChoices,
+  buildDiscordMatch,
   clientMapStats,
   createMeetings,
+  effectiveReminderSettings,
   findClientByDiscordId,
+  formatReminderOffsets,
   isAuthorizedStaff,
+  matchLogModal,
   messageResponse,
+  modalValues,
+  parseReminderOffsets,
   statsEmbed,
   verifyDiscordRequest,
   zonedTimeToUtc,
@@ -37,12 +45,31 @@ function workspace() {
 }
 
 test("Discord command definitions expose the requested workflows", () => {
-  assert.deepEqual(DISCORD_COMMANDS.map(command => command.name), ["client-stats", "meeting"]);
+  assert.deepEqual(DISCORD_COMMANDS.map(command => command.name), ["client-stats", "meeting", "match-log", "reminders"]);
   assert.ok(DISCORD_COMMANDS.every(command => command.default_member_permissions === "32"));
   assert.ok(DISCORD_COMMANDS.every(command => command.contexts.length === 1 && command.contexts[0] === 0));
   const statsOptions = DISCORD_COMMANDS.find(command => command.name === "client-stats").options;
   assert.equal(statsOptions.find(option => option.name === "code").required, false);
+  assert.equal(statsOptions.find(option => option.name === "code").autocomplete, true);
+  assert.equal(statsOptions.find(option => option.name === "map").autocomplete, true);
   assert.equal(statsOptions.find(option => option.name === "client").type, 6);
+  assert.equal(DISCORD_COMMANDS.find(command => command.name === "match-log").options.find(option => option.name === "map").autocomplete, true);
+});
+
+test("client and map autocomplete return Discord-compatible choices", () => {
+  const data = workspace();
+  const clients = autocompleteChoices(data, {
+    data: { options: [{ name: "code", type: 3, value: "player", focused: true }] },
+  });
+  assert.deepEqual(clients, [{ name: "Player One — Masters", value: CLIENT_CODE }]);
+
+  data.matches.push({ id: "6", clientId: CLIENT_ID, result: "Win", map: "king's row" });
+  const maps = autocompleteChoices(data, {
+    data: { options: [{ name: "map", type: 3, value: "king", focused: true }] },
+  });
+  assert.equal(maps[0].value, "King's Row");
+  assert.match(maps[0].name, /Hybrid/);
+  assert.ok(maps.length <= 25);
 });
 
 test("bot command replies are public by default", () => {
@@ -134,6 +161,68 @@ test("meeting dates are converted from the coaching timezone and repeat weekly",
   assert.ok(meetings.every(meeting => meeting.discordChannelId === CHANNEL_ID && meeting.discordUserId === USER_ID));
 });
 
+test("match logging modal data becomes a normalized Coach HQ match", () => {
+  const modal = matchLogModal({ customId: "match-log:123", clientName: "Player One", map: "king's row", result: "Win" });
+  assert.equal(modal.type, 9);
+  assert.equal(modal.data.components.length, 5);
+  assert.ok(modal.data.components.every(component => component.type === 18));
+
+  const values = modalValues([
+    { type: 18, component: { custom_id: "match_type", values: ["Scrim"] } },
+    { type: 18, component: { custom_id: "role", values: ["Damage"] } },
+    { type: 18, component: { custom_id: "heroes", value: "tracer, GENJI" } },
+    { type: 18, component: { custom_id: "replay_code", value: "ABC123" } },
+    { type: 18, component: { custom_id: "notes", value: "Reviewed first fight" } },
+  ]);
+  const match = buildDiscordMatch({
+    id: "discord-match-123",
+    clientId: CLIENT_ID,
+    date: "2026-09-01",
+    map: "king's row",
+    result: "win",
+    type: values.match_type,
+    role: values.role,
+    heroes: values.heroes,
+    replayCode: values.replay_code,
+    notes: values.notes,
+    createdBy: USER_ID,
+  });
+  assert.equal(match.map, "King's Row");
+  assert.equal(match.mode, "Hybrid");
+  assert.equal(match.result, "Win");
+  assert.deepEqual(match.heroes, ["Tracer", "Genji"]);
+  assert.equal(match.source, "discord");
+});
+
+test("per-client reminder settings parse, format, and override server defaults", () => {
+  assert.deepEqual(parseReminderOffsets("2d, 6h, 15m, 15m").values, [2880, 360, 15]);
+  assert.equal(formatReminderOffsets([2880, 360, 15]), "2d, 6h, 15m");
+  assert.match(parseReminderOffsets("tomorrow").error, /invalid/);
+  assert.deepEqual(effectiveReminderSettings({}, [1440, 60]), {
+    paused: false,
+    offsets: [1440, 60],
+    customized: false,
+  });
+  assert.deepEqual(effectiveReminderSettings({ discordReminderSettings: { paused: true, offsetsMinutes: [30, 120] } }, [1440, 60]), {
+    paused: true,
+    offsets: [120, 30],
+    customized: true,
+  });
+});
+
+test("audit messages identify the coach without exposing client codes", () => {
+  const content = auditMessage({
+    action: "Match logged",
+    actorId: USER_ID,
+    clientName: "Player One",
+    details: ["King's Row • Win"],
+    at: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.match(content, new RegExp(`<@${USER_ID}>`));
+  assert.match(content, /Player One/);
+  assert.equal(content.includes(CLIENT_CODE), false);
+});
+
 test("reminders become due once per configured offset and use the session channel user", () => {
   const data = workspace();
   data.scheduled.push({
@@ -156,4 +245,10 @@ test("reminders become due once per configured offset and use the session channe
   data.scheduled[0].updatedAt = now.toISOString();
   assert.equal(dueReminders(data, { "meeting-1:60": now.toISOString() }, now, { offsets: [60], graceMinutes: 10 }).length, 1);
   assert.equal(dueReminders(data, { [due[0].key]: now.toISOString() }, now, { offsets: [60], graceMinutes: 10 }).length, 0);
+
+  data.clients[0].discordReminderSettings = { offsetsMinutes: [30] };
+  assert.equal(dueReminders(data, {}, now, { offsets: [60], graceMinutes: 10 }).length, 0);
+  assert.equal(dueReminders(data, {}, new Date("2026-09-14T23:00:00.000Z"), { offsets: [60], graceMinutes: 10 }).length, 1);
+  data.clients[0].discordReminderSettings.paused = true;
+  assert.equal(dueReminders(data, {}, new Date("2026-09-14T23:00:00.000Z"), { offsets: [60], graceMinutes: 10 }).length, 0);
 });

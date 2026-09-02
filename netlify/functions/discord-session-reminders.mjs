@@ -4,6 +4,7 @@ import {
   clean,
   discordId,
   discordTimestamp,
+  effectiveReminderSettings,
   zonedTimeToUtc,
 } from "../lib/discord-bot.mjs";
 
@@ -87,7 +88,7 @@ async function postToDiscord({ client, session, content }) {
 
 export function dueReminders(workspace, sent = {}, now = new Date(), options = {}) {
   const fallbackTimeZone = options.timeZone || workspace.settings?.timeZone || DEFAULT_TIME_ZONE;
-  const offsets = options.offsets || DEFAULT_OFFSETS;
+  const defaultOffsets = options.offsets || DEFAULT_OFFSETS;
   const graceMs = Math.max(1, num(options.graceMinutes, DEFAULT_GRACE_MINUTES)) * 60_000;
   const clients = new Map((workspace.clients || []).map(client => [client.id, client]));
   const sessions = (workspace.scheduled || [])
@@ -97,12 +98,14 @@ export function dueReminders(workspace, sent = {}, now = new Date(), options = {
   for (const session of sessions) {
     const client = clients.get(session.clientId);
     if (!client) continue;
+    const reminderSettings = effectiveReminderSettings(client, defaultOffsets);
+    if (reminderSettings.paused) continue;
     if (!clientDiscordId(client, session) && !validWebhook(client.webhook)) continue;
     const timeZone = clean(session.timeZone, 80) || fallbackTimeZone;
     const instant = zonedTimeToUtc(session.date, session.time, timeZone);
     if (!instant) continue;
 
-    for (const offset of offsets) {
+    for (const offset of reminderSettings.offsets) {
       // Include the wall-clock slot so editing/rescheduling a meeting creates
       // a new reminder cycle. Preserve old id:offset log entries only for
       // legacy sessions that predate modification timestamps.

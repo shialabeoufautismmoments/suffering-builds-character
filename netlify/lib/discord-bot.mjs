@@ -1,4 +1,5 @@
 import { createPublicKey, randomUUID, verify as verifySignature } from "node:crypto";
+import { OVERWATCH_CATALOG } from "../../apps/shared/overwatch-catalog.mjs";
 
 export const DISCORD_EPHEMERAL_FLAG = 64;
 export const DEFAULT_TIME_ZONE = "America/Winnipeg";
@@ -6,6 +7,11 @@ export const DEFAULT_TIME_ZONE = "America/Winnipeg";
 const ED25519_SPKI_PREFIX = Buffer.from("302a300506032b6570032100", "hex");
 const MANAGE_GUILD = 1n << 5n;
 const ADMINISTRATOR = 1n << 3n;
+const OW_MAP_NAMES = OVERWATCH_CATALOG.maps.map(map => map.name);
+const OW_MAP_MODE = Object.fromEntries(OVERWATCH_CATALOG.maps.map(map => [map.name, map.mode]));
+const OW_HERO_NAMES = OVERWATCH_CATALOG.heroes.map(hero => hero.name);
+const OW_ROLES = ["Tank", "Damage", "Support"];
+const MATCH_TYPES = ["Competitive", "Scrim", "Quick Play", "Custom", "Tournament"];
 
 export const DISCORD_COMMANDS = [
   {
@@ -23,6 +29,7 @@ export const DISCORD_COMMANDS = [
         required: false,
         min_length: 4,
         max_length: 80,
+        autocomplete: true,
       },
       {
         type: 6,
@@ -36,6 +43,7 @@ export const DISCORD_COMMANDS = [
         description: "Optional map name to filter the report",
         required: false,
         max_length: 120,
+        autocomplete: true,
       },
     ],
   },
@@ -54,7 +62,7 @@ export const DISCORD_COMMANDS = [
         options: [
           { type: 3, name: "date", description: "First date in YYYY-MM-DD format", required: true, min_length: 10, max_length: 10 },
           { type: 3, name: "time", description: "Start time in 24-hour HH:MM format", required: true, min_length: 5, max_length: 5 },
-          { type: 3, name: "code", description: "Private client code (use this or a linked Discord client)", required: false, min_length: 4, max_length: 80 },
+          { type: 3, name: "code", description: "Private client code (use this or a linked Discord client)", required: false, min_length: 4, max_length: 80, autocomplete: true },
           { type: 6, name: "client", description: "Discord client to look up and ping", required: false },
           { type: 7, name: "channel", description: "Reminder channel (defaults to the current channel)", required: false, channel_types: [0, 5, 10, 11, 12] },
           { type: 4, name: "repeat-weeks", description: "Number of weekly meetings, from 1 to 52", required: false, min_value: 1, max_value: 52 },
@@ -67,7 +75,7 @@ export const DISCORD_COMMANDS = [
         name: "list",
         description: "List upcoming meetings",
         options: [
-          { type: 3, name: "code", description: "Optional private client code", required: false, min_length: 4, max_length: 80 },
+          { type: 3, name: "code", description: "Optional private client code", required: false, min_length: 4, max_length: 80, autocomplete: true },
           { type: 6, name: "client", description: "Optional linked Discord client", required: false },
         ],
       },
@@ -78,6 +86,78 @@ export const DISCORD_COMMANDS = [
         options: [
           { type: 3, name: "meeting-id", description: "Meeting ID shown by /meeting list", required: true, max_length: 100 },
           { type: 5, name: "series", description: "Cancel the full repeating series", required: false },
+        ],
+      },
+    ],
+  },
+  {
+    name: "match-log",
+    description: "Log a client's match into Coach HQ",
+    type: 1,
+    contexts: [0],
+    integration_types: [0],
+    default_member_permissions: String(MANAGE_GUILD),
+    options: [
+      { type: 3, name: "map", description: "Overwatch map", required: true, max_length: 80, autocomplete: true },
+      {
+        type: 3,
+        name: "result",
+        description: "Match result",
+        required: true,
+        choices: [
+          { name: "Win", value: "Win" },
+          { name: "Loss", value: "Loss" },
+          { name: "Draw", value: "Draw" },
+        ],
+      },
+      { type: 3, name: "date", description: "Match date in YYYY-MM-DD format (defaults to today)", required: false, min_length: 10, max_length: 10 },
+      { type: 3, name: "code", description: "Private client code (use this or a linked Discord client)", required: false, min_length: 4, max_length: 80, autocomplete: true },
+      { type: 6, name: "client", description: "Linked Discord client", required: false },
+    ],
+  },
+  {
+    name: "reminders",
+    description: "Manage per-client meeting reminder settings",
+    type: 1,
+    contexts: [0],
+    integration_types: [0],
+    default_member_permissions: String(MANAGE_GUILD),
+    options: [
+      {
+        type: 1,
+        name: "set",
+        description: "Set this client's reminder offsets",
+        options: [
+          { type: 3, name: "offsets", description: "Comma-separated times, for example 24h,1h,15m", required: true, min_length: 2, max_length: 120 },
+          { type: 3, name: "code", description: "Private client code", required: false, min_length: 4, max_length: 80, autocomplete: true },
+          { type: 6, name: "client", description: "Linked Discord client", required: false },
+        ],
+      },
+      {
+        type: 1,
+        name: "status",
+        description: "Show this client's reminder settings",
+        options: [
+          { type: 3, name: "code", description: "Private client code", required: false, min_length: 4, max_length: 80, autocomplete: true },
+          { type: 6, name: "client", description: "Linked Discord client", required: false },
+        ],
+      },
+      {
+        type: 1,
+        name: "pause",
+        description: "Pause all meeting reminders for this client",
+        options: [
+          { type: 3, name: "code", description: "Private client code", required: false, min_length: 4, max_length: 80, autocomplete: true },
+          { type: 6, name: "client", description: "Linked Discord client", required: false },
+        ],
+      },
+      {
+        type: 1,
+        name: "resume",
+        description: "Resume meeting reminders for this client",
+        options: [
+          { type: 3, name: "code", description: "Private client code", required: false, min_length: 4, max_length: 80, autocomplete: true },
+          { type: 6, name: "client", description: "Linked Discord client", required: false },
         ],
       },
     ],
@@ -136,6 +216,15 @@ export function commandOptions(options = []) {
   return Object.fromEntries((options || []).map(option => [option.name, option.value]));
 }
 
+export function focusedCommandOption(options = []) {
+  for (const option of options || []) {
+    if (option.focused) return option;
+    const nested = focusedCommandOption(option.options || []);
+    if (nested) return nested;
+  }
+  return null;
+}
+
 export function findClientByCode(workspace, code) {
   const normalized = normalizeCode(code);
   if (!normalized) return null;
@@ -148,6 +237,59 @@ export function findClientByDiscordId(workspace, userId) {
   return (workspace?.clients || []).find(client =>
     discordId(client.discordId) === normalized || discordId(client.discord) === normalized
   ) || null;
+}
+
+export function autocompleteChoices(workspace, interaction) {
+  const focused = focusedCommandOption(interaction?.data?.options || []);
+  if (!focused) return [];
+  const query = clean(focused.value, 100).toLocaleLowerCase("en-US");
+
+  if (focused.name === "code") {
+    const seen = new Set();
+    return (workspace?.clients || [])
+      .filter(client => normalizeCode(client.clientCode))
+      .filter(client => {
+        const haystack = [client.name, client.discord, client.rank, client.clientCode].map(value => clean(value, 120).toLocaleLowerCase("en-US")).join(" ");
+        return !query || haystack.includes(query);
+      })
+      .sort((left, right) => clean(left.name, 100).localeCompare(clean(right.name, 100), undefined, { sensitivity: "base" }))
+      .filter(client => {
+        const value = normalizeCode(client.clientCode);
+        if (seen.has(value)) return false;
+        seen.add(value);
+        return true;
+      })
+      .slice(0, 25)
+      .map(client => ({
+        name: clean([client.name || "Client", client.rank].filter(Boolean).join(" — "), 100),
+        value: normalizeCode(client.clientCode),
+      }));
+  }
+
+  if (focused.name === "map") {
+    const customMaps = (workspace?.matches || []).map(match => clean(match.map, 80)).filter(Boolean);
+    const names = [...customMaps, ...OW_MAP_NAMES];
+    const unique = [...new Map(names.map(name => [name.toLocaleLowerCase("en-US"), name])).values()];
+    const matches = unique.filter(name => {
+      const mode = OW_MAP_MODE[name] || "";
+      return !query || `${name} ${mode}`.toLocaleLowerCase("en-US").includes(query);
+    });
+    const choices = matches.slice(0, 25).map(name => ({
+      name: clean(OW_MAP_MODE[name] ? `${name} — ${OW_MAP_MODE[name]}` : name, 100),
+      value: clean(name, 80),
+    }));
+    const raw = clean(focused.value, 80);
+    if (raw && !unique.some(name => name.toLocaleLowerCase("en-US") === raw.toLocaleLowerCase("en-US")) && choices.length < 25) {
+      choices.push({ name: clean(`Use custom map: ${raw}`, 100), value: raw });
+    }
+    return choices.slice(0, 25);
+  }
+
+  return [];
+}
+
+export function autocompleteResponse(choices = []) {
+  return { type: 8, data: { choices: choices.slice(0, 25) } };
 }
 
 function record(matches) {
@@ -278,6 +420,10 @@ function dateParts(date) {
   return { year, month, day };
 }
 
+export function validDate(date) {
+  return !!dateParts(date);
+}
+
 function timeParts(time) {
   const match = /^(\d{2}):(\d{2})$/.exec(clean(time, 5));
   if (!match) return null;
@@ -340,6 +486,160 @@ export function addDays(date, amount) {
   if (!parts) return "";
   const value = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + amount));
   return value.toISOString().slice(0, 10);
+}
+
+export function parseReminderOffsets(value) {
+  const raw = clean(value, 120);
+  if (!raw) return { error: "Enter at least one reminder offset, such as 24h,1h." };
+  const tokens = raw.split(",").map(token => token.trim()).filter(Boolean);
+  if (!tokens.length || tokens.length > 10) return { error: "Enter between 1 and 10 comma-separated reminder offsets." };
+  const values = [];
+  for (const token of tokens) {
+    const match = /^(\d+(?:\.\d+)?)\s*(m|min|mins|h|hr|hrs|d|day|days)?$/i.exec(token);
+    if (!match) return { error: `“${token}” is invalid. Use values such as 15m, 1h, or 2d.` };
+    const amount = Number(match[1]);
+    const unit = (match[2] || "m").toLowerCase();
+    const multiplier = unit.startsWith("d") ? 1440 : unit.startsWith("h") ? 60 : 1;
+    const minutes = Math.round(amount * multiplier);
+    if (!Number.isFinite(minutes) || minutes < 1 || minutes > 43_200) {
+      return { error: "Each reminder must be between 1 minute and 30 days before the meeting." };
+    }
+    values.push(minutes);
+  }
+  return { values: [...new Set(values)].sort((left, right) => right - left) };
+}
+
+export function formatReminderOffsets(offsets = []) {
+  return offsets.map(minutes => {
+    if (minutes % 1440 === 0) return `${minutes / 1440}d`;
+    if (minutes % 60 === 0) return `${minutes / 60}h`;
+    return `${minutes}m`;
+  }).join(", ");
+}
+
+export function effectiveReminderSettings(client, defaults = [1440, 60]) {
+  const saved = client?.discordReminderSettings || {};
+  const custom = Array.isArray(saved.offsetsMinutes)
+    ? [...new Set(saved.offsetsMinutes.map(Number).filter(value => Number.isInteger(value) && value >= 1 && value <= 43_200))].sort((a, b) => b - a)
+    : [];
+  return {
+    paused: saved.paused === true,
+    offsets: custom.length ? custom : defaults,
+    customized: custom.length > 0,
+  };
+}
+
+function canonicalize(value, choices) {
+  const input = clean(value, 120);
+  return choices.find(choice => choice.toLocaleLowerCase("en-US") === input.toLocaleLowerCase("en-US")) || input;
+}
+
+export function matchLogModal({ customId, clientName, map, result }) {
+  return {
+    type: 9,
+    data: {
+      custom_id: clean(customId, 100),
+      title: clean(`Log match — ${clientName || "Client"}`, 45),
+      components: [
+        {
+          type: 18,
+          label: "Match type",
+          description: clean(`${map} • ${result}`, 100),
+          component: {
+            type: 3,
+            custom_id: "match_type",
+            options: MATCH_TYPES.map((value, index) => ({ label: value, value, ...(index === 0 ? { default: true } : {}) })),
+            required: true,
+          },
+        },
+        {
+          type: 18,
+          label: "Role",
+          component: {
+            type: 3,
+            custom_id: "role",
+            placeholder: "Optional",
+            options: OW_ROLES.map(value => ({ label: value, value })),
+            min_values: 0,
+            max_values: 1,
+            required: false,
+          },
+        },
+        {
+          type: 18,
+          label: "Heroes played",
+          description: "Separate multiple heroes with commas",
+          component: { type: 4, custom_id: "heroes", style: 1, required: false, max_length: 400, placeholder: "Tracer, Genji" },
+        },
+        {
+          type: 18,
+          label: "Replay code",
+          component: { type: 4, custom_id: "replay_code", style: 1, required: false, max_length: 40, placeholder: "ABC123" },
+        },
+        {
+          type: 18,
+          label: "Notes",
+          component: { type: 4, custom_id: "notes", style: 2, required: false, max_length: 1500, placeholder: "Key moments, matchup notes, or coaching context" },
+        },
+      ],
+    },
+  };
+}
+
+export function modalValues(components = []) {
+  const values = {};
+  for (const wrapper of components || []) {
+    const children = wrapper?.component ? [wrapper.component] : wrapper?.components || [];
+    for (const component of children) {
+      if (!component?.custom_id) continue;
+      values[component.custom_id] = Array.isArray(component.values) ? component.values[0] || "" : component.value || "";
+    }
+  }
+  return values;
+}
+
+export function buildDiscordMatch({ id, clientId, date, map, result, type, role, heroes, replayCode, notes, createdBy }) {
+  const canonicalMap = canonicalize(map, OW_MAP_NAMES);
+  const canonicalRole = canonicalize(role, OW_ROLES);
+  const matchType = canonicalize(type, MATCH_TYPES);
+  const canonicalResult = canonicalize(result, ["Win", "Loss", "Draw"]);
+  if (!id || !clientId || !validDate(date) || !canonicalMap || !["Win", "Loss", "Draw"].includes(canonicalResult)) return null;
+  const createdAt = new Date().toISOString();
+  return {
+    id: clean(id, 100),
+    clientId: clean(clientId, 100),
+    date: clean(date, 10),
+    type: MATCH_TYPES.includes(matchType) ? matchType : "Competitive",
+    result: canonicalResult,
+    role: OW_ROLES.includes(canonicalRole) ? canonicalRole : "",
+    map: canonicalMap,
+    mode: OW_MAP_MODE[canonicalMap] || "",
+    heroes: clean(heroes, 400).split(/[,;\n]/).map(hero => canonicalize(hero, OW_HERO_NAMES)).filter(Boolean).slice(0, 8),
+    rankBefore: "",
+    rankAfter: "",
+    replayCode: clean(replayCode, 40),
+    notes: clean(notes, 1500),
+    source: "discord",
+    createdByDiscordId: discordId(createdBy),
+    createdAt,
+    updatedAt: createdAt,
+  };
+}
+
+function escapeDiscordMarkdown(value) {
+  return clean(value, 1000).replace(/([\\`*_{}\[\]()#+\-.!|>~])/g, "\\$1");
+}
+
+export function auditMessage({ action, actorId, clientName, details = [], at = new Date() }) {
+  const coachId = discordId(actorId);
+  const rows = [
+    `📋 **${escapeDiscordMarkdown(action || "Bot change")}**`,
+    coachId ? `Coach: <@${coachId}>` : "Coach: Unknown",
+    clientName ? `Client: **${escapeDiscordMarkdown(clientName)}**` : "",
+    ...details.map(detail => escapeDiscordMarkdown(detail)).filter(Boolean),
+    `When: ${discordTimestamp(at)}`,
+  ].filter(Boolean);
+  return clean(rows.join("\n"), 1900);
 }
 
 export function createMeetings({ clientId, date, time, timeZone, notes = "", repeatWeeks = 1, channelId, userId, createdBy }) {

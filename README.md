@@ -837,7 +837,7 @@ Redeploy after adding the variables. The endpoint validates and length-limits
 every field, disables Discord mentions, includes a honeypot, accepts only HTTP(S)
 VOD links, and rate-limits each IP/domain to five submissions per minute.
 
-### Discord client-stats and meeting bot
+### Discord coaching bot
 
 The Discord bot is implemented as signed HTTP interactions at
 `https://sufferingbuildscharacter.com/api/discord`, so it runs in the existing
@@ -855,6 +855,17 @@ and the client app:
 - `/meeting list [code] [client]` returns upcoming meetings and their IDs.
 - `/meeting cancel meeting-id:<id> [series]` cancels one meeting or its full
   repeating series so pending reminders are skipped.
+- `/match-log map:<map> result:<result> code:<code>` (or `client:@member`)
+  opens a Discord form for match type, role, heroes, replay code, and notes,
+  then saves the match directly into the client's Coach HQ history.
+- `/reminders set offsets:24h,1h,15m code:<code>` gives one client a custom
+  reminder schedule. `/reminders pause`, `/reminders resume`, and
+  `/reminders status` manage or inspect that client's setting.
+
+Client-code and map fields provide autocomplete while typing. Map suggestions
+come from the site's Overwatch catalog plus maps already present in Coach HQ.
+Successful match, meeting, and reminder-setting changes are also posted to the
+private channel configured by `DISCORD_AUDIT_CHANNEL_ID`.
 
 Command responses are public so everyone in the channel can see the bot's stats,
 schedule confirmations, meeting lists, and errors. Commands default to members
@@ -882,7 +893,8 @@ are never echoed by the bot's response.
    Developer Mode**, then copy:
 
    - the coaching server ID (`DISCORD_GUILD_ID`),
-   - the default reminders channel ID (`DISCORD_REMINDER_CHANNEL_ID`), and
+   - the default reminders channel ID (`DISCORD_REMINDER_CHANNEL_ID`),
+   - a private staff audit channel ID (`DISCORD_AUDIT_CHANNEL_ID`), and
    - optionally comma-separated coach role/user IDs
      (`DISCORD_STAFF_ROLE_IDS`, `DISCORD_STAFF_USER_IDS`).
 
@@ -895,6 +907,7 @@ are never echoed by the bot's response.
    DISCORD_BOT_TOKEN=<the newly reset token>
    DISCORD_GUILD_ID=<server ID>
    DISCORD_REMINDER_CHANNEL_ID=<channel ID>
+   DISCORD_AUDIT_CHANNEL_ID=<private staff channel ID>
    DISCORD_STAFF_ROLE_IDS=<optional comma-separated role IDs>
    DISCORD_STAFF_USER_IDS=<optional comma-separated user IDs>
    COACH_TIME_ZONE=America/Winnipeg
@@ -951,9 +964,12 @@ are never echoed by the bot's response.
    that meeting, so reminders keep their intended destination even if the
    global default later changes.
 
-8. **Test the workflow.** Run `/client-stats`, schedule a meeting far enough in
-   the future to hit an offset, then check **Netlify → Functions** for the
-   `discord-session-reminders` scheduled function. It runs every five minutes
+8. **Test the workflow.** Type part of a client name or map to confirm
+   autocomplete, run `/client-stats`, use `/match-log`, and check that the
+   match appears in Coach HQ and the change appears in the private audit
+   channel. Then set a test client's reminders with `/reminders set`, schedule
+   a meeting far enough in the future to hit an offset, and check **Netlify →
+   Functions** for the `discord-session-reminders` scheduled function. It runs every five minutes
    on published deploys. For a quick test, temporarily use
    `DISCORD_REMINDER_OFFSETS_MINUTES=5` and schedule a meeting 6-10 minutes out,
    then restore `1440,60` after confirming delivery.
