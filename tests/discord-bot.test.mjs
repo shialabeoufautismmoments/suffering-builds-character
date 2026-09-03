@@ -21,7 +21,7 @@ import {
   verifyDiscordRequest,
   zonedTimeToUtc,
 } from "../netlify/lib/discord-bot.mjs";
-import discordInteractions from "../netlify/functions/discord-interactions.mjs";
+import discordInteractions, { resolveMatchClient } from "../netlify/functions/discord-interactions.mjs";
 import { dueReminders, reminderContent } from "../netlify/functions/discord-session-reminders.mjs";
 
 const CLIENT_CODE = "SBC-TEST-01";
@@ -46,7 +46,8 @@ function workspace() {
 
 test("Discord command definitions expose the requested workflows", () => {
   assert.deepEqual(DISCORD_COMMANDS.map(command => command.name), ["client-stats", "meeting", "match-log", "reminders"]);
-  assert.ok(DISCORD_COMMANDS.every(command => command.default_member_permissions === "32"));
+  assert.ok(DISCORD_COMMANDS.filter(command => command.name !== "match-log").every(command => command.default_member_permissions === "32"));
+  assert.equal(DISCORD_COMMANDS.find(command => command.name === "match-log").default_member_permissions, undefined);
   assert.ok(DISCORD_COMMANDS.every(command => command.contexts.length === 1 && command.contexts[0] === 0));
   const statsOptions = DISCORD_COMMANDS.find(command => command.name === "client-stats").options;
   assert.equal(statsOptions.find(option => option.name === "code").required, false);
@@ -54,6 +55,22 @@ test("Discord command definitions expose the requested workflows", () => {
   assert.equal(statsOptions.find(option => option.name === "map").autocomplete, true);
   assert.equal(statsOptions.find(option => option.name === "client").type, 6);
   assert.equal(DISCORD_COMMANDS.find(command => command.name === "match-log").options.find(option => option.name === "map").autocomplete, true);
+});
+
+test("clients can log only to their own Discord-linked profile while staff can select any client", () => {
+  const data = workspace();
+  data.clients.push({
+    id: "client-2",
+    name: "Player Two",
+    clientCode: "SBC-TEST-02",
+    discordId: "254409348698106278",
+  });
+  assert.equal(resolveMatchClient(data, { actorId: USER_ID }).client.id, CLIENT_ID);
+  assert.equal(resolveMatchClient(data, { actorId: USER_ID, code: CLIENT_CODE }).client.id, CLIENT_ID);
+  assert.match(resolveMatchClient(data, { actorId: USER_ID, code: "SBC-TEST-02" }).error, /only log matches/);
+  assert.match(resolveMatchClient(data, { actorId: USER_ID, userId: "254409348698106278" }).error, /only log matches/);
+  assert.equal(resolveMatchClient(data, { actorId: USER_ID, code: "SBC-TEST-02", staff: true }).client.id, "client-2");
+  assert.match(resolveMatchClient(data, { actorId: "354409348698106278" }).error, /not linked/);
 });
 
 test("client and map autocomplete return Discord-compatible choices", () => {
@@ -210,7 +227,7 @@ test("per-client reminder settings parse, format, and override server defaults",
   });
 });
 
-test("audit messages identify the coach without exposing client codes", () => {
+test("audit messages identify the submitter without exposing client codes", () => {
   const content = auditMessage({
     action: "Match logged",
     actorId: USER_ID,

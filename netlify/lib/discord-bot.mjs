@@ -96,7 +96,6 @@ export const DISCORD_COMMANDS = [
     type: 1,
     contexts: [0],
     integration_types: [0],
-    default_member_permissions: String(MANAGE_GUILD),
     options: [
       { type: 3, name: "map", description: "Overwatch map", required: true, max_length: 80, autocomplete: true },
       {
@@ -634,7 +633,7 @@ export function auditMessage({ action, actorId, clientName, details = [], at = n
   const coachId = discordId(actorId);
   const rows = [
     `📋 **${escapeDiscordMarkdown(action || "Bot change")}**`,
-    coachId ? `Coach: <@${coachId}>` : "Coach: Unknown",
+    coachId ? `Submitted by: <@${coachId}>` : "Submitted by: Unknown",
     clientName ? `Client: **${escapeDiscordMarkdown(clientName)}**` : "",
     ...details.map(detail => escapeDiscordMarkdown(detail)).filter(Boolean),
     `When: ${discordTimestamp(at)}`,

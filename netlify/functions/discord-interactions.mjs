@@ -101,6 +101,28 @@ function resolveClient(workspace, { code, userId } = {}) {
   return { client: byCode || byUser };
 }
 
+export function resolveMatchClient(workspace, { actorId, code, userId, staff = false } = {}) {
+  if (staff) return resolveClient(workspace, { code, userId });
+  const coachHqClient = findClientByDiscordId(workspace, actorId);
+  if (!coachHqClient) {
+    return { error: "Your Discord account is not linked to a Coach HQ client profile. Ask a coach to add your numeric Discord User ID." };
+  }
+  const requestedByCode = clean(code, 80) ? findClientByCode(workspace, code) : null;
+  if (clean(code, 80) && requestedByCode?.id !== coachHqClient.id) {
+    return { error: "Clients can only log matches to their own linked Coach HQ profile." };
+  }
+  const requestedUserId = clean(userId, 80) ? discordId(userId) : "";
+  if (clean(userId, 80) && requestedUserId !== discordId(actorId)) {
+    return { error: "Clients can only log matches to their own linked Coach HQ profile." };
+  }
+  return { client: coachHqClient };
+}
+
+function isMatchInteraction(interaction) {
+  if (interaction?.data?.name === "match-log") return true;
+  return interaction?.type === 5 && clean(interaction.data?.custom_id, 100).startsWith("match-log:");
+}
+
 async function postDiscordMessage(channelId, content) {
   const token = env("DISCORD_BOT_TOKEN");
   const destination = discordId(channelId);
@@ -149,11 +171,16 @@ async function handleClientStats(interaction, workspace) {
   return json(messageResponse({ embeds: [statsEmbed(stats)] }));
 }
 
-async function handleMatchLogCommand(interaction, store) {
+async function handleMatchLogCommand(interaction, store, staff) {
   const workspace = await readWorkspace(store);
   if (!workspace) return unavailable("The coaching workspace has not been synced yet.");
   const options = commandOptions(interaction.data?.options);
-  const resolved = resolveClient(workspace, { code: options.code, userId: options.client });
+  const resolved = resolveMatchClient(workspace, {
+    actorId: interactionUserId(interaction),
+    code: options.code,
+    userId: options.client,
+    staff,
+  });
   if (resolved.error) return unavailable(resolved.error);
   const map = clean(options.map, 80);
   const result = clean(options.result, 10);
@@ -420,20 +447,26 @@ export default async request => {
   if (![2, 4, 5].includes(interaction.type)) return unavailable("This interaction type is not supported.");
 
   const guildId = env("DISCORD_GUILD_ID");
-  const authorized = guildId && isAuthorizedStaff(interaction, {
+  const staff = guildId && isAuthorizedStaff(interaction, {
     guildId,
     roleIds: csvSet(env("DISCORD_STAFF_ROLE_IDS")),
     userIds: csvSet(env("DISCORD_STAFF_USER_IDS")),
   });
-  if (interaction.type === 4 && !authorized) return json(autocompleteResponse([]));
+  const guildMember = interaction.guild_id === guildId && !!interactionUserId(interaction);
+  const matchAccess = guildMember && isMatchInteraction(interaction);
+  if (interaction.type === 4 && !staff && !matchAccess) return json(autocompleteResponse([]));
   if (!guildId) return unavailable("DISCORD_GUILD_ID is not configured on Netlify.");
-  if (!authorized) return unavailable("This command is limited to configured coaching staff.");
+  if (!staff && !matchAccess) return unavailable("This command is limited to configured coaching staff.");
 
   try {
     const store = workspaceStore();
     if (interaction.type === 4) {
       const workspace = await readWorkspace(store);
-      return json(autocompleteResponse(workspace ? autocompleteChoices(workspace, interaction) : []));
+      if (!workspace) return json(autocompleteResponse([]));
+      const visibleWorkspace = !staff && matchAccess
+        ? { ...workspace, clients: [findClientByDiscordId(workspace, interactionUserId(interaction))].filter(Boolean) }
+        : workspace;
+      return json(autocompleteResponse(autocompleteChoices(visibleWorkspace, interaction)));
     }
     if (interaction.type === 5) {
       if (clean(interaction.data?.custom_id, 100).startsWith("match-log:")) return handleMatchLogModal(interaction, store);
@@ -444,7 +477,7 @@ export default async request => {
       if (!workspace) return unavailable("The coaching workspace has not been synced yet.");
       return handleClientStats(interaction, workspace);
     }
-    if (interaction.data?.name === "match-log") return handleMatchLogCommand(interaction, store);
+    if (interaction.data?.name === "match-log") return handleMatchLogCommand(interaction, store, staff);
     if (interaction.data?.name === "meeting") return handleMeeting(interaction, store);
     if (interaction.data?.name === "reminders") return handleReminders(interaction, store);
     return unavailable("Unknown command. Re-register the Discord commands and try again.");

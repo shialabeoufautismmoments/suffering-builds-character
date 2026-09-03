@@ -855,9 +855,10 @@ and the client app:
 - `/meeting list [code] [client]` returns upcoming meetings and their IDs.
 - `/meeting cancel meeting-id:<id> [series]` cancels one meeting or its full
   repeating series so pending reminders are skipped.
-- `/match-log map:<map> result:<result> code:<code>` (or `client:@member`)
-  opens a Discord form for match type, role, heroes, replay code, and notes,
-  then saves the match directly into the client's Coach HQ history.
+- `/match-log map:<map> result:<result>` opens a Discord form for match type,
+  role, heroes, replay code, and notes, then saves the match directly into the
+  invoking client's linked Coach HQ history. Staff can add `code:<code>` or
+  `client:@member` to log a match for another client.
 - `/reminders set offsets:24h,1h,15m code:<code>` gives one client a custom
   reminder schedule. `/reminders pause`, `/reminders resume`, and
   `/reminders status` manage or inspect that client's setting.
@@ -868,13 +869,15 @@ Successful match, meeting, and reminder-setting changes are also posted to the
 private channel configured by `DISCORD_AUDIT_CHANNEL_ID`.
 
 Command responses are public so everyone in the channel can see the bot's stats,
-schedule confirmations, meeting lists, and errors. Commands default to members
-with Discord's **Manage Server** permission, and the function independently
-checks the guild, configured staff roles/users, or Manage Server/Administrator
-permission before reading client data. If a configured staff role does not have
-Manage Server, grant that role access under **Server Settings → Integrations →
-the bot → Commands** as well. Client codes are accepted as command inputs but
-are never echoed by the bot's response.
+schedule confirmations, meeting lists, and errors. `/match-log` is available to
+all members of the configured server, but non-staff members can save only to the
+Coach HQ client profile linked to their own Discord ID. All other commands
+default to members with Discord's **Manage Server** permission, and the function
+independently checks the guild, configured staff roles/users, or Manage
+Server/Administrator permission before reading client data. If a configured
+staff role does not have Manage Server, grant that role access under **Server
+Settings → Integrations → the bot → Commands** as well. Client codes are
+accepted as command inputs but are never echoed by the bot's response.
 
 #### One-time setup
 
