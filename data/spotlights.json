@@ -1,18 +1,10 @@
 {
   "spotlights": [
     {
-      "enabled": true,
-      "slug": "beleosplotlight",
-      "playerName": "Beleo",
-      "photo": "https://cdn.discordapp.com/avatars/1200154824772157553/ee3a6303b077212f8c9ce8727a232d44.png?size=4096",
-      "summary": "High Masters to Champion 5 in 3 weeks.",
-      "game": "Overwatch",
-      "startingPoint": "High Masters",
-      "result": "Champion 5",
       "timeframe": "3 weeks",
+      "notes": "![Beleo's streak to hit Champion.](/assets/uploads/wins.png \"Beleo's Winstreak\")\n\n![Beleo hitting Champ 5 on July 27th, 3 weeks after the beginning of the program.](/assets/uploads/screenshot-2026-07-28-083504.png \"Beleo Hitting Champ\")\n\nBeleo worked closely with coaches EOO/Trip and psev to hit Champ 5 in only 3 weeks. 2-3 vods a week and with effort put in from Beleo, he was able to quickly climb to Champ 5. \n\nWe worked not only on his gamesense, incorporating good range drills, power positions, and teaching him how to monitor resources, but also his aim, more specifically micro corrections and general control tracking to improve smoothness and corrections.\n\nBeleo also transitioned from a Soldier one trick to a full fledged hitscan in the given timeframe. Working closely with EOO/Trip, he improved not only on Soldier, but on Cassidy, Widowmaker, and Sojourn.\n\nGive him a follow, [here on twitter](https://x.com/beleofps).",
+      "enabled": true,
       "coachingType": "Duo Coaching",
-      "coaches": "EOO / Trip + psev",
-      "focusAreas": "Game sense\nAim mechanics\nHitscan hero pool",
       "metrics": [
         {
           "label": "Competitive rank",
@@ -25,10 +17,43 @@
           "after": "3 weeks"
         }
       ],
-      "publishedDate": "2026-07-28",
-      "featured": true,
       "consentConfirmed": true,
-      "notes": "![Beleo's streak to hit Champion.](/assets/uploads/wins.png \"Beleo's Winstreak\")\n\n![Beleo hitting Champ 5 on July 27th, 3 weeks after the beginning of the program.](/assets/uploads/screenshot-2026-07-28-083504.png \"Beleo Hitting Champ\")\n\nBeleo worked closely with coaches EOO/Trip and psev to hit Champ 5 in only 3 weeks. 2-3 vods a week and with effort put in from Beleo, he was able to quickly climb to Champ 5. \n\nWe worked not only on his gamesense, incorporating good range drills, power positions, and teaching him how to monitor resources, but also his aim, more specifically micro corrections and general control tracking to improve smoothness and corrections.\n\nBeleo also transitioned from a Soldier one trick to a full fledged hitscan in the given timeframe. Working closely with EOO/Trip, he improved not only on Soldier, but on Cassidy, Widowmaker, and Sojourn.\n\nGive him a follow, [here on twitter](https://x.com/beleofps)."
+      "summary": "High Masters to Champion 5 in 3 weeks.",
+      "coaches": "EOO / Trip + psev",
+      "slug": "beleosplotlight",
+      "playerName": "Beleo",
+      "featured": true,
+      "focusAreas": "Game sense\nAim mechanics\nHitscan hero pool",
+      "startingPoint": "High Masters",
+      "photo": "https://cdn.discordapp.com/avatars/1200154824772157553/ee3a6303b077212f8c9ce8727a232d44.png?size=4096",
+      "game": "Overwatch",
+      "publishedDate": "2026-07-28",
+      "result": "Champion 5"
+    },
+    {
+      "timeframe": "12 days",
+      "notes": "Hosoi started as a low Masters, high Diamond Soldier player. Through psev and EOO's coaching, he achieved Grandmaster 5 in a record time of 12 days. Throughout 4 sessions, 2 were dedicated to game sense, led by EOO, and 2 were dedicated to micro and mechanics, led by psev. \n\n![Winrates](/assets/uploads/screenshot-2026-09-04-033856.png \"Winrates had skyrocketed\")\n\nThroughout the nearly 2 week progression period, Hosoi put in lots of work to achieve his goal. He now joins HONE as a graduate through our vod program, where we use him as an example for other students to learn from.",
+      "enabled": true,
+      "coachingType": "Duo Coaching",
+      "metrics": [
+        {
+          "label": "Rank",
+          "before": "Diamond 2",
+          "after": "Grandmaster 5"
+        }
+      ],
+      "consentConfirmed": true,
+      "summary": "High Diamond to Grandmaster in 12 days.",
+      "coaches": "EOO / Trip + psev",
+      "slug": "hosoispotlight",
+      "playerName": "Hosoi23",
+      "featured": true,
+      "focusAreas": "Game sense\nAim mechanics\nMovement mechanics\nJabbing\nSoldier",
+      "startingPoint": "High Diamond",
+      "photo": "https://cdn.discordapp.com/avatars/387729768025554993/92922b25ac30bf58bb0b016b793e31ab.png?size=4096",
+      "game": "Overwatch",
+      "publishedDate": "2026-09-04",
+      "result": "Grandmaster 5"
     }
   ]
 }
